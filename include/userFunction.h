@@ -1,3 +1,6 @@
+#ifndef __USERFUNCTION_H__
+#define __USERFUNCTION_H__
+
 #include "bwio.h"
 #include "syscall.h"
 
@@ -10,7 +13,10 @@ void user() {
 	Exit();
 }
 
+
 void first() {
+	bwputstr(COM2, "Enter first()\n\r");
+
 	int ret;
 	ret = Create(2, &user);
 	bwprintf(COM2, "Created: %d\n\r", ret);
@@ -27,3 +33,5 @@ void first() {
 	bwputstr(COM2, "‘FirstUserTask: exiting\n\r");
 	Exit();
 }
+
+#endif

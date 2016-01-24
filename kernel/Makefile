@@ -25,7 +25,7 @@ kernel.o: kernel.s
 	$(AS) $(ASFLAGS) -o kernel.o kernel.s
 
 kernel.elf: kernel.o
-	$(LD) $(LDFLAGS) -o $@ kernel.o -lbwio -lgcc
+	$(LD) $(LDFLAGS) -o $@ kernel.o -lbwio -ltaskDescriptor -lgcc
 
 clean:
 	-rm -f kernel.elf *.s *.o kernel.map

@@ -1,39 +1,19 @@
-#include <bwio.h>
-#include <taskDescriptor.h>
+#ifndef __KERNELFUNCTION_H__
+#define __KERNELFUNCTION_H__
+
+#include "taskDescriptor.h"
+#include "syscall.h"
 
 
-void initialize(td* tds) {
-	// Task descriptor initialization
-	tds->id = 1;
-	tds->state = Ready;
+typedef struct request {
+	int type;
+	td *task;
+	int arg1;
+	int arg2;
+} req;
 
-	tds->stack_ptr = 0x800000;
 
-	int usr_entry_point = &first + 0x00218000;
-
-	asm volatile (
-		"stmfd %0!, {%0, %1}"
-		:"=r"(tds->stack_ptr)
-		:"r"(usr_entry_point)
-	);
-
-	tds->SPSR = 0xd0;
-	tds->rtn_value = 0;
-
-	// Set up swi table
-	int *handler_addr = 0x28;
-	int swi_handler_addr = 0;
-	asm volatile (
-		"ldr ip, =__SWI_HANDLER"
-	);
-	asm volatile (
-		"mov %0, ip"
-		:"=r"(swi_handler_addr)
-	);
-	*handler_addr = swi_handler_addr + 0x00218000;
-}
-
-void activate(td* tds) {
+void activate(td* tds, req *request) {
 	// Install spsr of the active task
 	int active_spsr = tds->SPSR;
 	asm volatile (
@@ -94,7 +74,25 @@ void activate(td* tds) {
 	);
 	
 	// Get argument
+	int arg1 = 0;
+	int arg2 = 0;
+	asm volatile (
+		"mov %0, r0"
+		:"=r"(arg1)
+	);
+	asm volatile (
+		"mov %0, r1"
+		:"=r"(arg2)
+	);
+	asm volatile (
+		"ldr %0, [lr, #-4]"
+		:"=r"(request->type)
+	);
 
+	if (request->type == 0) {
+		request->arg1 = arg1;
+		request->arg2 = arg2;
+	}
 	
 	// Acquire lr
 	asm volatile(
@@ -144,14 +142,59 @@ void activate(td* tds) {
 	tds->SPSR = spsr_value;
 }
 
-int main() {
-	bwsetfifo(COM2, OFF);
-	td tds;
-	initialize(&tds);
 
-	int i = 0;
-	for (i = 0; i < 3 ; i++) {
-		activate(&tds);
+void handle(pair *td_pq, td *td_ary, req request) {
+	if(request.type == 0) {
+		bwputstr(COM2, "create\n\r");
+		struct taskDescriptor *newtd = &(td_ary[task_id_counter]);
+
+		newtd->free = 0;
+		newtd->id = task_id_counter;
+		newtd->state = Ready;
+		newtd->priority = request.arg1;
+		newtd->p_id = (request.task)->p_id;
+		newtd->stack_ptr = usr_stack_base - task_id_counter * usr_stack_space;
+		newtd->SPSR = 0xd0;
+		newtd->rtn_value = 0;
+
+		int usr_entry_point = request.arg2 + 0x00218000;
+
+		asm volatile (
+			"stmfd %0!, {%0, %1}"
+			:"=r"(newtd->stack_ptr)
+			:"r"(usr_entry_point)
+		);	
+
+		pq_insert(td_pq, newtd);
+
+		(request.task)->rtn_value = task_id_counter;
+
+		task_id_counter++;
+
+		return;
 	}
-	return 0;
+	bwputstr(COM2, "not create\n\r");
+
+	switch(request.type) {
+		
+		case 1:
+			(request.task)->rtn_value = (request.task)->id;
+			break;
+
+		case 2:
+			(request.task)->rtn_value = (request.task)->p_id;
+			break;
+
+		case 3:
+			pq_movetoend(td_pq, request.task);
+			break;
+
+		case 4:
+			pq_delete(td_pq, request.task);
+			break;
+	}
+	return;
 }
+
+#endif
+

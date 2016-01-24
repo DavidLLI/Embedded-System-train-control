@@ -1,4 +1,5 @@
-
+#ifndef __BWIO_H__
+#define __BWIO_H__
 
 /*
  * bwio.h
@@ -39,4 +40,7 @@ int bwputr( int channel, unsigned int reg );
 void bwputw( int channel, int n, char fc, char *bf );
 
 void bwprintf( int channel, char *format, ... );
+
+#endif
+
 
