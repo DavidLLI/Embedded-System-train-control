@@ -15,18 +15,28 @@ enum sys_request {
 
 
 int Create(int priority, void (*code) ()) {
+	int temp = priority;
 	asm volatile (
 		"mov r1, %0"
-		: "=r" (priority)
+		: "=r" (temp)
+	);
+
+	temp = code;
+	asm volatile (
+		"mov r2, %0"
+		: "=r" (temp)
 	);
 
 	asm volatile (
-		"mov r2, %0"
-		: "=r" (code)
+		"stmfd sp!, {fp}"
 	);
 
 	asm volatile (
 		"swi #0"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {fp}"
 	);
 
 	int rtn;
@@ -40,7 +50,15 @@ int Create(int priority, void (*code) ()) {
 
 int MyTid() {	
 	asm volatile (
+		"stmfd sp!, {fp}"
+	);
+
+	asm volatile (
 		"swi #1"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {fp}"
 	);
 
 	int rtn;
@@ -55,7 +73,15 @@ int MyTid() {
 
 int MyParentTid() {
 	asm volatile (
+		"stmfd sp!, {fp}"
+	);
+
+	asm volatile (
 		"swi #2"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {fp}"
 	);
 
 	int rtn;
@@ -70,14 +96,30 @@ int MyParentTid() {
 
 void Pass() {
 	asm volatile (
+		"stmfd sp!, {fp}"
+	);
+
+	asm volatile (
 		"swi #3"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {fp}"
 	);
 }
 
 
 void Exit() {
 	asm volatile (
+		"stmfd sp!, {fp}"
+	);
+
+	asm volatile (
 		"swi #4"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {fp}"
 	);
 }
 

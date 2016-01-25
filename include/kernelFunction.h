@@ -146,39 +146,32 @@ void activate(td* tds, req *request) {
 
 void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 	if(request.type == 0) {
-		bwputstr(COM2, "create\n\r");
 		struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
-		bwprintf(COM2, "1 %d\n\r", *task_id_counter);
 
+		// set td fields
 		newtd->free = 0;
-		bwprintf(COM2, "2\n\r");
 		newtd->id = *task_id_counter;
-		bwprintf(COM2, "2\n\r");
 		newtd->state = Ready;
-		bwprintf(COM2, "2\n\r");
 		newtd->priority = request.arg1;
-		bwprintf(COM2, "2\n\r");
-		//newtd->p_id = (request.task)->id;
-		bwprintf(COM2, "2\n\r");
+		//bwprintf(COM2, "arg1:%d, arg2:%x\n\r", request.arg1, request.arg2);
+		newtd->p_id = (request.task)->id;
 		int stack_adr = 0x7fff00 - (* task_id_counter) * 0x1000;
-		bwprintf(COM2, "2\n\r");
 		newtd->stack_ptr = stack_adr;
-		bwprintf(COM2, "2 %x\n\r", newtd->stack_ptr);
 		newtd->SPSR = 0xd0;
 		newtd->rtn_value = 0;
 
 		int usr_entry_point = (int) (request.arg2 + 0x00218000);
-		bwprintf(COM2, "2 %x\n\r", request.arg2);
 		
 		*((int *)newtd->stack_ptr) = usr_entry_point;
 		*((int *)newtd->stack_ptr - 1) = stack_adr;
 		newtd->stack_ptr -= 4;
 
-		bwputstr(COM2, "3\n\r");
+		//insert into priority queue
+		//bwprintf(COM2, "insert--id: %d, pri: %d\n\r", newtd->id, newtd->priority);
 		pq_insert(td_pq, newtd);
-		bwputstr(COM2, "4\n\r");
+		
 		(request.task)->rtn_value = *task_id_counter;
-		bwputstr(COM2, "5\n\r");
+		
 		(*task_id_counter)++;
 
 		return;
@@ -187,16 +180,19 @@ void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 
 	switch(request.type) {
 		
-		case 1:
+		case 1: //MyTid
+			bwprintf(COM2, "id: %d\n\r", (request.task)->id);
 			(request.task)->rtn_value = (request.task)->id;
 			break;
 
-		case 2:
+		case 2: //MyParentTid
 			(request.task)->rtn_value = (request.task)->p_id;
 			break;
 
 		case 3:
+			//bwputstr(COM2, "--pass\n\r");
 			pq_movetoend(td_pq, request.task);
+			//bwputstr(COM2, "mte return\n\r");
 			break;
 
 		case 4:

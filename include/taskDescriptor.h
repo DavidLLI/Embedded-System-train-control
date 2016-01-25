@@ -35,16 +35,18 @@ typedef struct pair {
 
 
 void user() {
-	bwprintf(COM2, "MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
+	//bwprintf(COM2, "enter user()\n\r");
+
+	bwprintf(COM2, "1--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
 	Pass();
 
-	bwprintf(COM2, "MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
+	bwprintf(COM2, "2--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
 	Exit();
 }
 
 
 void first() {
-	bwputstr(COM2, "Enter first()\n\r");
+	//bwputstr(COM2, "Enter first()\n\r");
 
 	int ret;
 	ret = Create(2, &user);
@@ -59,7 +61,7 @@ void first() {
 	ret = Create(1, &user);
 	bwprintf(COM2, "Created: %d\n\r", ret);
 
-	bwputstr(COM2, "‘FirstUserTask: exiting\n\r");
+	bwputstr(COM2, "FirstUserTask: exiting\n\r");
 	Exit();
 }
 
@@ -82,7 +84,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	*((int *)td1->stack_ptr - 1) = 0x7fff00;
 	td1->stack_ptr -= 4;
 
-	bwprintf(COM2, "%x\n\r", td1->stack_ptr);
+	//bwprintf(COM2, "%x\n\r", td1->stack_ptr);
 
 	td_pq[0].td_head = td1;
 	td_pq[0].td_tail = td1; 
@@ -104,6 +106,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 
 
 td *schedule(pair *td_pq) {
+	//bwputstr(COM2, "schedule\n\r");
 	int schedule_i;
 	for(schedule_i = 0; schedule_i < 32; schedule_i++) {
 		pair p;
@@ -124,6 +127,7 @@ td *schedule(pair *td_pq) {
 }
 
 void pq_insert(pair *td_pq, td *td) {
+	//bwprintf(COM2, "insert--id: %d, pri: %d\n\r", td->id, td->priority);
 	int priority = td->priority;
 	struct taskDescriptor *tail = td_pq[priority].td_tail;
 	if(tail != 0) {
@@ -132,6 +136,7 @@ void pq_insert(pair *td_pq, td *td) {
 		td->td_nxt = 0;
 		td_pq[priority].td_tail = td;
 	} else {
+		//bwputstr(COM2, "tail == 0\n\r");
 		td_pq[priority].td_tail = td;
 		td_pq[priority].td_head = td;
 		td->td_prv = 0;
@@ -147,7 +152,7 @@ void pq_movetoend(pair *td_pq, td *td) {
 	struct taskDescriptor *head = td_pq[priority].td_head;
 
 	if(td != tail) {
-
+		//bwputstr(COM2, "move\n\r");
 		if(td == head) {
 			td_pq[priority].td_head = td->td_nxt;
 		} else {

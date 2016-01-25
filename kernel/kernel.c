@@ -27,25 +27,25 @@ int main(int argc, char *argv[]) {
 	initialize(td_pq, td_ary, &task_id_counter); // tds is an array of TDs
 	
 
-	int i;
-	for(i = 0; i < 8; i++) {
-		bwputstr(COM2, "loop start.\n\r");
+	
+	for(;;) {
+
 		td *active = schedule(td_pq);
-		bwputstr(COM2, "schedule return.\n\r");
+		bwprintf(COM2, "activate task %d.\n\r", active->id);
 		if(active == 0) {
 			bwputstr(COM2, "No more task to be scheduled. Kernel is exiting.\n\r");
 			break;
 		}
 
 		req request;
-		bwprintf(COM2, "activate task %d.\n\r", active->id);
 		
 		activate(active, &request);
 		request.task = active;
-		bwputstr(COM2, "activate return.\n\r");
 
+		pq_movetoend(td_pq, active);
 		handle(td_pq, td_ary, request, &task_id_counter);
-		bwputstr(COM2, "handle return.\n\r");
+
+		
 	}
 	return 0;
 }
