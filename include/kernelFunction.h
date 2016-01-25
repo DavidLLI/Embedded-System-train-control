@@ -45,7 +45,6 @@ void activate(td* tds, req *request) {
 		"mov ip, lr"
 	);
 
-	// Put return value into r0
 	// Return to svc mode
 	asm volatile (
 		"msr cpsr, #0xd3"
@@ -77,17 +76,19 @@ void activate(td* tds, req *request) {
 	int arg1 = 0;
 	int arg2 = 0;
 	asm volatile (
-		"mov %0, r0"
+		"mov %0, r1"
 		:"=r"(arg1)
 	);
 	asm volatile (
-		"mov %0, r1"
+		"mov %0, r2"
 		:"=r"(arg2)
 	);
 	asm volatile (
 		"ldr %0, [lr, #-4]"
 		:"=r"(request->type)
 	);
+
+	request->type = request->type & 0x00ffffff;
 
 	if (request->type == 0) {
 		request->arg1 = arg1;
@@ -143,37 +144,46 @@ void activate(td* tds, req *request) {
 }
 
 
-void handle(pair *td_pq, td *td_ary, req request) {
+void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 	if(request.type == 0) {
 		bwputstr(COM2, "create\n\r");
-		struct taskDescriptor *newtd = &(td_ary[task_id_counter]);
+		struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
+		bwprintf(COM2, "1 %d\n\r", *task_id_counter);
 
 		newtd->free = 0;
-		newtd->id = task_id_counter;
+		bwprintf(COM2, "2\n\r");
+		newtd->id = *task_id_counter;
+		bwprintf(COM2, "2\n\r");
 		newtd->state = Ready;
+		bwprintf(COM2, "2\n\r");
 		newtd->priority = request.arg1;
-		newtd->p_id = (request.task)->p_id;
-		newtd->stack_ptr = usr_stack_base - task_id_counter * usr_stack_space;
+		bwprintf(COM2, "2\n\r");
+		//newtd->p_id = (request.task)->id;
+		bwprintf(COM2, "2\n\r");
+		int stack_adr = 0x7fff00 - (* task_id_counter) * 0x1000;
+		bwprintf(COM2, "2\n\r");
+		newtd->stack_ptr = stack_adr;
+		bwprintf(COM2, "2 %x\n\r", newtd->stack_ptr);
 		newtd->SPSR = 0xd0;
 		newtd->rtn_value = 0;
 
-		int usr_entry_point = request.arg2 + 0x00218000;
+		int usr_entry_point = (int) (request.arg2 + 0x00218000);
+		bwprintf(COM2, "2 %x\n\r", request.arg2);
+		
+		*((int *)newtd->stack_ptr) = usr_entry_point;
+		*((int *)newtd->stack_ptr - 1) = stack_adr;
+		newtd->stack_ptr -= 4;
 
-		asm volatile (
-			"stmfd %0!, {%0, %1}"
-			:"=r"(newtd->stack_ptr)
-			:"r"(usr_entry_point)
-		);	
-
+		bwputstr(COM2, "3\n\r");
 		pq_insert(td_pq, newtd);
-
-		(request.task)->rtn_value = task_id_counter;
-
-		task_id_counter++;
+		bwputstr(COM2, "4\n\r");
+		(request.task)->rtn_value = *task_id_counter;
+		bwputstr(COM2, "5\n\r");
+		(*task_id_counter)++;
 
 		return;
 	}
-	bwputstr(COM2, "not create\n\r");
+	//bwputstr(COM2, "not create\n\r");
 
 	switch(request.type) {
 		

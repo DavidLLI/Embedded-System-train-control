@@ -1,8 +1,6 @@
 #ifndef __TASKDESCRIPTOR_H__
 #define __TASKDESCRIPTOR_H__
 
-#define usr_stack_base 0x7fff00;
-#define usr_stack_space 0x1000;
 
 //#include "userFunction.h"
 #include "syscall.h"
@@ -35,7 +33,6 @@ typedef struct pair {
 	td *td_tail;
 } pair;
 
-int task_id_counter = 0;
 
 void user() {
 	bwprintf(COM2, "MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
@@ -66,12 +63,12 @@ void first() {
 	Exit();
 }
 
-void initialize(pair *td_pq, td *td_ary) {
+void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	// set up first task
 	td *td1 = &(td_ary[0]);
 
 	td1->free = 0;
-	td1->id = task_id_counter;
+	td1->id = *task_id_counter;
 	td1->state = Ready;
 	td1->priority = 0;
 	td1->p_id = 0;
@@ -79,18 +76,18 @@ void initialize(pair *td_pq, td *td_ary) {
 	td1->SPSR = 0xd0;
 	td1->rtn_value = 0;
 
-	int usr_entry_point = (int) &first + 0x00218000;
+	int usr_entry_point = (int) (&first + 0x00218000);
 
-	asm volatile (
-		"stmfd %0!, {%0, %1}"
-		:"=r"(td1->stack_ptr)
-		:"r"(usr_entry_point)
-	);	
+	*((int *)td1->stack_ptr) = usr_entry_point;
+	*((int *)td1->stack_ptr - 1) = 0x7fff00;
+	td1->stack_ptr -= 4;
+
+	bwprintf(COM2, "%x\n\r", td1->stack_ptr);
 
 	td_pq[0].td_head = td1;
 	td_pq[0].td_tail = td1; 
 
-	task_id_counter++;
+	(*task_id_counter)++;
 
 	// Set up swi table
 	int *handler_addr = (int *) 0x28;

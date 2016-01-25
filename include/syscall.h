@@ -25,18 +25,15 @@ int Create(int priority, void (*code) ()) {
 		: "=r" (code)
 	);
 
-	bwputstr(COM2, "before swi\n\r");
 	asm volatile (
 		"swi #0"
 	);
-	bwputstr(COM2, "after swi\n\r");
 
 	int rtn;
 	asm volatile (
 		"mov %0, r0"
 		: "=r" (rtn)
 	);
-
 	return rtn;		
 }
 
