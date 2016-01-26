@@ -55,10 +55,10 @@ void first() {
 	ret = Create(2, &user);
 	bwprintf(COM2, "Created: %d\n\r", ret);
 
-	ret = Create(1, &user);
+	ret = Create(0, &user);
 	bwprintf(COM2, "Created: %d\n\r", ret);
 
-	ret = Create(1, &user);
+	ret = Create(0, &user);
 	bwprintf(COM2, "Created: %d\n\r", ret);
 
 	bwputstr(COM2, "FirstUserTask: exiting\n\r");
@@ -72,7 +72,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	td1->free = 0;
 	td1->id = *task_id_counter;
 	td1->state = Ready;
-	td1->priority = 0;
+	td1->priority = 1;
 	td1->p_id = 0;
 	td1->stack_ptr = 0x7fff00;
 	td1->SPSR = 0xd0;
@@ -86,8 +86,8 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 
 	//bwprintf(COM2, "%x\n\r", td1->stack_ptr);
 
-	td_pq[0].td_head = td1;
-	td_pq[0].td_tail = td1; 
+	td_pq[td1->priority].td_head = td1;
+	td_pq[td1->priority].td_tail = td1; 
 
 	(*task_id_counter)++;
 

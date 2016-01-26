@@ -14,6 +14,7 @@ typedef struct request {
 
 
 void activate(td* tds, req *request) {
+	//bwprintf(COM2, "Return value: %d\n\r", tds->rtn_value);
 	// Install spsr of the active task
 	int active_spsr = tds->SPSR;
 	asm volatile (
@@ -181,7 +182,7 @@ void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 	switch(request.type) {
 		
 		case 1: //MyTid
-			bwprintf(COM2, "id: %d\n\r", (request.task)->id);
+			//bwprintf(COM2, "id: %d\n\r", (request.task)->id);
 			(request.task)->rtn_value = (request.task)->id;
 			break;
 

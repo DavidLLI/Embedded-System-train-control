@@ -28,7 +28,7 @@ int Create(int priority, void (*code) ()) {
 	);
 
 	asm volatile (
-		"stmfd sp!, {fp}"
+		"stmfd sp!, {r4-r9, fp}"
 	);
 
 	asm volatile (
@@ -36,7 +36,7 @@ int Create(int priority, void (*code) ()) {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {fp}"
+		"ldmfd sp!, {r4-r9, fp}"
 	);
 
 	int rtn;
@@ -50,7 +50,7 @@ int Create(int priority, void (*code) ()) {
 
 int MyTid() {	
 	asm volatile (
-		"stmfd sp!, {fp}"
+		"stmfd sp!, {r4-r9, fp}"
 	);
 
 	asm volatile (
@@ -58,7 +58,7 @@ int MyTid() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {fp}"
+		"ldmfd sp!, {r4-r9, fp}"
 	);
 
 	int rtn;
@@ -73,7 +73,7 @@ int MyTid() {
 
 int MyParentTid() {
 	asm volatile (
-		"stmfd sp!, {fp}"
+		"stmfd sp!, {r4-r9, fp}"
 	);
 
 	asm volatile (
@@ -81,7 +81,7 @@ int MyParentTid() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {fp}"
+		"ldmfd sp!, {r4-r9, fp}"
 	);
 
 	int rtn;
@@ -96,7 +96,7 @@ int MyParentTid() {
 
 void Pass() {
 	asm volatile (
-		"stmfd sp!, {fp}"
+		"stmfd sp!, {r4-r9, fp}"
 	);
 
 	asm volatile (
@@ -104,14 +104,14 @@ void Pass() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {fp}"
+		"ldmfd sp!, {r4-r9, fp}"
 	);
 }
 
 
 void Exit() {
 	asm volatile (
-		"stmfd sp!, {fp}"
+		"stmfd sp!, {r4-r9, fp}"
 	);
 
 	asm volatile (
@@ -119,7 +119,7 @@ void Exit() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {fp}"
+		"ldmfd sp!, {r4-r9, fp}"
 	);
 }
 

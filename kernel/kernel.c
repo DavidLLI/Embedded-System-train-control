@@ -31,19 +31,25 @@ int main(int argc, char *argv[]) {
 	for(;;) {
 
 		td *active = schedule(td_pq);
-		bwprintf(COM2, "activate task %d.\n\r", active->id);
+		//bwprintf(COM2, "Activate task id: %d, addr:%x.\n\r", active->id, active);
 		if(active == 0) {
 			bwputstr(COM2, "No more task to be scheduled. Kernel is exiting.\n\r");
 			break;
+		} else {
+			
 		}
 
 		req request;
 		
+		//bwputstr(COM2, "activate() start.\n\r");
 		activate(active, &request);
 		request.task = active;
+		//bwputstr(COM2, "activate() end.\n\r");
 
 		pq_movetoend(td_pq, active);
+		//bwputstr(COM2, "handle() start.\n\r");
 		handle(td_pq, td_ary, request, &task_id_counter);
+		//bwputstr(COM2, "handle() start.\n\r");
 
 		
 	}
