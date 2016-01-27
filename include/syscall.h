@@ -21,7 +21,7 @@ int Create(int priority, void (*code) ()) {
 		: "=r" (temp)
 	);
 
-	temp = code;
+	temp = (int) code;
 	asm volatile (
 		"mov r2, %0"
 		: "=r" (temp)

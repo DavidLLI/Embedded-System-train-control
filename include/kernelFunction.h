@@ -14,7 +14,6 @@ typedef struct request {
 
 
 void activate(td* tds, req *request) {
-	//bwprintf(COM2, "Return value: %d\n\r", tds->rtn_value);
 	// Install spsr of the active task
 	int active_spsr = tds->SPSR;
 	asm volatile (
@@ -147,58 +146,56 @@ void activate(td* tds, req *request) {
 
 void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 	if(request.type == 0) {
-		struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
+			struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
 
-		// set td fields
-		newtd->free = 0;
-		newtd->id = *task_id_counter;
-		newtd->state = Ready;
-		newtd->priority = request.arg1;
-		//bwprintf(COM2, "arg1:%d, arg2:%x\n\r", request.arg1, request.arg2);
-		newtd->p_id = (request.task)->id;
-		int stack_adr = 0x7fff00 - (* task_id_counter) * 0x1000;
-		newtd->stack_ptr = stack_adr;
-		newtd->SPSR = 0xd0;
-		newtd->rtn_value = 0;
+			// set td fields
+			newtd->free = 0;
+			newtd->id = *task_id_counter;
+			newtd->state = Ready;
+			newtd->priority = request.arg1;
+			newtd->p_id = (request.task)->id;
+			int stack_adr = 0x7fff00 - (* task_id_counter) * 0x1000;
+			newtd->stack_ptr = stack_adr;
+			newtd->SPSR = 0xd0;
+			newtd->rtn_value = 0;
 
-		int usr_entry_point = (int) (request.arg2 + 0x00218000);
-		
-		*((int *)newtd->stack_ptr) = usr_entry_point;
-		*((int *)newtd->stack_ptr - 1) = stack_adr;
-		newtd->stack_ptr -= 4;
+			int usr_entry_point = (int) (request.arg2 + 0x00218000);
+			
+			*((int *)newtd->stack_ptr) = usr_entry_point;
+			*((int *)newtd->stack_ptr - 1) = stack_adr;
+			newtd->stack_ptr -= 4;
 
-		//insert into priority queue
-		//bwprintf(COM2, "insert--id: %d, pri: %d\n\r", newtd->id, newtd->priority);
-		pq_insert(td_pq, newtd);
-		
-		(request.task)->rtn_value = *task_id_counter;
-		
-		(*task_id_counter)++;
+			//insert into priority queue
+			pq_insert(td_pq, newtd);
+			
+			(request.task)->rtn_value = *task_id_counter;
+			
+			(*task_id_counter)++;
 
-		return;
+			return;		
 	}
-	//bwputstr(COM2, "not create\n\r");
+
 
 	switch(request.type) {
-		
-		case 1: //MyTid
-			//bwprintf(COM2, "id: %d\n\r", (request.task)->id);
+				
+		case 1: // MyTid
 			(request.task)->rtn_value = (request.task)->id;
 			break;
 
-		case 2: //MyParentTid
+		case 2: // MyParentTid
 			(request.task)->rtn_value = (request.task)->p_id;
 			break;
 
-		case 3:
-			//bwputstr(COM2, "--pass\n\r");
+		case 3: // Pass
 			pq_movetoend(td_pq, request.task);
-			//bwputstr(COM2, "mte return\n\r");
 			break;
 
-		case 4:
+		case 4: //Exit
 			pq_delete(td_pq, request.task);
 			break;
+		default:
+			break;
+
 	}
 	return;
 }

@@ -152,9 +152,6 @@ user:
 	.align	2
 .LC2:
 	.ascii	"Created: %d\012\015\000"
-	.align	2
-.LC3:
-	.ascii	"FirstUserTask: exiting\012\015\000"
 	.text
 	.align	2
 	.global	first
@@ -195,20 +192,7 @@ first:
 	mov	r1, r3
 	ldr	r2, [fp, #-20]
 	bl	bwprintf(PLT)
-	mov	r0, #0
-	ldr	r3, .L19+4
-	ldr	r3, [sl, r3]
-	mov	r1, r3
-	bl	Create(PLT)
-	mov	r3, r0
-	str	r3, [fp, #-20]
 	mov	r0, #1
-	ldr	r3, .L19+8
-	add	r3, sl, r3
-	mov	r1, r3
-	ldr	r2, [fp, #-20]
-	bl	bwprintf(PLT)
-	mov	r0, #0
 	ldr	r3, .L19+4
 	ldr	r3, [sl, r3]
 	mov	r1, r3
@@ -222,10 +206,18 @@ first:
 	ldr	r2, [fp, #-20]
 	bl	bwprintf(PLT)
 	mov	r0, #1
-	ldr	r3, .L19+12
+	ldr	r3, .L19+4
+	ldr	r3, [sl, r3]
+	mov	r1, r3
+	bl	Create(PLT)
+	mov	r3, r0
+	str	r3, [fp, #-20]
+	mov	r0, #1
+	ldr	r3, .L19+8
 	add	r3, sl, r3
 	mov	r1, r3
-	bl	bwputstr(PLT)
+	ldr	r2, [fp, #-20]
+	bl	bwprintf(PLT)
 	bl	Exit(PLT)
 	ldmfd	sp, {r3, sl, fp, sp, pc}
 .L20:
@@ -234,7 +226,6 @@ first:
 	.word	_GLOBAL_OFFSET_TABLE_-(.L18+8)
 	.word	user(GOT)
 	.word	.LC2(GOTOFF)
-	.word	.LC3(GOTOFF)
 	.size	first, .-first
 	.align	2
 	.global	initialize
@@ -266,7 +257,7 @@ initialize:
 	mov	r3, #0
 	str	r3, [r2, #8]
 	ldr	r2, [fp, #-32]
-	mov	r3, #1
+	mov	r3, #0
 	str	r3, [r2, #12]
 	ldr	r2, [fp, #-32]
 	mov	r3, #0
@@ -922,7 +913,7 @@ handle:
 	.size	handle, .-handle
 	.section	.rodata
 	.align	2
-.LC4:
+.LC3:
 	.ascii	"No more task to be scheduled. Kernel is exiting.\012"
 	.ascii	"\015\000"
 	.text
@@ -1057,6 +1048,6 @@ main:
 	.word	-272
 	.word	-268
 	.word	-3792
-	.word	.LC4(GOTOFF)
+	.word	.LC3(GOTOFF)
 	.size	main, .-main
 	.ident	"GCC: (GNU) 4.0.2"
