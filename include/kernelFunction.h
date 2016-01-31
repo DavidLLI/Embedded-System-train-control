@@ -146,33 +146,33 @@ void activate(td* tds, req *request) {
 
 void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 	if(request.type == 0) {
-			struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
+		struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
 
-			// set td fields
-			newtd->free = 0;
-			newtd->id = *task_id_counter;
-			newtd->state = Ready;
-			newtd->priority = request.arg1;
-			newtd->p_id = (request.task)->id;
-			int stack_adr = 0x7fff00 - (* task_id_counter) * 0x1000;
-			newtd->stack_ptr = stack_adr;
-			newtd->SPSR = 0xd0;
-			newtd->rtn_value = 0;
+		// set td fields
+		newtd->free = 0;
+		newtd->id = *task_id_counter;
+		newtd->state = Ready;
+		newtd->priority = request.arg1;
+		newtd->p_id = (request.task)->id;
+		int stack_adr = 0x7fff00 - (* task_id_counter) * 0x1000;
+		newtd->stack_ptr = stack_adr;
+		newtd->SPSR = 0xd0;
+		newtd->rtn_value = 0;
 
-			int usr_entry_point = (int) (request.arg2 + 0x00218000);
-			
-			*((int *)newtd->stack_ptr) = usr_entry_point;
-			*((int *)newtd->stack_ptr - 1) = stack_adr;
-			newtd->stack_ptr -= 4;
+		int usr_entry_point = (int) (request.arg2 + 0x00218000);
+		
+		*((int *)newtd->stack_ptr) = usr_entry_point;
+		*((int *)newtd->stack_ptr - 1) = stack_adr;
+		newtd->stack_ptr -= 4;
 
-			//insert into priority queue
-			pq_insert(td_pq, newtd);
-			
-			(request.task)->rtn_value = *task_id_counter;
-			
-			(*task_id_counter)++;
+		//insert into priority queue
+		pq_insert(td_pq, newtd);
+		
+		(request.task)->rtn_value = *task_id_counter;
+		
+		(*task_id_counter)++;
 
-			return;		
+		return;		
 	}
 
 

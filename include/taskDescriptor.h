@@ -2,7 +2,7 @@
 #define __TASKDESCRIPTOR_H__
 
 
-//#include "userFunction.h"
+#include "userFunction.h"
 #include "syscall.h"
 
 enum tsk_state {
@@ -34,35 +34,6 @@ typedef struct pair {
 } pair;
 
 
-void user() {
-	//bwprintf(COM2, "enter user()\n\r");
-
-	bwprintf(COM2, "1--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
-	Pass();
-
-	bwprintf(COM2, "2--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
-	Exit();
-}
-
-
-void first() {
-	//bwputstr(COM2, "Enter first()\n\r");
-
-	int ret;
-	ret = Create(2, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	ret = Create(2, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	ret = Create(1, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	ret = Create(1, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	Exit();
-}
 
 void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	// set up first task
