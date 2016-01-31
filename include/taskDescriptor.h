@@ -2,13 +2,16 @@
 #define __TASKDESCRIPTOR_H__
 
 
-//#include "userFunction.h"
+#include "userFunction.h"
 #include "syscall.h"
 
 enum tsk_state {
 	Ready,
 	Active,
-	Zombie
+	Zombie,
+	Send_Blk,
+	Recv_Blk,
+	Reply_Blk
 };
 
 typedef struct taskDescriptor {
@@ -32,77 +35,6 @@ typedef struct pair {
 	td *td_head;
 	td *td_tail;
 } pair;
-
-
-void user() {
-	//bwprintf(COM2, "enter user()\n\r");
-
-	bwprintf(COM2, "1--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
-	Pass();
-
-	bwprintf(COM2, "2--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
-	Exit();
-}
-
-
-void first() {
-	//bwputstr(COM2, "Enter first()\n\r");
-
-	int ret;
-	ret = Create(2, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	ret = Create(2, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	ret = Create(1, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	ret = Create(1, &user);
-	bwprintf(COM2, "Created: %d\n\r", ret);
-
-	Exit();
-}
-
-void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
-	// set up first task
-	td *td1 = &(td_ary[0]);
-
-	td1->free = 0;
-	td1->id = *task_id_counter;
-	td1->state = Ready;
-	td1->priority = 0;
-	td1->p_id = 0;
-	td1->stack_ptr = 0x7fff00;
-	td1->SPSR = 0xd0;
-	td1->rtn_value = 0;
-
-	int usr_entry_point = (int) (&first + 0x00218000);
-
-	*((int *)td1->stack_ptr) = usr_entry_point;
-	*((int *)td1->stack_ptr - 1) = 0x7fff00;
-	td1->stack_ptr -= 4;
-
-	//bwprintf(COM2, "%x\n\r", td1->stack_ptr);
-
-	td_pq[td1->priority].td_head = td1;
-	td_pq[td1->priority].td_tail = td1; 
-
-	(*task_id_counter)++;
-
-	// Set up swi table
-	int *handler_addr = (int *) 0x28;
-	int swi_handler_addr = 0;
-	asm volatile (
-		"ldr ip, =__SWI_HANDLER"
-	);
-	asm volatile (
-		"mov %0, ip"
-		:"=r"(swi_handler_addr)
-	);
-	*handler_addr = swi_handler_addr + 0x00218000;	
-}
-
 
 td *schedule(pair *td_pq) {
 	//bwputstr(COM2, "schedule\n\r");
