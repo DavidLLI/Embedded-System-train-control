@@ -20,6 +20,8 @@ void user() {
 struct match {
 	int tid1;
 	int tid2;
+	int pid1;
+	int pid2;
 	int c1;
 	int c2;
 };
@@ -32,16 +34,35 @@ void server() {
 	struct match m_ary[20];
 	int signup_counter = 0;
 
+	int dum = 0;
+
 	for(;;) {
 		char rcv[MSG_LEN];
 		int sender;
 
+
+
+		//bwprintf(COM2, "-------------------------------------------------------\n\r");
+		//bwprintf(COM2, "~Game Start~\n\r");
 		int ret = Receive(&sender, rcv, MSG_LEN);
 		if(ret != MSG_LEN) bwprintf(COM2, "player(), Send error.\n\r");
 
+		dum++;
 		struct match* m;
 		int id;
 		char reply[MSG_LEN];
+
+		if(dum == 50) {
+			bwprintf(COM2, "\n\r---------------------------------------------\n\r");
+			bwprintf(COM2, "Warning: There is no EASTER EGG in this game!\n\r");
+			bwprintf(COM2, "---------------------------------------------\n\r\n\r");
+		}
+
+		if(dum == 60) {
+			bwprintf(COM2, "\n\r---------------------------------------------\n\r");
+			bwprintf(COM2, "I told you there is no EASTER EGG!\n\r");
+			bwprintf(COM2, "---------------------------------------------\n\r\n\r");
+		}		
 
 		int rcv_int = myAtoi(rcv);
 		switch(rcv_int) {
@@ -50,12 +71,14 @@ void server() {
 			m = &(m_ary[signup_counter/2]);
 			if(signup_counter % 2) {
 				m->tid2 = sender;
+				m->pid2 = signup_counter;
 				m->c2 = -1;
 			} else {
 				m->tid1 = sender;
+				m->pid1 = signup_counter;
 				m->c1 = -1;
 			}
-			bwprintf(COM2, "Server: signup request, tid: %d, pid: %d\n\r", sender, signup_counter);
+			//bwprintf(COM2, "Server: signup request, tid: %d, pid: %d\n\r", sender, signup_counter);
 			myItoa(signup_counter, reply);
 			signup_counter++;
 			Reply(sender, reply, MSG_LEN);
@@ -67,7 +90,7 @@ void server() {
 			m = &(m_ary[id/2]);
 
 			myItoa(1, reply);
-			//Reply(sender, reply, MSG_LEN);
+			Reply(sender, reply, MSG_LEN);
 
 			if(signup_counter % 2) {
 				m->tid2 = -1;
@@ -77,13 +100,26 @@ void server() {
 				m->c1 = -1;
 			}
 
+			signup_counter--;
+
 			break;
 		default:
 			;
 			int choice = rcv_int % 10;
 			id = rcv_int / 10;
 
-			bwprintf(COM2, "Server: play request, tid: %d, pid: %d, choice: %d\n\r",sender, id, choice);
+			char c;
+			switch(choice) {
+				case 0: 
+					bwprintf(COM2, "---Player %d uses ROCK throw! (Geodude, is that you?)\n\r", id, c);
+					break;
+				case 1:
+					bwprintf(COM2, "---Player %d shows CS 452 final exam PAPER! (Prof. Cowan, is that you?)\n\r", id, c);
+					break;
+				case 2:	
+					bwprintf(COM2, "---Player %d uses SCISSORS to cut your eternet line! (NOOOOOOOOOOO!)\n\r", id, c);
+					break;
+			}
 
 			m = &(m_ary[id/2]);
 			if(id%2) {
@@ -98,22 +134,55 @@ void server() {
 				if(m->c1 == m->c2) {
 					myItoa(0, reply);
 
-					bwprintf(COM2, "Server: play result, player tid %d and player tid %d tie\n\r", m->tid1, m->tid2);
+					bwprintf(COM2, "*Result: TIE\n\r", m->pid1);
+					switch(m->c1) {
+						case 0:
+							bwprintf(COM2, "It's not very effective...\n\r\n\r");
+							break;
+						case 1:
+							bwprintf(COM2, "Both of you finish that final exam right now.\n\r\n\r" );
+							break;
+						case 2:
+							bwprintf(COM2, "Fine, we can only use WIFI now...\n\r\n\r", m->pid2);
+							break;
+					}					
 
 					Reply(m->tid1, reply, MSG_LEN);
 					Reply(m->tid2, reply, MSG_LEN);
 					
-				} else if(m->c1 - m->c2 == -1 || (m->c1 == 3 && m->c2 == 0)) {
+				} else if(m->c1 - m->c2 == 1 || (m->c1 == 0 && m->c2 == 2)) {
 					//c1 win, c2 lose
-					bwprintf(COM2, "Server: play result, player tid %d win and player tid %d lose\n\r", m->tid1, m->tid2);
-
+					bwprintf(COM2, "*Result: Player %d win!\n\r", m->pid1);
+					switch(m->c1) {
+						case 0:
+							bwprintf(COM2, "Thank god...\n\r\n\r");
+							break;
+						case 1:
+							bwprintf(COM2, "Of course Geodude can't pass CS 452 final...\n\r\n\r" );
+							break;
+						case 2:
+							bwprintf(COM2, "Player %d, are your sure u wanna cut that final exam as well?\n\r\n\r", m->pid2);
+							break;
+					}
+					
 					myItoa(1, reply);
 					Reply(m->tid1, reply, MSG_LEN);
 					myItoa(2, reply);
 					Reply(m->tid2, reply, MSG_LEN);
 				} else {
 					//c1 lose, c2 win
-					bwprintf(COM2, "Server: play result, player tid %d lose and player tid %d win\n\r", m->tid1, m->tid2);
+					bwprintf(COM2, "*Result: Player %d win!\n\r", m->pid2);
+					switch(m->c2) {
+						case 0:
+							bwprintf(COM2, "Charlie, you really need to stop.\n\r\n\r");
+							break;
+						case 1:
+							bwprintf(COM2, "Of course Geodude can't pass CS 452 final...\n\r\n\r" );
+							break;
+						case 2:
+							bwprintf(COM2, "Player %d, are your sure u wanna cut that final exam as well?\n\r\n\r", m->pid1);
+							break;
+					}
 
 					myItoa(2, reply);
 					Reply(m->tid1, reply, MSG_LEN);
@@ -123,11 +192,13 @@ void server() {
 
 				m->c1 = -1;
 				m->c2 = -1;
-
-				//bwgetc(COM2);
 			}
 		}
+
+		if(signup_counter == 0) break;
 	}
+
+	Exit();
 }
 
 void player() {
@@ -147,8 +218,7 @@ void player() {
 	if(myAtoi(reply1) < 0) bwprintf(COM2, "player %d, Signup failed.\n\r", MyTid());
 	else pid = myAtoi(reply1);
 
-	int i;
-	for(i = 0; i < 5; i++) {
+	for(;;) {
 		int choice = (*timer_value) % 3;
 		int msg_int = pid * 10 + choice;
 		char msg[MSG_LEN];
@@ -161,12 +231,36 @@ void player() {
 		//bwprintf(COM2, "			player after play\n\r");
 		if(ret != MSG_LEN) bwprintf(COM2, "player(), Send error.\n\r");
 
+		char c;
+		switch(choice) {
+			case 0: 
+				c = 'R';
+				break;
+			case 1:	
+				c = 'P';
+				break;
+			case 2:	
+				c = 'S';
+				break;
+		}
+
+		/*
 		if(myAtoi(reply2) == 0) {
-			bwprintf(COM2, "Player id: %d, choice: %d, result: tie\n\r", pid, choice);
+			bwprintf(COM2, "Player id: %d, choice: %c, result: tie\n\r", pid, c);
 		} else if(myAtoi(reply2) == 1) {
-			bwprintf(COM2, "Player id: %d, choice: %d, result: win\n\r", pid, choice);
+			bwprintf(COM2, "Player id: %d, choice: %c, result: win\n\r", pid, c);
 		} else if(myAtoi(reply2) == 2) {
-			bwprintf(COM2, "Player id: %d, choice: %d, result: lose\n\r", pid, choice);
+			bwprintf(COM2, "Player id: %d, choice: %c, result: lose\n\r", pid, c);
+		}
+		*/
+
+		bwprintf(COM2, "					Player %d, it's your turn. Press ENTER to accept the challenge or type q to quit.\n\r", pid);
+
+		char cmd = bwgetc(COM2);
+
+		if(cmd == 'q') {
+			ret = Send(server_tid, "-1", MSG_LEN, reply2, MSG_LEN);
+			break;
 		}
 	}
 
@@ -187,69 +281,19 @@ void first() {
 
 	int ret;
 	ret = Create(1, &nameServer);
-	bwprintf(COM2, "Created name server: %d\n\r", ret);
+	//bwprintf(COM2, "Created name server: %d\n\r", ret);
 
 	ret = Create(2, &server);
-	bwprintf(COM2, "server Created: %d\n\r", ret);
+	//bwprintf(COM2, "RPS server Created: %d\n\r", ret);
 
 	ret = Create(3, &player);
-	bwprintf(COM2, "player 0 Created: %d\n\r", ret);
+	//bwprintf(COM2, "player 0 Created: %d\n\r", ret);
 
 	ret = Create(3, &player);
-	bwprintf(COM2, "player 1 Created: %d\n\r", ret);
+	//bwprintf(COM2, "player 1 Created: %d\n\r", ret);
 
 	Exit();
 }
 
-
-/*
-void send_task() {
-	char send[] = "a";
-	char reply[MSG_LEN];
-	int actual_reply_size = 0;
-
-	//timer init
-	int *timer_load = (int *)TIMER2_BASE;
-	*timer_load = *timer_load | 50000;
-
-	int *timer_ctrl = (int *)(TIMER2_BASE + CRTL_OFFSET);
-	*timer_ctrl = *timer_ctrl | ENABLE_MASK | MODE_MASK | CLKSEL_MASK;
-	
-	int *timer_value = (int *)(TIMER2_BASE + VAL_OFFSET);
-
-	int time1 = *timer_value;
-
-	actual_reply_size = Send(2, send, MSG_LEN, reply, MSG_LEN);
-
-	int time2 = *timer_value;
-
-	bwprintf(COM2, "first(), time: %d\n\r", time2 - time1);
-
-	Exit();
-}
-
-void receive_and_reply_task() {
-	char receive[MSG_LEN];
-	int receive_size = MSG_LEN;
-	int tid;
-	receive_size = Receive(&tid, receive, MSG_LEN);
-	char reply[] = "a";
-	Reply(tid, reply, MSG_LEN);
-
-	Exit();
-}
-
-void first() {
-
-	bwputstr(COM2, "first enter\n\r");
-	int ret;
-	ret = Create(2, &send_task);
-	bwprintf(COM2, "Created send, tid: %d\n\r", ret);
-
-	ret = Create(1, &receive_and_reply_task);
-	bwprintf(COM2, "Created receive, tid %d\n\r", ret);
-
-	Exit();
-
-*/
 #endif
+
