@@ -18,8 +18,8 @@ typedef struct request {
 
 void activate(td* tds, req *request) {
 	// Install spsr of the active task
-	int temp = 0;
-	int active_spsr = tds->SPSR;
+	volatile int temp = 0;
+	volatile int active_spsr = tds->SPSR;
 	asm volatile (
 		"msr spsr, %0"
 		:"=r"(active_spsr)
@@ -34,7 +34,7 @@ void activate(td* tds, req *request) {
 	);
 	
 	// Put sp, spsr, rtn_value
-	unsigned int temp_stack_ptr = (unsigned int) tds->stack_ptr;
+	volatile unsigned int temp_stack_ptr = (unsigned int) tds->stack_ptr;
 	asm volatile (
 		"mov sp, %0"
 		:"=r"(temp_stack_ptr)
@@ -59,7 +59,7 @@ void activate(td* tds, req *request) {
 	);
 	
 	// Put return value into r0
-	int rtn_value = tds->rtn_value;
+	volatile int rtn_value = tds->rtn_value;
 	asm volatile (
 		"mov r0, %0"
 		:"=r"(rtn_value)
@@ -141,7 +141,7 @@ void activate(td* tds, req *request) {
 		:"=r"(temp)
 	);
 	// Acquire SPSR
-	int spsr_value = 0;
+	volatile int spsr_value = 0;
 	asm volatile (
 		"mrs %0, spsr"
 		:"=r"(spsr_value)
@@ -154,7 +154,7 @@ void activate(td* tds, req *request) {
 
 void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	// set up first task
-	td *td1 = &(td_ary[0]);
+	volatile td *td1 = &(td_ary[0]);
 
 	td1->free = 0;
 	td1->id = *task_id_counter;
@@ -165,7 +165,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	td1->SPSR = 0xd0;
 	td1->rtn_value = 0;
 
-	int usr_entry_point = (int) (&first + 0x00218000);
+	volatile int usr_entry_point = (int) (&first + 0x00218000);
 
 	*((int *)td1->stack_ptr) = usr_entry_point;
 	*((int *)td1->stack_ptr - 1) = 0x7fff00;
@@ -179,8 +179,8 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	(*task_id_counter)++;
 
 	// Set up swi table
-	int *handler_addr = (int *) 0x28;
-	int swi_handler_addr = 0;
+	volatile int *handler_addr = (int *) 0x28;
+	volatile int swi_handler_addr = 0;
 	asm volatile (
 		"ldr ip, =__SWI_HANDLER"
 	);
@@ -285,7 +285,7 @@ void handle_msg_passing(td *td_ary, req request,
 			if (td_ary[send_tid].state == Recv_Blk) {
 				(request.task)->state = Reply_Blk; // Set current task to be reply blocked
 				// Fill receive task's buffer
-				*(recv_arr[send_tid].tid) = send_tid;
+				*(recv_arr[send_tid].tid) = own_id;
 				memcpy(recv_arr[send_tid].msg, send_buf, recv_arr[send_tid].msglen);
 				// Make the receive task ready
 				td_ary[send_tid].state = Ready;

@@ -6,6 +6,28 @@
 
 int main(int argc, char *argv[]) {
 
+/*
+	asm volatile (
+		//enable mmu
+		"MRC	p15, 0, r1, c1, c0, 0\n\t"
+		"ORR	r1, r1, #0x1\n\t"
+		"MCR	p15, 0, r1, c1, c0, 0\n\t"
+
+		//enable D-cache
+		"MRC     p15, 0, r1, c1, c0, 0\n\t"
+       	"ORR     r0, r0, #(0x1 << 2)\n\t"
+        "MCR     p15, 0, r1, c1, c0, 0\n\t"
+
+        //enable L-cache
+        "MRC     p15, 0, r1, c1, c0, 0\n\t"
+       	"ORR     r1, r1, #(0x1 << 12)\n\t"
+        "MCR     p15, 0, r1, c1, c0, 0"
+		);
+*/
+	 									
+	 
+
+
 	// declare kernel data structures
 	int task_id_counter = 0;
 
@@ -29,7 +51,6 @@ int main(int argc, char *argv[]) {
 	int msg_queue_len[88];
 	int msg_queue_i;
 	for(msg_queue_i = 0; msg_queue_i < 88; msg_queue_i++) {
-		int msg_queue_j;
 		recv_arr[msg_queue_i].tid = 0;
 		recv_arr[msg_queue_i].msg = 0;
 		recv_arr[msg_queue_i].msglen = 0;
@@ -45,20 +66,24 @@ int main(int argc, char *argv[]) {
 	asm volatile (
 			".ltorg"
 	);
+
+
+
 	FOREVER {
 		td *active = schedule(td_pq);
+
 		if(active == 0) {
 			bwputstr(COM2, "No more task to be scheduled. Kernel is exiting.\n\r");
 			break;
-		} else {
-			
 		}
 
 		asm volatile (
 			".ltorg"
 		);
 		req request;
+		//bwprintf(COM2,"ACTIVETE before\n\r");
 		activate(active, &request);
+		//bwprintf(COM2,"ACTIVETE after\n\r");
 		request.task = active;
 		asm volatile (
 			".ltorg"
