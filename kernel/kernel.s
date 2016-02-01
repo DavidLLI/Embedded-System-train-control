@@ -865,96 +865,98 @@ nameServer:
 	.section	.rodata
 	.align	2
 .LC4:
-	.ascii	"1--MyTid: %d, MyParentTid: %d\012\015\000"
+	.ascii	"\033[2J\000"
 	.align	2
-.LC5:
-	.ascii	"2--MyTid: %d, MyParentTid: %d\012\015\000"
-	.text
-	.align	2
-	.global	user
-	.type	user, %function
-user:
-	@ args = 0, pretend = 0, frame = 0
-	@ frame_needed = 1, uses_anonymous_args = 0
-	mov	ip, sp
-	stmfd	sp!, {r4, sl, fp, ip, lr, pc}
-	sub	fp, ip, #4
-	ldr	sl, .L96
-.L95:
-	add	sl, pc, sl
-	bl	MyTid(PLT)
-	mov	r4, r0
-	bl	MyParentTid(PLT)
-	mov	ip, r0
-	mov	r0, #1
-	ldr	r3, .L96+4
-	add	r3, sl, r3
-	mov	r1, r3
-	mov	r2, r4
-	mov	r3, ip
-	bl	bwprintf(PLT)
-	bl	Pass(PLT)
-	bl	MyTid(PLT)
-	mov	r4, r0
-	bl	MyParentTid(PLT)
-	mov	ip, r0
-	mov	r0, #1
-	ldr	r3, .L96+8
-	add	r3, sl, r3
-	mov	r1, r3
-	mov	r2, r4
-	mov	r3, ip
-	bl	bwprintf(PLT)
-	bl	Exit(PLT)
-	ldmfd	sp, {r4, sl, fp, sp, pc}
-.L97:
-	.align	2
-.L96:
-	.word	_GLOBAL_OFFSET_TABLE_-(.L95+8)
-	.word	.LC4(GOTOFF)
-	.word	.LC5(GOTOFF)
-	.size	user, .-user
-	.section	.rodata
+.LC6:
+	.ascii	"\033[30;1H\033[Kerver before reveive.\012\015\000"
 	.align	2
 .LC7:
-	.ascii	"player(), Send error.\012\015\000"
+	.ascii	"\033[30;1H\033[Kerver after reveive.\012\015\000"
 	.align	2
 .LC8:
-	.ascii	"Server: signup request, tid: %d, pid: %d\012\015\000"
+	.ascii	"\033[30;1H\033[Kplayer(), Send error.\012\015\000"
 	.align	2
 .LC9:
-	.ascii	"Server: play request, tid: %d, pid: %d, choice: %d\012"
-	.ascii	"\015\000"
+	.ascii	"\033[10;1H\033\000"
 	.align	2
 .LC10:
+	.ascii	"\033[1;1H\033\000"
+	.align	2
+.LC11:
+	.ascii	"Player %d\000"
+	.align	2
+.LC12:
+	.ascii	"\033[30;1H\033[KServer: signup request, tid: %d, pi"
+	.ascii	"d: %d\012\015\000"
+	.align	2
+.LC13:
+	.ascii	"\033[30;1H\033[Kserver before reply.\012\015\000"
+	.align	2
+.LC14:
+	.ascii	"\033[30;1H\033[KServer: play request, tid: %d, pid:"
+	.ascii	" %d, choice: %d\012\015\000"
+	.align	2
+.LC15:
+	.ascii	"\033[12;1H\033[K\000"
+	.align	2
+.LC16:
+	.ascii	"\033[3;1H\033[K\000"
+	.align	2
+.LC17:
+	.ascii	"ROCK\000"
+	.align	2
+.LC18:
+	.ascii	"PAPER\000"
+	.align	2
+.LC19:
+	.ascii	"SCISSORS\000"
+	.align	2
+.LC20:
+	.ascii	"\033[15;1H\033[K\000"
+	.align	2
+.LC21:
 	.ascii	"Server: play result, player tid %d and player tid %"
 	.ascii	"d tie\012\015\000"
 	.align	2
-.LC11:
+.LC22:
+	.ascii	"Tie\000"
+	.align	2
+.LC23:
 	.ascii	"Server: play result, player tid %d win and player t"
 	.ascii	"id %d lose\012\015\000"
 	.align	2
-.LC12:
+.LC24:
+	.ascii	"Player 0 Win!\000"
+	.align	2
+.LC25:
 	.ascii	"Server: play result, player tid %d lose and player "
 	.ascii	"tid %d win\012\015\000"
 	.align	2
-.LC6:
+.LC26:
+	.ascii	"Player 1 Win!\000"
+	.align	2
+.LC5:
 	.ascii	"RPS\000"
 	.text
 	.align	2
 	.global	server
 	.type	server, %function
 server:
-	@ args = 0, pretend = 0, frame = 364
+	@ args = 0, pretend = 0, frame = 368
 	@ frame_needed = 1, uses_anonymous_args = 0
 	mov	ip, sp
 	stmfd	sp!, {sl, fp, ip, lr, pc}
 	sub	fp, ip, #4
-	sub	sp, sp, #368
+	sub	sp, sp, #372
 	ldr	sl, .L127
 .L126:
 	add	sl, pc, sl
+	mov	r0, #1
 	ldr	r3, .L127+4
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+	ldr	r3, .L127+8
 	add	r3, sl, r3
 	ldr	r3, [r3, #0]
 	str	r3, [fp, #-44]
@@ -963,9 +965,12 @@ server:
 	bl	RegisterAs(PLT)
 	mov	r3, #0
 	str	r3, [fp, #-40]
-	b	.L125
-.L99:
-.L125:
+.L94:
+	mov	r0, #1
+	ldr	r3, .L127+12
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
 	sub	r3, fp, #372
 	sub	r2, fp, #368
 	mov	r0, r3
@@ -974,15 +979,20 @@ server:
 	bl	Receive(PLT)
 	mov	r3, r0
 	str	r3, [fp, #-36]
-	ldr	r3, [fp, #-36]
-	cmp	r3, #4
-	beq	.L100
 	mov	r0, #1
-	ldr	r3, .L127+8
+	ldr	r3, .L127+16
 	add	r3, sl, r3
 	mov	r1, r3
 	bl	bwprintf(PLT)
-.L100:
+	ldr	r3, [fp, #-36]
+	cmp	r3, #4
+	beq	.L95
+	mov	r0, #1
+	ldr	r3, .L127+20
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+.L95:
 	sub	r3, fp, #368
 	mov	r0, r3
 	bl	myAtoi(PLT)
@@ -992,12 +1002,12 @@ server:
 	str	r2, [fp, #-380]
 	ldr	r3, [fp, #-380]
 	cmn	r3, #2
-	beq	.L103
+	beq	.L98
 	ldr	r2, [fp, #-380]
 	cmn	r2, #1
-	beq	.L104
-	b	.L102
-.L103:
+	beq	.L99
+	b	.L97
+.L98:
 	ldr	r2, [fp, #-40]
 	mov	r3, r2, lsr #31
 	add	r3, r3, r2
@@ -1011,25 +1021,41 @@ server:
 	and	r3, r3, #1
 	and	r3, r3, #255
 	cmp	r3, #0
-	beq	.L105
+	beq	.L100
 	ldr	r2, [fp, #-372]
 	ldr	r3, [fp, #-32]
 	str	r2, [r3, #4]
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #12]
-	b	.L107
-.L105:
+	mov	r0, #1
+	ldr	r3, .L127+24
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+	b	.L102
+.L100:
 	ldr	r2, [fp, #-372]
 	ldr	r3, [fp, #-32]
 	str	r2, [r3, #0]
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #8]
-.L107:
+	mov	r0, #1
+	ldr	r3, .L127+28
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+.L102:
+	mov	r0, #1
+	ldr	r3, .L127+32
+	add	r3, sl, r3
+	mov	r1, r3
+	ldr	r2, [fp, #-40]
+	bl	bwprintf(PLT)
 	ldr	r2, [fp, #-372]
 	mov	r0, #1
-	ldr	r3, .L127+12
+	ldr	r3, .L127+36
 	add	r3, sl, r3
 	mov	r1, r3
 	ldr	r3, [fp, #-40]
@@ -1041,16 +1067,26 @@ server:
 	ldr	r3, [fp, #-40]
 	add	r3, r3, #1
 	str	r3, [fp, #-40]
+	mov	r0, #1
+	ldr	r3, .L127+40
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
 	ldr	r3, [fp, #-372]
 	sub	r2, fp, #376
 	mov	r0, r3
 	mov	r1, r2
 	mov	r2, #4
 	bl	Reply(PLT)
-	b	.L99
-.L104:
+	mov	r0, #1
+	ldr	r3, .L127+40
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+	b	.L103
+.L99:
 	ldr	r1, [fp, #-24]
-	ldr	r3, .L127+16
+	ldr	r3, .L127+44
 	smull	r2, r3, r1, r3
 	mov	r2, r3, asr #2
 	mov	r3, r1, asr #31
@@ -1069,29 +1105,39 @@ server:
 	mov	r0, #1
 	mov	r1, r3
 	bl	myItoa(PLT)
+	ldr	r3, [fp, #-372]
+	sub	r2, fp, #376
+	mov	r0, r3
+	mov	r1, r2
+	mov	r2, #4
+	bl	Reply(PLT)
 	ldr	r3, [fp, #-40]
 	and	r3, r3, #1
 	and	r3, r3, #255
 	cmp	r3, #0
-	beq	.L109
+	beq	.L104
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #4]
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #12]
-	b	.L99
-.L109:
+	b	.L106
+.L104:
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #0]
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #8]
-	b	.L99
-.L102:
+.L106:
+	ldr	r3, [fp, #-40]
+	sub	r3, r3, #1
+	str	r3, [fp, #-40]
+	b	.L103
+.L97:
 	ldr	r1, [fp, #-24]
-	ldr	r3, .L127+16
+	ldr	r3, .L127+44
 	smull	r2, r3, r1, r3
 	mov	r2, r3, asr #2
 	mov	r3, r1, asr #31
@@ -1103,7 +1149,7 @@ server:
 	rsb	r3, r3, r1
 	str	r3, [fp, #-20]
 	ldr	r1, [fp, #-24]
-	ldr	r3, .L127+16
+	ldr	r3, .L127+44
 	smull	r2, r3, r1, r3
 	mov	r2, r3, asr #2
 	mov	r3, r1, asr #31
@@ -1113,7 +1159,7 @@ server:
 	ldr	r3, [fp, #-20]
 	str	r3, [sp, #0]
 	mov	r0, #1
-	ldr	r3, .L127+20
+	ldr	r3, .L127+48
 	add	r3, sl, r3
 	mov	r1, r3
 	ldr	r3, [fp, #-28]
@@ -1131,30 +1177,73 @@ server:
 	and	r3, r3, #1
 	and	r3, r3, #255
 	cmp	r3, #0
-	beq	.L112
+	beq	.L107
 	ldr	r2, [fp, #-32]
 	ldr	r3, [fp, #-20]
 	str	r3, [r2, #12]
-	b	.L114
-.L112:
-	ldr	r2, [fp, #-32]
+	mov	r0, #1
+	ldr	r3, .L127+52
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+	b	.L109
+.L107:
+	mov	r0, #1
+	ldr	r3, .L127+56
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+.L109:
 	ldr	r3, [fp, #-20]
-	str	r3, [r2, #8]
-.L114:
+	str	r3, [fp, #-384]
+	ldr	r2, [fp, #-384]
+	cmp	r2, #1
+	beq	.L112
+	ldr	r3, [fp, #-384]
+	cmp	r3, #2
+	beq	.L113
+	ldr	r2, [fp, #-384]
+	cmp	r2, #0
+	beq	.L111
+	b	.L110
+.L111:
+	mov	r0, #1
+	ldr	r3, .L127+60
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+.L112:
+	mov	r0, #1
+	ldr	r3, .L127+64
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+.L113:
+	mov	r0, #1
+	ldr	r3, .L127+68
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+.L110:
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #8]
 	cmp	r3, #0
-	blt	.L99
+	blt	.L103
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #12]
 	cmp	r3, #0
-	blt	.L99
+	blt	.L103
+	mov	r0, #1
+	ldr	r3, .L127+72
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
 	ldr	r3, [fp, #-32]
 	ldr	r2, [r3, #8]
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #12]
 	cmp	r2, r3
-	bne	.L117
+	bne	.L116
 	sub	r3, fp, #376
 	mov	r0, #0
 	mov	r1, r3
@@ -1164,10 +1253,15 @@ server:
 	ldr	r3, [fp, #-32]
 	ldr	ip, [r3, #4]
 	mov	r0, #1
-	ldr	r3, .L127+24
+	ldr	r3, .L127+76
 	add	r3, sl, r3
 	mov	r1, r3
 	mov	r3, ip
+	bl	bwprintf(PLT)
+	mov	r0, #1
+	ldr	r3, .L127+80
+	add	r3, sl, r3
+	mov	r1, r3
 	bl	bwprintf(PLT)
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #0]
@@ -1183,127 +1277,180 @@ server:
 	mov	r1, r2
 	mov	r2, #4
 	bl	Reply(PLT)
-	b	.L119
-.L117:
+	b	.L118
+.L116:
 	ldr	r3, [fp, #-32]
 	ldr	r2, [r3, #8]
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #12]
 	rsb	r3, r3, r2
 	cmn	r3, #1
-	beq	.L120
+	beq	.L119
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #8]
 	cmp	r3, #3
-	bne	.L122
+	bne	.L121
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #12]
 	cmp	r3, #0
-	bne	.L122
-.L120:
-	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #0]
-	ldr	r3, [fp, #-32]
-	ldr	ip, [r3, #4]
-	mov	r0, #1
-	ldr	r3, .L127+28
-	add	r3, sl, r3
-	mov	r1, r3
-	mov	r3, ip
-	bl	bwprintf(PLT)
-	sub	r3, fp, #376
-	mov	r0, #1
-	mov	r1, r3
-	bl	myItoa(PLT)
-	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #0]
-	sub	r2, fp, #376
-	mov	r0, r3
-	mov	r1, r2
-	mov	r2, #4
-	bl	Reply(PLT)
-	sub	r3, fp, #376
-	mov	r0, #2
-	mov	r1, r3
-	bl	myItoa(PLT)
-	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #4]
-	sub	r2, fp, #376
-	mov	r0, r3
-	mov	r1, r2
-	mov	r2, #4
-	bl	Reply(PLT)
-	b	.L119
-.L122:
-	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #0]
-	ldr	r3, [fp, #-32]
-	ldr	ip, [r3, #4]
-	mov	r0, #1
-	ldr	r3, .L127+32
-	add	r3, sl, r3
-	mov	r1, r3
-	mov	r3, ip
-	bl	bwprintf(PLT)
-	sub	r3, fp, #376
-	mov	r0, #2
-	mov	r1, r3
-	bl	myItoa(PLT)
-	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #0]
-	sub	r2, fp, #376
-	mov	r0, r3
-	mov	r1, r2
-	mov	r2, #4
-	bl	Reply(PLT)
-	sub	r3, fp, #376
-	mov	r0, #1
-	mov	r1, r3
-	bl	myItoa(PLT)
-	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #4]
-	sub	r2, fp, #376
-	mov	r0, r3
-	mov	r1, r2
-	mov	r2, #4
-	bl	Reply(PLT)
+	bne	.L121
 .L119:
+	ldr	r3, [fp, #-32]
+	ldr	r2, [r3, #0]
+	ldr	r3, [fp, #-32]
+	ldr	ip, [r3, #4]
+	mov	r0, #1
+	ldr	r3, .L127+84
+	add	r3, sl, r3
+	mov	r1, r3
+	mov	r3, ip
+	bl	bwprintf(PLT)
+	mov	r0, #1
+	ldr	r3, .L127+88
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+	sub	r3, fp, #376
+	mov	r0, #1
+	mov	r1, r3
+	bl	myItoa(PLT)
+	ldr	r3, [fp, #-32]
+	ldr	r3, [r3, #0]
+	sub	r2, fp, #376
+	mov	r0, r3
+	mov	r1, r2
+	mov	r2, #4
+	bl	Reply(PLT)
+	sub	r3, fp, #376
+	mov	r0, #2
+	mov	r1, r3
+	bl	myItoa(PLT)
+	ldr	r3, [fp, #-32]
+	ldr	r3, [r3, #4]
+	sub	r2, fp, #376
+	mov	r0, r3
+	mov	r1, r2
+	mov	r2, #4
+	bl	Reply(PLT)
+	b	.L118
+.L121:
+	ldr	r3, [fp, #-32]
+	ldr	r2, [r3, #0]
+	ldr	r3, [fp, #-32]
+	ldr	ip, [r3, #4]
+	mov	r0, #1
+	ldr	r3, .L127+92
+	add	r3, sl, r3
+	mov	r1, r3
+	mov	r3, ip
+	bl	bwprintf(PLT)
+	mov	r0, #1
+	ldr	r3, .L127+96
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
+	sub	r3, fp, #376
+	mov	r0, #2
+	mov	r1, r3
+	bl	myItoa(PLT)
+	ldr	r3, [fp, #-32]
+	ldr	r3, [r3, #0]
+	sub	r2, fp, #376
+	mov	r0, r3
+	mov	r1, r2
+	mov	r2, #4
+	bl	Reply(PLT)
+	sub	r3, fp, #376
+	mov	r0, #1
+	mov	r1, r3
+	bl	myItoa(PLT)
+	ldr	r3, [fp, #-32]
+	ldr	r3, [r3, #4]
+	sub	r2, fp, #376
+	mov	r0, r3
+	mov	r1, r2
+	mov	r2, #4
+	bl	Reply(PLT)
+.L118:
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #8]
 	ldr	r2, [fp, #-32]
 	mvn	r3, #0
 	str	r3, [r2, #12]
-	b	.L99
+.L103:
+	ldr	r3, [fp, #-40]
+	cmp	r3, #0
+	beq	.L123
+	b	.L94
+.L123:
+	bl	Exit(PLT)
+	sub	sp, fp, #16
+	ldmfd	sp, {sl, fp, sp, pc}
 .L128:
 	.align	2
 .L127:
 	.word	_GLOBAL_OFFSET_TABLE_-(.L126+8)
+	.word	.LC4(GOTOFF)
+	.word	.LC5(GOTOFF)
 	.word	.LC6(GOTOFF)
 	.word	.LC7(GOTOFF)
 	.word	.LC8(GOTOFF)
-	.word	1717986919
 	.word	.LC9(GOTOFF)
 	.word	.LC10(GOTOFF)
 	.word	.LC11(GOTOFF)
 	.word	.LC12(GOTOFF)
+	.word	.LC13(GOTOFF)
+	.word	1717986919
+	.word	.LC14(GOTOFF)
+	.word	.LC15(GOTOFF)
+	.word	.LC16(GOTOFF)
+	.word	.LC17(GOTOFF)
+	.word	.LC18(GOTOFF)
+	.word	.LC19(GOTOFF)
+	.word	.LC20(GOTOFF)
+	.word	.LC21(GOTOFF)
+	.word	.LC22(GOTOFF)
+	.word	.LC23(GOTOFF)
+	.word	.LC24(GOTOFF)
+	.word	.LC25(GOTOFF)
+	.word	.LC26(GOTOFF)
 	.size	server, .-server
 	.section	.rodata
 	.align	2
-.LC13:
+.LC27:
+	.ascii	"Server id: %d\012\015\000"
+	.align	2
+.LC28:
+	.ascii	"\033[30;1H\033[player before sent.\012\015\000"
+	.align	2
+.LC29:
 	.ascii	"-2\000"
 	.align	2
-.LC14:
-	.ascii	"player %d, Signup failed.\012\015\000"
+.LC30:
+	.ascii	"\033[30;1H\033[player after sent.\012\015\000"
 	.align	2
-.LC15:
-	.ascii	"Player id: %d, choice: %d, result: tie\012\015\000"
+.LC31:
+	.ascii	"\033[30;1H\033[Kplayer %d, Signup failed.\012\015\000"
 	.align	2
-.LC16:
-	.ascii	"Player id: %d, choice: %d, result: win\012\015\000"
+.LC32:
+	.ascii	"\033[30;1H\033[KPlayer id: %d, choice: %d, result: "
+	.ascii	"tie\012\015\000"
 	.align	2
-.LC17:
-	.ascii	"Player id: %d, choice: %d, result: lose\012\015\000"
+.LC33:
+	.ascii	"\033[30;1H\033[KPlayer id: %d, choice: %d, result: "
+	.ascii	"win\012\015\000"
+	.align	2
+.LC34:
+	.ascii	"\033[30;1H\033[KPlayer id: %d, choice: %d, result: "
+	.ascii	"lose\012\015\000"
+	.align	2
+.LC35:
+	.ascii	"\033[30;1H\033[KPlayer %d's turn, press enter to co"
+	.ascii	"ntinue.\000"
+	.align	2
+.LC36:
+	.ascii	"-1\000"
 	.text
 	.align	2
 	.global	player
@@ -1329,13 +1476,24 @@ player:
 	bl	WhoIs(PLT)
 	mov	r3, r0
 	str	r3, [fp, #-40]
+	mov	r0, #1
+	ldr	r3, .L148+12
+	add	r3, sl, r3
+	mov	r1, r3
+	ldr	r2, [fp, #-40]
+	bl	bwprintf(PLT)
 	mvn	r3, #0
 	str	r3, [fp, #-36]
+	mov	r0, #1
+	ldr	r3, .L148+16
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
 	sub	ip, fp, #52
 	mov	r3, #4
 	str	r3, [sp, #0]
 	ldr	r0, [fp, #-40]
-	ldr	r3, .L148+12
+	ldr	r3, .L148+20
 	add	r3, sl, r3
 	mov	r1, r3
 	mov	r2, #4
@@ -1343,11 +1501,16 @@ player:
 	bl	Send(PLT)
 	mov	r3, r0
 	str	r3, [fp, #-32]
+	mov	r0, #1
+	ldr	r3, .L148+24
+	add	r3, sl, r3
+	mov	r1, r3
+	bl	bwprintf(PLT)
 	ldr	r3, [fp, #-32]
 	cmp	r3, #4
 	beq	.L130
 	mov	r0, #1
-	ldr	r3, .L148+16
+	ldr	r3, .L148+28
 	add	r3, sl, r3
 	mov	r1, r3
 	bl	bwprintf(PLT)
@@ -1361,26 +1524,24 @@ player:
 	bl	MyTid(PLT)
 	mov	r3, r0
 	mov	r0, #1
-	ldr	r2, .L148+20
+	ldr	r2, .L148+32
 	add	r2, sl, r2
 	mov	r1, r2
 	mov	r2, r3
 	bl	bwprintf(PLT)
-	b	.L134
+	b	.L146
 .L132:
 	sub	r3, fp, #52
 	mov	r0, r3
 	bl	myAtoi(PLT)
 	mov	r3, r0
 	str	r3, [fp, #-36]
+	b	.L146
 .L134:
-	mov	r3, #0
-	str	r3, [fp, #-28]
-	b	.L135
-.L136:
+.L146:
 	ldr	r3, [fp, #-44]
 	ldr	r2, [r3, #0]
-	ldr	r3, .L148+24
+	ldr	r3, .L148+36
 	smull	r0, r1, r3, r2
 	mov	r3, r2, asr #31
 	rsb	r1, r3, r1
@@ -1388,18 +1549,18 @@ player:
 	mov	r3, r3, asl #1
 	add	r3, r3, r1
 	rsb	r3, r3, r2
-	str	r3, [fp, #-24]
+	str	r3, [fp, #-28]
 	ldr	r2, [fp, #-36]
 	mov	r3, r2
 	mov	r3, r3, asl #2
 	add	r3, r3, r2
 	mov	r3, r3, asl #1
 	mov	r2, r3
-	ldr	r3, [fp, #-24]
+	ldr	r3, [fp, #-28]
 	add	r3, r2, r3
-	str	r3, [fp, #-20]
+	str	r3, [fp, #-24]
 	sub	r3, fp, #56
-	ldr	r0, [fp, #-20]
+	ldr	r0, [fp, #-24]
 	mov	r1, r3
 	bl	myItoa(PLT)
 	sub	r2, fp, #56
@@ -1415,93 +1576,114 @@ player:
 	str	r3, [fp, #-32]
 	ldr	r3, [fp, #-32]
 	cmp	r3, #4
-	beq	.L137
+	beq	.L135
 	mov	r0, #1
-	ldr	r3, .L148+16
+	ldr	r3, .L148+28
 	add	r3, sl, r3
 	mov	r1, r3
 	bl	bwprintf(PLT)
-.L137:
+.L135:
 	sub	r3, fp, #60
 	mov	r0, r3
 	bl	myAtoi(PLT)
 	mov	r3, r0
 	cmp	r3, #0
-	bne	.L139
+	bne	.L137
 	mov	r0, #1
-	ldr	r3, .L148+28
+	ldr	r3, .L148+40
 	add	r3, sl, r3
 	mov	r1, r3
 	ldr	r2, [fp, #-36]
-	ldr	r3, [fp, #-24]
+	ldr	r3, [fp, #-28]
 	bl	bwprintf(PLT)
-	b	.L141
-.L139:
+	b	.L139
+.L137:
 	sub	r3, fp, #60
 	mov	r0, r3
 	bl	myAtoi(PLT)
 	mov	r3, r0
 	cmp	r3, #1
-	bne	.L142
+	bne	.L140
 	mov	r0, #1
-	ldr	r3, .L148+32
+	ldr	r3, .L148+44
 	add	r3, sl, r3
 	mov	r1, r3
 	ldr	r2, [fp, #-36]
-	ldr	r3, [fp, #-24]
+	ldr	r3, [fp, #-28]
 	bl	bwprintf(PLT)
-	b	.L141
-.L142:
+	b	.L139
+.L140:
 	sub	r3, fp, #60
 	mov	r0, r3
 	bl	myAtoi(PLT)
 	mov	r3, r0
 	cmp	r3, #2
-	bne	.L141
+	bne	.L139
 	mov	r0, #1
-	ldr	r3, .L148+36
+	ldr	r3, .L148+48
 	add	r3, sl, r3
 	mov	r1, r3
 	ldr	r2, [fp, #-36]
-	ldr	r3, [fp, #-24]
+	ldr	r3, [fp, #-28]
 	bl	bwprintf(PLT)
-.L141:
-	ldr	r3, [fp, #-28]
-	add	r3, r3, #1
-	str	r3, [fp, #-28]
-.L135:
-	ldr	r3, [fp, #-28]
-	cmp	r3, #4
-	ble	.L136
-	bl	Exit(PLT)
-	sub	sp, fp, #16
-	ldmfd	sp, {sl, fp, sp, pc}
+.L139:
+	mov	r0, #1
+	ldr	r3, .L148+52
+	add	r3, sl, r3
+	mov	r1, r3
+	ldr	r2, [fp, #-36]
+	bl	bwprintf(PLT)
+	mov	r0, #1
+	bl	bwgetc(PLT)
+	mov	r3, r0
+	strb	r3, [fp, #-17]
+	ldrb	r3, [fp, #-17]	@ zero_extendqisi2
+	cmp	r3, #113
+	bne	.L134
+	sub	ip, fp, #52
+	mov	r3, #4
+	str	r3, [sp, #0]
+	ldr	r0, [fp, #-40]
+	ldr	r3, .L148+56
+	add	r3, sl, r3
+	mov	r1, r3
+	mov	r2, #4
+	mov	r3, ip
+	bl	Send(PLT)
+	mov	r3, r0
+	str	r3, [fp, #-32]
+	b	.L134
 .L149:
 	.align	2
 .L148:
 	.word	_GLOBAL_OFFSET_TABLE_-(.L147+8)
 	.word	-2139029468
-	.word	.LC6(GOTOFF)
-	.word	.LC13(GOTOFF)
-	.word	.LC7(GOTOFF)
-	.word	.LC14(GOTOFF)
+	.word	.LC5(GOTOFF)
+	.word	.LC27(GOTOFF)
+	.word	.LC28(GOTOFF)
+	.word	.LC29(GOTOFF)
+	.word	.LC30(GOTOFF)
+	.word	.LC8(GOTOFF)
+	.word	.LC31(GOTOFF)
 	.word	1431655766
-	.word	.LC15(GOTOFF)
-	.word	.LC16(GOTOFF)
-	.word	.LC17(GOTOFF)
+	.word	.LC32(GOTOFF)
+	.word	.LC33(GOTOFF)
+	.word	.LC34(GOTOFF)
+	.word	.LC35(GOTOFF)
+	.word	.LC36(GOTOFF)
 	.size	player, .-player
 	.section	.rodata
 	.align	2
-.LC18:
+.LC37:
 	.ascii	"Created name server: %d\012\015\000"
 	.align	2
-.LC19:
+.LC38:
 	.ascii	"server Created: %d\012\015\000"
 	.align	2
-.LC20:
+.LC39:
 	.ascii	"player 0 Created: %d\012\015\000"
 	.align	2
-.LC21:
+.LC40:
 	.ascii	"player 1 Created: %d\012\015\000"
 	.text
 	.align	2
@@ -1594,12 +1776,12 @@ first:
 	.word	-2139029472
 	.word	-2139029464
 	.word	nameServer(GOT)
-	.word	.LC18(GOTOFF)
+	.word	.LC37(GOTOFF)
 	.word	server(GOT)
-	.word	.LC19(GOTOFF)
+	.word	.LC38(GOTOFF)
 	.word	player(GOT)
-	.word	.LC20(GOTOFF)
-	.word	.LC21(GOTOFF)
+	.word	.LC39(GOTOFF)
+	.word	.LC40(GOTOFF)
 	.size	first, .-first
 	.align	2
 	.global	schedule
@@ -2872,7 +3054,7 @@ handle_msg_passing:
 	.size	handle_msg_passing, .-handle_msg_passing
 	.section	.rodata
 	.align	2
-.LC22:
+.LC41:
 	.ascii	"No more task to be scheduled. Kernel is exiting.\012"
 	.ascii	"\015\000"
 	.text
@@ -3164,7 +3346,7 @@ main:
 	.word	-96724
 	.word	-97780
 	.word	-98132
-	.word	.LC22(GOTOFF)
+	.word	.LC41(GOTOFF)
 	.word	-98160
 	.size	main, .-main
 	.ident	"GCC: (GNU) 4.0.2"
