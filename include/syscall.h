@@ -95,7 +95,7 @@ struct ns_request {
 
 int Send(int tid, void *msg, int msglen, void *reply, int replylen) {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int temp = tid;
@@ -133,7 +133,7 @@ int Send(int tid, void *msg, int msglen, void *reply, int replylen) {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;
@@ -146,7 +146,7 @@ int Send(int tid, void *msg, int msglen, void *reply, int replylen) {
 
 int Receive(int *tid, void *msg, int msglen) {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int temp = (int)tid;
@@ -172,7 +172,7 @@ int Receive(int *tid, void *msg, int msglen) {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;
@@ -185,7 +185,7 @@ int Receive(int *tid, void *msg, int msglen) {
 
 int Reply(int tid, void *reply, int replylen) {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int temp = tid;
@@ -211,7 +211,7 @@ int Reply(int tid, void *reply, int replylen) {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;
@@ -224,7 +224,7 @@ int Reply(int tid, void *reply, int replylen) {
 
 int Create(int priority, void (*code) ()) {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int temp = priority;
@@ -244,7 +244,7 @@ int Create(int priority, void (*code) ()) {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;
@@ -258,7 +258,7 @@ int Create(int priority, void (*code) ()) {
 
 int MyTid() {	
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	asm volatile (
@@ -266,7 +266,7 @@ int MyTid() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;
@@ -281,7 +281,7 @@ int MyTid() {
 
 int MyParentTid() {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	asm volatile (
@@ -289,7 +289,7 @@ int MyParentTid() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;
@@ -304,7 +304,7 @@ int MyParentTid() {
 
 void Pass() {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	asm volatile (
@@ -312,14 +312,14 @@ void Pass() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 }
 
 
 void Exit() {
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	asm volatile (
@@ -327,7 +327,7 @@ void Exit() {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 }
 
@@ -385,7 +385,7 @@ enum event {
 int AwaitEvent(int event) {
 
 	asm volatile (
-		"stmfd sp!, {r4-r12, lr}"
+		"stmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int temp = event;
@@ -400,7 +400,7 @@ int AwaitEvent(int event) {
 	);
 
 	asm volatile (
-		"ldmfd sp!, {r4-r12, lr}"
+		"ldmfd sp!, {r4-r9, lr}"
 	);
 
 	volatile int rtn;

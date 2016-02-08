@@ -10,17 +10,9 @@
 #define MSG_LEN 4
 
 
-void user() {
-	bwprintf(COM2, "1--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
-	Pass();
-
-	bwprintf(COM2, "2--MyTid: %d, MyParentTid: %d\n\r", MyTid(), MyParentTid());
-	Exit();
-}
-
 void idle() {
 	for (;;) {
-		//bwprintf(COM2, "idle\n\r");
+
 	}
 }
 
@@ -40,8 +32,6 @@ void client() {
 }
 
 void first() {
-
-	bwprintf(COM2, "first enter\n\r");
 
 	int id_temp = 0;
 	id_temp = Create(1, &nameServer);
@@ -77,41 +67,47 @@ void first() {
 
 	Exit();
 }
+
+
 /*
 void first() {
 
-	
-	bwprintf(COM2, "first enter\n\r");
-	int i = 0;
-
-	int ret;
-	ret = Create(2, &second);
-	bwprintf(COM2, "create second: %d\n\r", ret);
+	bwprintf(COM2, "first\n\r");
 
 	
-	ret = Create(31, &idle);
-	bwprintf(COM2, "create idle: %d\n\r", ret);
+	//set load
+	int *timer_load = (int *)TIMER2_BASE;
+	int *timer_ctrl = (int *)(TIMER2_BASE + CRTL_OFFSET);
+	int *timer_value = (int *)(TIMER2_BASE + VAL_OFFSET);
+
+	//set control bit
+	
+	*timer_ctrl = *timer_ctrl | ENABLE_MASK | MODE_MASK | CLKSEL_MASK;
+
+	unsigned int counter = 0;
+
+	*timer_load = *timer_load | 50799;
+	int last = 50800;
+	int value = 0;
+	volatile int i = 0;
+	for(i = 0; i < 100000; i++) {
+		value = *timer_value;
+		if(value >= 50800) {
+			counter++;
+			//bwprintf(COM2, "wrap around\n\r");
+			last = value;
+		}
+	}
 	
 
-	bwprintf(COM2, "First is calling AwaitEvent(%d)\n\r", timer3);
-	ret  = AwaitEvent(timer3);
-	bwprintf(COM2, "First returns from Await\n\r");
-
-	int sender;
-	char rev[10];
-
-	bwprintf(COM2, "First receive\n\r");
-	ret = Receive(&sender, rev , 4);
-
-	char rpu[1];
-	ret = Reply(sender, rpu, 4);
-	bwprintf(COM2, "First after reply to senderID: %d\n\r", sender);
+	bwprintf(COM2, "%d\n\r", counter);
+	
 	
 
 	Exit();
 }
-*/
 
+*/
 
 
 

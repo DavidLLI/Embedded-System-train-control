@@ -70,6 +70,7 @@ void activate(td* tds, req *request) {
 	
 	volatile int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
 	*VIC2xIntEnable = 524288;
+
 	
 	// Put return value into r0
 	volatile int rtn_value = tds->rtn_value;
@@ -140,6 +141,7 @@ void activate(td* tds, req *request) {
 	*VIC1xIntEnClear = 0xffffffff;
 	*VIC2xIntEnClear = 0xffffffff;
 	tds->rtn_value = temp;
+
 
 	asm volatile (
 		"mov %0, r4"
@@ -303,6 +305,7 @@ void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 	switch(request.type) {
 		case 0: // Create
 			;
+
 			struct taskDescriptor *newtd = &(td_ary[*task_id_counter]);
 
 			// set td fields
@@ -540,7 +543,8 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 				if(current == 0) break;
 				else {
 					if(current->event_type == event) {
-						//bwprintf(COM2, "in interrupt handle: id: %d, event: %d\n\r", (current->task)->id, request.arg2);
+						//bwprintf(COM2, "in interrupt handle: id: %d, event1: %d, event2:%d\n\r", 
+							//(current->task)->id, request.arg1, request.arg2);
 						(current->task)->state = Ready;
 						(current->task)->rtn_value = 0;
 
