@@ -699,7 +699,7 @@ Send:
 	str	r1, [fp, #-28]
 	str	r2, [fp, #-32]
 	str	r3, [fp, #-36]
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	ldr	r3, [fp, #-24]
 	str	r3, [fp, #-16]
 	mov r4, r3
@@ -721,7 +721,7 @@ Send:
 	mov r8, r3
 	str	r3, [fp, #-16]
 	swi #5
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-20]
 	ldr	r3, [fp, #-20]
@@ -742,7 +742,7 @@ Receive:
 	str	r0, [fp, #-24]
 	str	r1, [fp, #-28]
 	str	r2, [fp, #-32]
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	ldr	r3, [fp, #-24]
 	str	r3, [fp, #-16]
 	mov r4, r3
@@ -756,7 +756,7 @@ Receive:
 	mov r6, r3
 	str	r3, [fp, #-16]
 	swi #6
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-20]
 	ldr	r3, [fp, #-20]
@@ -777,7 +777,7 @@ Reply:
 	str	r0, [fp, #-24]
 	str	r1, [fp, #-28]
 	str	r2, [fp, #-32]
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	ldr	r3, [fp, #-24]
 	str	r3, [fp, #-16]
 	mov r4, r3
@@ -791,7 +791,7 @@ Reply:
 	mov r6, r3
 	str	r3, [fp, #-16]
 	swi #7
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-20]
 	ldr	r3, [fp, #-20]
@@ -811,7 +811,7 @@ Create:
 	sub	sp, sp, #16
 	str	r0, [fp, #-24]
 	str	r1, [fp, #-28]
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	ldr	r3, [fp, #-24]
 	str	r3, [fp, #-16]
 	mov r4, r3
@@ -821,7 +821,7 @@ Create:
 	mov r5, r3
 	str	r3, [fp, #-16]
 	swi #0
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-20]
 	ldr	r3, [fp, #-20]
@@ -839,9 +839,9 @@ MyTid:
 	stmfd	sp!, {fp, ip, lr, pc}
 	sub	fp, ip, #4
 	sub	sp, sp, #4
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	swi #1
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-16]
 	ldr	r3, [fp, #-16]
@@ -858,9 +858,9 @@ MyParentTid:
 	stmfd	sp!, {fp, ip, lr, pc}
 	sub	fp, ip, #4
 	sub	sp, sp, #4
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	swi #2
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-16]
 	ldr	r3, [fp, #-16]
@@ -876,9 +876,9 @@ Pass:
 	mov	ip, sp
 	stmfd	sp!, {fp, ip, lr, pc}
 	sub	fp, ip, #4
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	swi #3
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	ldmfd	sp, {fp, sp, pc}
 	.size	Pass, .-Pass
 	.align	2
@@ -890,9 +890,9 @@ Exit:
 	mov	ip, sp
 	stmfd	sp!, {fp, ip, lr, pc}
 	sub	fp, ip, #4
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	swi #4
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	ldmfd	sp, {fp, sp, pc}
 	.size	Exit, .-Exit
 	.section	.rodata
@@ -1041,13 +1041,13 @@ AwaitEvent:
 	sub	fp, ip, #4
 	sub	sp, sp, #12
 	str	r0, [fp, #-24]
-	stmfd sp!, {r4-r12}
+	stmfd sp!, {r4-r12, lr}
 	ldr	r3, [fp, #-24]
 	str	r3, [fp, #-16]
 	mov r4, r3
 	str	r3, [fp, #-16]
 	swi #8
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!, {r4-r12, lr}
 	mov r3, r0
 	str	r3, [fp, #-20]
 	ldr	r3, [fp, #-20]
@@ -2211,11 +2211,11 @@ activate:
 .L221:
 	.align	2
 .L220:
-	.word	134266896
+	.word	-2146697200
 	.word	-2146762752
-	.word	134266880
+	.word	-2146697216
 	.word	-2146762732
-	.word	134266900
+	.word	-2146697196
 	.word	-2139029364
 	.size	activate, .-activate
 	.align	2
@@ -2350,7 +2350,7 @@ initialize:
 	.word	_GLOBAL_OFFSET_TABLE_-(.L224+8)
 	.word	8384512
 	.word	first(GOT)
-	.word	134266896
+	.word	-2146697200
 	.word	-2139029376
 	.word	5079
 	.word	-2139029368
@@ -3264,7 +3264,7 @@ handle_block:
 .L294:
 	.align	2
 .L293:
-	.word	134266900
+	.word	-2146697196
 	.size	handle_block, .-handle_block
 	.section	.rodata
 	.align	2

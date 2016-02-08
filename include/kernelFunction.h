@@ -8,7 +8,6 @@
 #include "msgPassing.h"
 #include "syscall.h"
 #include "ts7200.h"
-#include "syscall.h"
 
 #define STACK_BASE 0x7ff000
 #define STACK_SPACE 0x1000

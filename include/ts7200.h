@@ -83,7 +83,7 @@
 
 
 #define VIC1_BASE 0x800B0000
-#define VIC2_BASE 0x800C000
+#define VIC2_BASE 0x800C0000
 
 #define VICxIRQStatus_OFFSET	0x00
 #define VICxIntEnable_OFFSET	0x10
