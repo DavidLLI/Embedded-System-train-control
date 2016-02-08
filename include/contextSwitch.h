@@ -4,6 +4,8 @@
 #define STACK_BASE 0x7ff000
 #define STACK_SPACE 0x1000
 
+#include "userFunction.h"
+
 typedef struct request {
 	int type;
 	td *task;

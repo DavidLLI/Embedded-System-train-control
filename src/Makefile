@@ -17,16 +17,7 @@ ASFLAGS	= -mcpu=arm920t -mapcs-32
 
 ARFLAGS = rcs
 
-all:  bwio.a taskDescriptor.a
-
-bwio.s: bwio.c 
-	$(XCC) -S $(CFLAGS) bwio.c
-
-bwio.o: bwio.s
-	$(AS) $(ASFLAGS) -o bwio.o bwio.s
-
-bwio.a: bwio.o
-	$(AR) $(ARFLAGS) $@ bwio.o
+all: taskDescriptor.a
 
 taskDescriptor.s: taskDescriptor.c 
 	$(XCC) -S $(CFLAGS) taskDescriptor.c

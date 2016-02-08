@@ -2,7 +2,6 @@
 #include "taskDescriptor.h"
 #include "kernelFunction.h"
 #include "ts7200.h"
-#include "contextSwitch.h"
 
 #define FOREVER for(;;)
 
@@ -77,8 +76,8 @@ int main(int argc, char *argv[]) {
 	);
 	//bwprintf(COM2, "init return\n\r");
 
-	int for_i;
-	for(;;) {
+
+	FOREVER {
 		td *active = schedule(td_pq);
 
 

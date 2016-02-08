@@ -1,7 +1,6 @@
 #ifndef __SYSCALL_H__
 #define __SYSCALL_H__
 
-#include "taskDescriptor.h"
 #include "bwio.h"
 
 void myMemCpy(void *dest, void *src, int n)

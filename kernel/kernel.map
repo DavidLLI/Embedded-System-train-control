@@ -28,80 +28,80 @@ bss             0x0000000000000000        0x0
  *(.bss)
                 0x0000000000000000                _BssEnd = .
 
-text            0x0000000000000000     0x4038
+text            0x0000000000000000     0x403c
  *(.text)
- .text          0x0000000000000000     0x30a4 kernel.o
-                0x0000000000000434                Send
-                0x0000000000000000                myMemCpy
-                0x0000000000000e34                clockNotifier
-                0x0000000000000248                reverse
-                0x0000000000000c74                add_wtid
+ .text          0x0000000000000000     0x30a8 kernel.o
+                0x0000000000000900                Send
+                0x00000000000004cc                myMemCpy
+                0x0000000000001300                clockNotifier
+                0x0000000000000714                reverse
+                0x0000000000001140                add_wtid
                 0x00000000000028bc                handle_block
-                0x0000000000000634                MyParentTid
-                0x0000000000000664                Pass
+                0x0000000000000b00                MyParentTid
+                0x0000000000000b30                Pass
                 0x000000000000202c                memcpy
-                0x0000000000000ea4                clockServer
-                0x000000000000076c                WhoIs
-                0x00000000000005a8                Create
-                0x0000000000000830                AwaitEvent
-                0x00000000000014f8                schedule
-                0x00000000000004c8                Receive
-                0x0000000000000538                Reply
-                0x0000000000001154                user
-                0x0000000000000604                MyTid
-                0x00000000000001c8                myStrcmp
+                0x0000000000001370                clockServer
+                0x0000000000000c38                WhoIs
+                0x0000000000000a74                Create
+                0x0000000000000cfc                AwaitEvent
+                0x0000000000000000                schedule
+                0x0000000000000994                Receive
+                0x0000000000000a04                Reply
+                0x0000000000001620                user
+                0x0000000000000ad0                MyTid
+                0x0000000000000694                myStrcmp
                 0x00000000000019c4                activate
-                0x0000000000000680                Exit
-                0x00000000000011d8                idle
+                0x0000000000000b4c                Exit
+                0x00000000000016a4                idle
                 0x0000000000001e4c                handle
-                0x0000000000000878                nameServer
-                0x00000000000011e8                client
-                0x0000000000000bf4                DelayUntil
-                0x0000000000000300                myItoa
+                0x0000000000000d44                nameServer
+                0x00000000000016b4                client
+                0x00000000000010c0                DelayUntil
+                0x00000000000007cc                myItoa
                 0x0000000000002b78                main
-                0x0000000000000084                myAtoi
-                0x0000000000001920                getTaskDes
-                0x000000000000069c                RegisterAs
-                0x0000000000000b74                Delay
-                0x00000000000012cc                first
-                0x0000000000000af8                Time
+                0x0000000000000550                myAtoi
+                0x0000000000000428                getTaskDes
+                0x0000000000000b68                RegisterAs
+                0x0000000000001040                Delay
+                0x0000000000001798                first
+                0x0000000000000fc4                Time
                 0x00000000000020b8                handle_msg_passing
                 0x0000000000001c54                initialize
-                0x00000000000017a4                pq_delete
-                0x00000000000015b4                pq_insert
-                0x000000000000169c                pq_movetoend
- .text          0x00000000000030a4      0xc54 ../lib/libbwio.a(bwio.o)
-                0x000000000000341c                bwputr
-                0x0000000000003988                bwi2a
-                0x00000000000030a4                bwsetfifo
-                0x0000000000003278                bwputc
-                0x00000000000036d8                bwa2d
-                0x000000000000316c                bwsetspeed
-                0x000000000000333c                c2x
-                0x0000000000003780                bwa2i
-                0x0000000000003620                bwgetc
-                0x0000000000003844                bwui2a
-                0x00000000000039ec                bwformat
-                0x0000000000003518                bwputw
-                0x0000000000003cc0                bwprintf
-                0x000000000000339c                bwputx
-                0x000000000000349c                bwputstr
- .text          0x0000000000003cf8      0x110 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)
-                0x0000000000003cf8                __udivsi3
-                0x0000000000003df0                __aeabi_uidivmod
- .text          0x0000000000003e08       0xcc /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_umodsi3.o)
-                0x0000000000003e08                __umodsi3
- .text          0x0000000000003ed4        0x4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_dvmd_tls.o)
-                0x0000000000003ed4                __aeabi_ldiv0
-                0x0000000000003ed4                __div0
-                0x0000000000003ed4                __aeabi_idiv0
+                0x00000000000002ac                pq_delete
+                0x00000000000000bc                pq_insert
+                0x00000000000001a4                pq_movetoend
+ .text          0x00000000000030a8      0xc54 ../lib/libbwio.a(bwio.o)
+                0x0000000000003420                bwputr
+                0x000000000000398c                bwi2a
+                0x00000000000030a8                bwsetfifo
+                0x000000000000327c                bwputc
+                0x00000000000036dc                bwa2d
+                0x0000000000003170                bwsetspeed
+                0x0000000000003340                c2x
+                0x0000000000003784                bwa2i
+                0x0000000000003624                bwgetc
+                0x0000000000003848                bwui2a
+                0x00000000000039f0                bwformat
+                0x000000000000351c                bwputw
+                0x0000000000003cc4                bwprintf
+                0x00000000000033a0                bwputx
+                0x00000000000034a0                bwputstr
+ .text          0x0000000000003cfc      0x110 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)
+                0x0000000000003cfc                __udivsi3
+                0x0000000000003df4                __aeabi_uidivmod
+ .text          0x0000000000003e0c       0xcc /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_umodsi3.o)
+                0x0000000000003e0c                __umodsi3
+ .text          0x0000000000003ed8        0x4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_dvmd_tls.o)
+                0x0000000000003ed8                __aeabi_ldiv0
+                0x0000000000003ed8                __div0
+                0x0000000000003ed8                __aeabi_idiv0
  *(.got)
- .got           0x0000000000003ed8       0x18 kernel.o
+ .got           0x0000000000003edc       0x18 kernel.o
  *(.got.plt)
- .got.plt       0x0000000000003ef0        0xc kernel.o
-                0x0000000000003ef0                _GLOBAL_OFFSET_TABLE_
+ .got.plt       0x0000000000003ef4        0xc kernel.o
+                0x0000000000003ef4                _GLOBAL_OFFSET_TABLE_
  *(.rodata)
- .rodata        0x0000000000003efc      0x13c kernel.o
+ .rodata        0x0000000000003f00      0x13c kernel.o
  *(.rodata.str1.4)
  *(.glue_7)
  *(.glue_7t)
