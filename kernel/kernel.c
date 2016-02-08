@@ -2,6 +2,7 @@
 #include "taskDescriptor.h"
 #include "kernelFunction.h"
 #include "ts7200.h"
+#include "contextSwitch.h"
 
 #define FOREVER for(;;)
 

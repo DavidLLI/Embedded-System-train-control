@@ -12,7 +12,9 @@ enum tsk_state {
 	Zombie,
 	Send_Blk,
 	Recv_Blk,
-	Reply_Blk
+	Reply_Blk,
+	Event_Blk,
+
 };
 
 typedef struct taskDescriptor {
@@ -48,9 +50,13 @@ td *schedule(pair *td_pq) {
 		if(p.td_head != 0) {
 			td *current_td = p.td_head;
 			for(;;) {
+				
 				if(current_td == 0) break;
+				//bwprintf(COM2, "%d, i: %d, id: %d, state: %d\n\r", current_td, schedule_i, current_td->id, current_td->state);
 
-				if(current_td->state == Ready) return current_td;
+				if(current_td->state == Ready) {
+					return current_td;
+				}
 				else current_td = current_td->td_nxt;
 			}
 		}
@@ -120,7 +126,8 @@ void pq_delete(pair *td_pq, td *td) {
 		td_pq[priority].td_tail = td->td_prv;
 		(td->td_prv)->td_nxt = 0;
 	} else {
-		(td->td_prv)->td_nxt = td->td_nxt; 
+		(td->td_prv)->td_nxt = td->td_nxt;
+		(td->td_nxt)->td_prv = td->td_prv;
 	}	
 }
 

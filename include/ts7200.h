@@ -82,3 +82,9 @@
 #define UART_HDLCSTS_OFFSET	0x21c
 
 
+#define VIC1_BASE 0x800B0000
+#define VIC2_BASE 0x800C000
+
+#define VICxIRQStatus_OFFSET	0x00
+#define VICxIntEnable_OFFSET	0x10
+#define VICxIntEnClear_OFFSET	0x14
