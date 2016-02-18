@@ -1,7 +1,9 @@
+#include "contextSwitch.h"
 #include "bwio.h"
 #include "taskDescriptor.h"
 #include "kernelFunction.h"
 #include "ts7200.h"
+
 
 #define FOREVER for(;;)
 
@@ -83,6 +85,8 @@ int main(int argc, char *argv[]) {
 
 
 	FOREVER {
+		// schedule
+		//bwprintf(COM2, "before schedule\n\r");
 		td *active = schedule(td_pq);
 
 		if(active->priority == 31 && task_counter == 4) {
@@ -100,9 +104,9 @@ int main(int argc, char *argv[]) {
 			*timer_load = 5079;		
 		}
 
+		// active
+		//bwprintf(COM2, "before active\n\r");
 		activate(active, &request);
-
-
 
 		if(active->priority == 31) {
 			int current = *timer_value;	
@@ -120,6 +124,7 @@ int main(int argc, char *argv[]) {
 		
 		pq_movetoend(td_pq, active);
 
+		//handle
 		handle(td_pq, td_ary, request, &task_id_counter);
 		handle_msg_passing(td_ary, request, msg_queue, msg_queue_len, recv_arr, reply_arr);
 		handle_block(blk_ary, &pair, request);

@@ -4,7 +4,7 @@
 XCC     = gcc
 AS	= as
 AR	= ar
-CFLAGS  = -c -fPIC -Wall -I. -I../include -mcpu=arm920t -msoft-float
+CFLAGS  = -c -fPIC -Wall -O2 -I. -I../include -mcpu=arm920t -msoft-float
 # -g: include hooks for gdb
 # -c: only compile
 # -mcpu=arm920t: generate code for the 920t architecture
@@ -17,16 +17,16 @@ ASFLAGS	= -mcpu=arm920t -mapcs-32
 
 ARFLAGS = rcs
 
-all: taskDescriptor.a
+all: bwio.a
 
-taskDescriptor.s: taskDescriptor.c 
-	$(XCC) -S $(CFLAGS) taskDescriptor.c
+bwio.s: bwio.c 
+	$(XCC) -S $(CFLAGS) bwio.c
 
-taskDescriptor.o: taskDescriptor.s
-	$(AS) $(ASFLAGS) -o taskDescriptor.o taskDescriptor.s
+bwio.o: bwio.s
+	$(AS) $(ASFLAGS) -o bwio.o bwio.s
 
-taskDescriptor.a: taskDescriptor.o
-	$(AR) $(ARFLAGS) $@ taskDescriptor.o
+bwio.a: bwio.o
+	$(AR) $(ARFLAGS) $@ bwio.o
 
 clean:
 	-rm -f *.s *.a *.o

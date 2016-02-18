@@ -1,6 +1,3 @@
-#
-# Makefile for busy-wait IO tests
-#
 XCC     = gcc
 AS	= as
 LD      = ld
@@ -16,16 +13,53 @@ ASFLAGS	= -mcpu=arm920t -mapcs-32
 
 LDFLAGS = -init main -Map kernel.map -N  -T orex.ld -L/u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2 -L../lib
 
-all:  kernel.s kernel.elf
+OBJ = ClockServer.o helper.o kernelFunction.o nameServer.o taskDescriptor.o userFunction.o contextSwitch.o syscall.o bwio.o
+
+
+
+all: $(OBJ) kernel.s kernel.elf 
+
+
+taskDescriptor.o: ../src/taskDescriptor.c
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+ClockServer.o: ../src/ClockServer.c
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+helper.o: ../src/helper.c
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+kernelFunction.o: ../src/kernelFunction.c
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+nameServer.o: ../src/nameServer.c
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+userFunction.o: ../src/userFunction.c 
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+contextSwitch.o: ../src/contextSwitch.c 
+	$(XCC) -c -o $@ $< $(CFLAGS)
+
+syscall.o: ../src/syscall.c 
+	$(XCC) -c -o $@ $< $(CFLAGS)
+
+bwio.o: ../src/bwio.c 
+	$(XCC) -c -o $@ $< $(CFLAGS)		
+
+
+
 
 kernel.s: kernel.c 
-	$(XCC) -S $(CFLAGS) kernel.c
+	$(XCC) -S $(CFLAGS) kernel.c ../src/taskDescriptor.c ../src/contextSwitch.c
 
-kernel.o: kernel.s
+
+
+kernel.o: kernel.s taskDescriptor.s contextSwitch.s
 	$(AS) $(ASFLAGS) -o kernel.o kernel.s
 
 kernel.elf: kernel.o
-	$(LD) $(LDFLAGS) -o $@ kernel.o -lbwio  -lgcc
+	$(LD) $(LDFLAGS) -o $@ kernel.o $(OBJ) -lgcc	
 
 clean:
 	-rm -f kernel.elf *.s *.o kernel.map
