@@ -32,7 +32,7 @@ void nameServer(void) {
 		//bwprintf(COM2, "type:%d, name:%s\n\r, size: %d", req.type, req.name, sizeof(struct ns_request));
 
 		switch(req.type) {
-			case 0:			//registerAs
+			case 0:			//RegisterAs
 				;
 				if(svr_counter <= 20) {
 					struct server *svr = &(svr_ary[svr_counter]);
@@ -61,7 +61,7 @@ void nameServer(void) {
 				//bwprintf(COM2, "ns after Receive\n\r");
 				//bwprintf(COM2, "%s registered\n\r", tail->name);
 				break;
-			case 1:			// whoIs
+			case 1:			// WhoIs
 				;
 				//bwprintf(COM2, "ns accept who req\n\r");
 				struct server *current = head;

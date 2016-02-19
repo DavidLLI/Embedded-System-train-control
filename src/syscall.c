@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "bwio.h"
 #include "helper.h"
+#include "ts7200.h"
 
 
 
@@ -241,52 +242,6 @@ void Exit() {
 		"ldmfd sp!, {r4-r9, lr}"
 	);
 }
-
-int RegisterAs(char *name) {
-	struct ns_request r;
-	r.type = 0;
-	r.tid = MyTid();
-
-	myMemCpy(r.name, name, 32);
-
-	//bwprintf(COM2, "reg %s %d\n\r", name, sizeof(name)/sizeof(char));
-
-	char msg[sizeof(struct ns_request)];
-
-	myMemCpy(msg, &r, sizeof(struct ns_request));
-
-	char reply[32];
-
-	//bwprintf(COM2, "reg before send\n\r");
-	int ret = Send(1, msg, sizeof(struct ns_request), reply, 32);
-	if(ret != 32) bwprintf(COM2, "RegisterAs(), Send error.\n\r");
-	//bwprintf(COM2, "reg after send\n\r");
-
-	return myAtoi(reply);
-
-}
-
-
-int WhoIs(char *name) {
-	struct ns_request r;
-	r.type = 1;
-
-	myMemCpy(r.name, name, 32);
-
-	char msg[sizeof(struct ns_request)];
-
-	myMemCpy(msg, &r, sizeof(struct ns_request));
-
-	char reply[32];
-
-	//bwprintf(COM2, "who before send\n\r");
-	int ret = Send(1, msg, sizeof(struct ns_request), reply, 32);
-	if(ret != 32) bwprintf(COM2, "WhoIs(), Send error.\n\r");
-	//bwprintf(COM2, "who after send\n\r");
-
-	return myAtoi(reply);
-}
-
 
 
 

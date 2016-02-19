@@ -1,6 +1,7 @@
 #ifndef __SYSCALL_H__
 #define __SYSCALL_H__
 
+#include "wrapper.h"
 
 enum sys_request {
 	create, 		// 0
@@ -10,15 +11,15 @@ enum sys_request {
 	exit			// 4
 };
 
-struct ns_request {
-	int type;		// 0 -- RegisterAs, 1 -- WhoIs
-	int tid;
-	char name[32]; 	// max length of name is 32
-};
 
 enum event {
 	timer3,
+	rcv1,
+	xmt1,
+	rcv2,
+	xmt2,
 };
+
 
 
 int Send(int tid, void *msg, int msglen, void *reply, int replylen);
@@ -37,12 +38,7 @@ void Pass(void);
 
 void Exit(void);
 
-int RegisterAs(char *name);
-
-int WhoIs(char *name);
-
 int AwaitEvent(int event);
-
 
 #endif
 

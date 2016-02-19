@@ -191,16 +191,12 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			blk->event_type = request.arg1;
 			blk->task = request.task;
 
-			//bwprintf(COM2, "in AwaitEvent handle: tid: %d, event: %d\n\r", blk->tid, blk->event_type);
-
 			if(pair->head != 0 && pair->tail != 0) {
-				//bwprintf(COM2, "handle_block 1\n\r");
 				(pair->tail)->nxt = blk;
 				blk->prv = (pair->tail);
 				blk->nxt = 0;
 				pair->tail = blk;
 			} else {
-				//bwprintf(COM2, "handle_block 2\n\r");
 				pair->head = blk;
 				pair->tail = blk;
 				blk->nxt = 0;
@@ -211,22 +207,38 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 		case 9: // hardware interrupt
 			;
 			//bwprintf(COM2, "Hardware Interrupt\n\r");
-			int event;
+			int event = -1;
+			int *UART1_INTR_OFFSET = (int *) (UART1_BASE + UART_INTR_OFFSET);
+			int *UART2_INTR_OFFSET = (int *) (UART2_BASE + UART_INTR_OFFSET);
+
 			if(request.arg2 != 0) {
 				event = timer3;
-
 				int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
 				*VIC2xIntEnClear = 524288;
+			} else if (*UART1_INTR_OFFSET & RIS_MASK) {
+				event = rcv1;
+				//*UART1_INTR_OFFSET = 1;
+			} else if (*UART1_INTR_OFFSET & TIS_MASK) {
+				event = xmt1;
+				//*UART1_INTR_OFFSET = 1;
+			} else if (*UART2_INTR_OFFSET & RIS_MASK) {
+				event = rcv2;
+				//*UART2_INTR_OFFSET = 1;
+			} else if (*UART2_INTR_OFFSET & TIS_MASK) {
+				event = xmt2;
+
+				int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+				*UART2ctrl &= ~(TIEN_MASK);
+				//*UART2_INTR_OFFSET = 1;
 			}
 
+			//bwprintf(COM2, "event: %d\n\r", event);
 			struct blk_td *current = pair->head;
 			for(;;) {
-				
 				if(current == 0) break;
 				else {
 					if(current->event_type == event) {
-						//bwprintf(COM2, "in interrupt handle: id: %d, event1: %d, event2:%d\n\r", 
-							//(current->task)->id, request.arg1, request.arg2);
+						//bwprintf(COM2, "interrupt handle: id: %d, event1: %d, event2:%d, event type: %d\n\r", (current->task)->id, request.arg1, request.arg2, event);
 						(current->task)->state = Ready;
 						(current->task)->rtn_value = 0;
 

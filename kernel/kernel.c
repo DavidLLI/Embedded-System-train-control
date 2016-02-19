@@ -10,14 +10,13 @@
 
 int main(int argc, char *argv[]) {
 
-	
 	asm volatile (
 		// enable cache
 		"MRC	p15, 0, r1, c1, c0, 0\n\t"
-		"ORR	r1, r1, #0x1\n\t" //enable mmu
-       	"ORR     r1, r1, #(0x1 << 2)\n\t" //enable D-cache
-       	"ORR     r1, r1, #(0x1 << 12)\n\t" //enable L-cache
-        "MCR     p15, 0, r1, c1, c0, 0"
+		"ORR	r1, r1, #0x1\n\t" 			//enable mmu
+       	"ORR	r1, r1, #(0x1 << 2)\n\t" 	//enable D-cache
+       	"ORR	r1, r1, #(0x1 << 12)\n\t" 	//enable L-cache
+        "MCR	p15, 0, r1, c1, c0, 0"
 	);
 
 	 									

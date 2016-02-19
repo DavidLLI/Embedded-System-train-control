@@ -32,9 +32,9 @@ main:
 	str	r1, [r2, r3]
 	MRC	p15, 0, r1, c1, c0, 0
 	ORR	r1, r1, #0x1
-	ORR     r1, r1, #(0x1 << 2)
-	ORR     r1, r1, #(0x1 << 12)
-	MCR     p15, 0, r1, c1, c0, 0
+	ORR	r1, r1, #(0x1 << 2)
+	ORR	r1, r1, #(0x1 << 12)
+	MCR	p15, 0, r1, c1, c0, 0
 	mov	r3, #0
 	str	r3, [fp, #-64]
 	mov	r3, #0

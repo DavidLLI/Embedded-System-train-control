@@ -2,38 +2,6 @@
 #include "syscall.h"
 #include "bwio.h"
 
-// Type 0
-int Time (void) {
-	int clockServerTid = WhoIs("ClockServer");
-	int current_time = 0;
-	clockMsg msg;
-	msg.type = 0;
-	Send(clockServerTid, &msg, sizeof(struct clockMessage), &current_time, sizeof(int));
-	return current_time;
-}
-
-// Type 1
-int Delay(int ticks) {
-	int clockServerTid = WhoIs("ClockServer");
-	//bwprintf(COM2, "Clock server tid in delay: %d\n\r", clockServerTid);
-	char c;
-	clockMsg msg;
-	msg.type = 1;
-	msg.ticks = ticks;
-	Send(clockServerTid, &msg, sizeof(struct clockMessage), &c, sizeof(char));
-	return 0;
-}
-
-// Type 2
-int DelayUntil(int ticks) {
-	int clockServerTid = WhoIs("ClockServer");
-	char c;
-	clockMsg msg;
-	msg.type = 2;
-	msg.ticks = ticks;
-	Send(clockServerTid, &msg, sizeof(struct clockMessage), &c, sizeof(char));
-	return 0;
-}
 
 void add_wtid(wtid *task_arr, int *task_counter, int time_counter, int tid) {
 	//bwprintf(COM2, "Before adding task to delay queue\n\r");

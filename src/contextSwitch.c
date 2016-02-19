@@ -7,20 +7,18 @@ void activate(td* tds, req *request) {
 	// Install spsr of the active task
 	volatile int temp = 0;
 	volatile int active_spsr = tds->SPSR;
+
 	asm volatile (
 		"msr spsr, %0"
 		:"=r"(active_spsr)
 	);
 	// save kernel registers
 	asm volatile (
-		"stmfd	sp!, {r4-r9}\n\r"
-		"stmfd	sp!, {fp}\n\r"
+		"stmfd	sp!, {r4-r9}\n\t"
+		"stmfd	sp!, {fp}\n\t"
+		"msr CPSR_c, #0xdf" // Change to system mode
 	);
-	// Change to system mode
-	asm volatile (
-		"msr CPSR_c, #0xdf"
-	);
-	
+
 	// Put sp, spsr, rtn_value
 	volatile unsigned int temp_stack_ptr = (unsigned int) tds->stack_ptr;
 	asm volatile (
@@ -30,22 +28,16 @@ void activate(td* tds, req *request) {
 	
 	// Pop user register from user stack
 	asm volatile(
-		"ldmfd	sp, {sp, lr}"
-	);
-	
-	asm volatile (
-		"mov ip, lr"
-	);
-
-	// Return to svc mode
-	asm volatile (
-		"msr cpsr, #0xd3"
-	);
-
-	asm volatile (
+		"ldmfd	sp, {sp, lr}\n\t"
+		"mov ip, lr\n\t"
+		"msr cpsr, #0xd3\n\t" // Return to svc mode
 		"mov lr, ip"
 	);
-	
+
+	// enable IRQ
+	volatile int *VIC1xIntEnable = (int *) (VIC1_BASE + VICxIntEnable_OFFSET);
+	*VIC1xIntEnable = (15 << 23);
+
 	volatile int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
 	*VIC2xIntEnable = 524288;
 
@@ -61,21 +53,14 @@ void activate(td* tds, req *request) {
 	asm volatile(
 		"msr CPSR_c, #0xdf\n\t"
 		"ldmfd	sp!, {r1-r12, lr}\n\t"
-		"msr cpsr, #0xd3"
-	);
-
-	asm volatile (
+		"msr cpsr, #0xd3\n\t"
 		"movs pc, lr"
 	);
 
 
-	
 	////////////////////////////////////////////////
 	////////////////////////////////////////////////
 	////////////////////////////////////////////////
-
-	// IRQ Handler
-	//asm volatile ( "__IRQ_HANDLER:" );
 
 	// SWI Handler
 	asm volatile ( "__SWI_HANDLER:" );
@@ -118,8 +103,8 @@ void activate(td* tds, req *request) {
 	volatile int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
 	*VIC1xIntEnClear = 0xffffffff;
 	*VIC2xIntEnClear = 0xffffffff;
-	tds->rtn_value = temp;
 
+	tds->rtn_value = temp;
 
 	asm volatile (
 		"mov %0, r4"
@@ -154,7 +139,6 @@ void activate(td* tds, req *request) {
 	
 
 	if(status1 || status2) {
-		//bwprintf(COM2, "interrupt\n\r");
 		request->type = 9;
 		request->arg1 = status1;
 		request->arg2 = status2;
@@ -168,8 +152,6 @@ void activate(td* tds, req *request) {
 
 		request->type = request->type & 0x00ffffff;		
 	}
-
-	
 
 	// Acquire lr
 	asm volatile(
@@ -242,11 +224,8 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	*((int *)td1->stack_ptr - 1) = STACK_BASE;
 	td1->stack_ptr -= 4;
 
-
-	//bwprintf(COM2, "%x\n\r", td1->stack_ptr);
-
-	td_pq[td1->priority].td_head = td1;
-	td_pq[td1->priority].td_tail = td1; 
+	td_pq[td1->priority].td_head = (td *) td1;
+	td_pq[td1->priority].td_tail = (td *) td1; 
 
 	(*task_id_counter)++;
 
@@ -266,17 +245,27 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	*handler_addr = swi_handler_addr + 0x00218000;
 	*irq_handler = swi_handler_addr + 0x00218000;
 
-	//enable IRQ
+	//enable IRQ in ICU
+	int *VIC1xIntEnable = (int *) (VIC1_BASE + VICxIntEnable_OFFSET);
+	*VIC1xIntEnable = (15 << 23);
+
 	int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
 	*VIC2xIntEnable = 524288;
 
 	//set clock
-	//set load
 	int *timer_load = (int *)TIMER3_BASE;
 	*timer_load = 5079;
-
-	//set control bit
 	int *timer_ctrl = (int *)(TIMER3_BASE + CRTL_OFFSET);
 	*timer_ctrl = *timer_ctrl | ENABLE_MASK | MODE_MASK | CLKSEL_MASK;
+
+	// enable UART interrupt
+	int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+	*UART2ctrl |= RIEN_MASK;
+	//*UART2ctrl |= TIEN_MASK;
+
+	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
+	*UART1ctrl |= RIEN_MASK;
+	//*UART1ctrl |= TIEN_MASK;
+	*UART1ctrl |= MSIEN_MASK;
 }
 
