@@ -48,7 +48,7 @@ wrapper.o: ../src/wrapper.c
 	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 ioServer.o: ../src/ioServer.c 
-	$(XCC) -O2 -c -o $@ $< $(CFLAGS)	
+	$(XCC) -c -o $@ $< $(CFLAGS)	
 
 bwio.o: ../src/bwio.c 
 	$(XCC) -c -o $@ $< $(CFLAGS)	

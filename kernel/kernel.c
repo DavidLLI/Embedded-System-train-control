@@ -88,12 +88,8 @@ int main(int argc, char *argv[]) {
 		//bwprintf(COM2, "before schedule\n\r");
 		td *active = schedule(td_pq);
 
-		if(active->priority == 31 && task_counter == 4) {
+		if(active->priority == 31 && task_counter == 7) {
 			bwprintf(COM2, "Idle percent: %d.%d\n\r", (idle_counter / 10) / hwi_counter, (idle_counter / 10) % hwi_counter);
-			break;
-		}
-		if(active == 0) {
-			bwputstr(COM2, "No more task to be scheduled. Kernel is exiting.\n\r");
 			break;
 		}
 

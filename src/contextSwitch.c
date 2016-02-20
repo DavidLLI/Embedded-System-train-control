@@ -36,10 +36,10 @@ void activate(td* tds, req *request) {
 
 	// enable IRQ
 	volatile int *VIC1xIntEnable = (int *) (VIC1_BASE + VICxIntEnable_OFFSET);
-	*VIC1xIntEnable = (15 << 23);
+	//*VIC1xIntEnable = (15 << 23);
 
 	volatile int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
-	*VIC2xIntEnable = 524288;
+	//*VIC2xIntEnable = 524288;
 
 	
 	// Put return value into r0
@@ -92,17 +92,17 @@ void activate(td* tds, req *request) {
 		"mov %0, r0"
 		:"=r"(temp)
 	);
-	*VIC2xIntEnable = 0;
+	//*VIC2xIntEnable = 0;
 
 	volatile int *VIC1xIRQStatus = (int *) (VIC1_BASE + VICxIRQStatus_OFFSET);
 	volatile int *VIC2xIRQStatus = (int *) (VIC2_BASE + VICxIRQStatus_OFFSET);
 	volatile int status1 = *VIC1xIRQStatus;
 	volatile int status2 = *VIC2xIRQStatus;
 
-	volatile int *VIC1xIntEnClear = (int *) (VIC1_BASE + VICxIntEnClear_OFFSET);
-	volatile int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
-	*VIC1xIntEnClear = 0xffffffff;
-	*VIC2xIntEnClear = 0xffffffff;
+	//volatile int *VIC1xIntEnClear = (int *) (VIC1_BASE + VICxIntEnClear_OFFSET);
+	//volatile int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
+	//*VIC1xIntEnClear = 0xffffffff;
+	//*VIC2xIntEnClear = 0xffffffff;
 
 	tds->rtn_value = temp;
 
@@ -142,8 +142,6 @@ void activate(td* tds, req *request) {
 		request->type = 9;
 		request->arg1 = status1;
 		request->arg2 = status2;
-		volatile int *timer_clr = (int *) (TIMER3_BASE + CLR_OFFSET);
-		*timer_clr = 1;
 	} else {
 		asm volatile (
 			"ldr %0, [lr, #-4]"
@@ -247,7 +245,8 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 
 	//enable IRQ in ICU
 	int *VIC1xIntEnable = (int *) (VIC1_BASE + VICxIntEnable_OFFSET);
-	*VIC1xIntEnable = (15 << 23);
+	*VIC1xIntEnable = (1 << 26);
+	//*VIC1xIntEnable = (15 << 23);
 
 	int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
 	*VIC2xIntEnable = 524288;
@@ -260,12 +259,12 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 
 	// enable UART interrupt
 	int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
-	*UART2ctrl |= RIEN_MASK;
-	//*UART2ctrl |= TIEN_MASK;
+	//*UART2ctrl |= RIEN_MASK;
+	*UART2ctrl |= TIEN_MASK;
 
 	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
-	*UART1ctrl |= RIEN_MASK;
+	//*UART1ctrl |= RIEN_MASK;
 	//*UART1ctrl |= TIEN_MASK;
-	*UART1ctrl |= MSIEN_MASK;
+	//*UART1ctrl |= MSIEN_MASK;
 }
 

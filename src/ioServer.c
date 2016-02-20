@@ -176,25 +176,25 @@ void COM2PutServer() {
 	int *flags = (int *) (UART2_BASE + UART_FLAG_OFFSET);
 
 	for (;;) {
-		ioReq req;
+		volatile ioReq req;
 		//char msg[sizeof(struct ioRequest)];
 
-		bwprintf(COM2, "server before received\n\r");
+		//bwprintf(COM2, "server before received\n\r");
 		Receive(&recv_id, &req, sizeof(struct ioRequest));
 
 		//myMemCpy(&req, msg, sizeof(struct ioRequest));
-		bwprintf(COM2, "server received req %d from id %d\n\r", req.type, recv_id);
+		//bwprintf(COM2, "server received req %d from id %d\n\r", req.type, recv_id);
 		switch (req.type) {
 			case 0: // Notifier
 				if (item_count > 0) {
 					char data = ring_buf[read_index];
 					read_index = (read_index + 1) % BUFFER_SIZE;
 					item_count--;
-					bwprintf(COM2, "noti, server reply\n\r");
+					//bwprintf(COM2, "noti, server reply\n\r");
 					Reply(recv_id, &data, sizeof(char));
 				}
 				else {
-					bwprintf(COM2, "noti, no put\n\r");
+					//bwprintf(COM2, "noti, no put\n\r");
 					notifierWaiting = 1;
 					notifierID = recv_id;
 				}
@@ -202,13 +202,13 @@ void COM2PutServer() {
 			case 1: // Put
 				if (notifierWaiting == 1) {
 					char reply = req.ch;
-					bwprintf(COM2, "put server reply to noti\n\r");
+					//bwprintf(COM2, "put server reply to noti\n\r");
 					Reply(notifierID, &reply, sizeof(char));
 					notifierWaiting = 0;
 				}
 				else {
 					ring_buf[write_index] = req.ch;
-					bwprintf(COM2, "put, no noti wait\n\r");
+					//bwprintf(COM2, "put, no noti wait\n\r");
 					write_index = (write_index + 1) % BUFFER_SIZE;
 					item_count++;
 				}
@@ -233,14 +233,16 @@ void COM2PutNotifier() {
 	int svrTid = WhoIs("COM2PutServer");
 	int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
 
-	bwprintf(COM2, "Entered Notifier, svr id: %d\n\r", svrTid);
-	bwputstr(COM2, "b\n\r");
+	//bwprintf(COM2, "Entered Notifier, svr id: %d\n\r", svrTid);
+	//bwputstr(COM2, 'b\n\r');
 	for(;;) {
 		// trun UART2 xmt int on
+		//bwprintf(COM2, "before enable interrupt\n\r");
 		*UART2ctrl |= TIEN_MASK;
+		//bwprintf(COM2, "after enable interrupt\n\r");
 		
 		int ret = AwaitEvent(xmt2);
-		//bwprintf(COM2, "return\n\r");
+		////bwprintf(COM2, "return\n\r");
 
 		*UART2ctrl &= ~(TIEN_MASK);
 
@@ -248,16 +250,13 @@ void COM2PutNotifier() {
 		req.type = 0;
 		req.ch = 'a';
 
-		//char msg[sizeof(struct ioRequest)];
-		//myMemCpy(msg, &req, sizeof(struct ioRequest));
-
 		char c;
 
-		bwprintf(COM2, "before notifier send req %d\n\r", req.type);
+		//bwprintf(COM2, "before notifier send req %d\n\r", req.type);
 		ret = Send(svrTid, &req, sizeof(struct ioRequest), &c, sizeof(char));
 
-		//int *data = (int *)(UART2_BASE + UART_DATA_OFFSET);
+		int *data = (int *)(UART2_BASE + UART_DATA_OFFSET);
 		//bwprintf(COM2, "before print\n\r");
-		//*data = 'a';
+		*data = c;
 	}
 }

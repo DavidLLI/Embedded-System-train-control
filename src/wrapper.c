@@ -61,9 +61,10 @@ int Getc(int channel) {
 			serverID = WhoIs("COM2GetServer");
 			break;
 	}
-	char req_type = 1;
+	ioReq req;
+	req.type = 1;
 	char ret = 0;
-	Send(serverID, &req_type, sizeof(char), &ret, sizeof(char));
+	Send(serverID, &req, sizeof(struct ioRequest), &ret, sizeof(char));
 	return ret;
 }
 
@@ -81,7 +82,7 @@ int Putc(int channel, char ch) {
 	char reply = 0;
 	req.type = 1;
 	req.ch = ch;
-	
+
 	Send(serverID, &req, sizeof(struct ioRequest), &reply, sizeof(char));
 	return 0;
 }

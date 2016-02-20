@@ -10,14 +10,16 @@
 
 
 void idle(void) {
+	volatile int i;
 	for (;;) {
-
+		i = 0;
 	}
 }
 
 void user(void) {
 	Putc(COM2, 'a');
-	bwprintf(COM2, "user exit\n\r");
+	Putc(COM2, 'b');
+	//bwprintf(COM2, "user exit\n\r");
 	Exit();
 }
 
@@ -33,7 +35,7 @@ void first(void) {
 	id_temp = Create(4, &COM2PutNotifier);	// 6
 	id_temp = Create(5, &user);				// 7
 
-	bwprintf(COM2, "first exit\n\r");
+	//bwprintf(COM2, "first exit\n\r");
 	Exit();
 }
 

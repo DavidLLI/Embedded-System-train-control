@@ -211,10 +211,14 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			int *UART1_INTR_OFFSET = (int *) (UART1_BASE + UART_INTR_OFFSET);
 			int *UART2_INTR_OFFSET = (int *) (UART2_BASE + UART_INTR_OFFSET);
 
-			if(request.arg2 != 0) {
+			if(request.arg2 & (1 << 19)) {
 				event = timer3;
-				int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
-				*VIC2xIntEnClear = 524288;
+
+				volatile int *timer_clr = (int *) (TIMER3_BASE + CLR_OFFSET);
+				*timer_clr = 1;
+
+				//int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
+				//*VIC2xIntEnClear = 524288;
 			} else if (*UART1_INTR_OFFSET & RIS_MASK) {
 				event = rcv1;
 				//*UART1_INTR_OFFSET = 1;
@@ -238,7 +242,7 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 				if(current == 0) break;
 				else {
 					if(current->event_type == event) {
-						//bwprintf(COM2, "interrupt handle: id: %d, event1: %d, event2:%d, event type: %d\n\r", (current->task)->id, request.arg1, request.arg2, event);
+						//bwprintf(COM2, "event: %d\n\r", event);
 						(current->task)->state = Ready;
 						(current->task)->rtn_value = 0;
 

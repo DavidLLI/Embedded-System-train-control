@@ -27,116 +27,109 @@ bss             0x0000000000000000        0x0
  *(.bss)
                 0x0000000000000000                _BssEnd = .
 
-text            0x0000000000000000     0x399c
+text            0x0000000000000000     0x3a88
  *(.text)
- .text          0x0000000000000000      0x780 kernel.o
+ .text          0x0000000000000000      0x764 kernel.o
                 0x0000000000000000                main
- .text          0x0000000000000780      0x314 ClockServer.o
-                0x0000000000000870                clockNotifier
-                0x0000000000000780                add_wtid
-                0x00000000000008cc                clockServer
- .text          0x0000000000000a94      0x1d4 helper.o
-                0x0000000000000a94                myMemCpy
-                0x0000000000000b94                reverse
-                0x0000000000000c44                memcpy
-                0x0000000000000b38                myStrcmp
-                0x0000000000000bd0                myItoa
-                0x0000000000000ab8                myAtoi
- .text          0x0000000000000c68      0x56c kernelFunction.o
-                0x0000000000001018                handle_block
-                0x0000000000000c68                handle
-                0x0000000000000d7c                handle_msg_passing
- .text          0x00000000000011d4      0x1bc nameServer.o
-                0x00000000000011d4                nameServer
- .text          0x0000000000001390      0x194 taskDescriptor.o
-                0x0000000000001390                schedule
-                0x00000000000014f4                getTaskDes
-                0x0000000000001468                pq_delete
-                0x00000000000013d4                pq_insert
-                0x0000000000001410                pq_movetoend
- .text          0x0000000000001524       0xf4 userFunction.o
-                0x0000000000001528                user
-                0x0000000000001524                idle
-                0x0000000000001560                first
- .text          0x0000000000001618      0x510 contextSwitch.o
-                0x0000000000001618                activate
-                0x00000000000018c0                initialize
- .text          0x0000000000001b28      0x2b0 syscall.o
-                0x0000000000001b28                Send
-                0x0000000000001d28                MyParentTid
-                0x0000000000001d58                Pass
-                0x0000000000001c9c                Create
-                0x0000000000001d90                AwaitEvent
-                0x0000000000001bbc                Receive
-                0x0000000000001c2c                Reply
-                0x0000000000001cf8                MyTid
-                0x0000000000001d74                Exit
- .text          0x0000000000001dd8      0xc54 bwio.o
-                0x0000000000002150                bwputr
-                0x00000000000026bc                bwi2a
-                0x0000000000001dd8                bwsetfifo
-                0x0000000000001fac                bwputc
-                0x000000000000240c                bwa2d
-                0x0000000000001ea0                bwsetspeed
-                0x0000000000002070                c2x
-                0x00000000000024b4                bwa2i
-                0x0000000000002354                bwgetc
-                0x0000000000002578                bwui2a
-                0x0000000000002720                bwformat
-                0x000000000000224c                bwputw
-                0x00000000000029f4                bwprintf
-                0x00000000000020d0                bwputx
-                0x00000000000021d0                bwputstr
- .text          0x0000000000002a2c      0x324 wrapper.o
-                0x0000000000002b48                Getc
-                0x0000000000002bc8                Putc
-                0x0000000000002ac0                WhoIs
-                0x0000000000002cf8                DelayUntil
-                0x0000000000002a2c                RegisterAs
-                0x0000000000002ca4                Delay
-                0x0000000000002c50                Time
- .text          0x0000000000002d50      0x844 ioServer.o
-                0x00000000000034c8                COM2PutNotifier
-                0x0000000000002f50                COM1PutServer
-                0x00000000000032c0                COM2PutServer
-                0x0000000000002d50                COM1GetServer
-                0x00000000000030c0                COM2GetServer
- .text          0x0000000000003594      0x110 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)
-                0x0000000000003594                __udivsi3
-                0x000000000000368c                __aeabi_uidivmod
- .text          0x00000000000036a4       0xcc /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_umodsi3.o)
-                0x00000000000036a4                __umodsi3
- .text          0x0000000000003770        0x4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_dvmd_tls.o)
-                0x0000000000003770                __aeabi_ldiv0
-                0x0000000000003770                __div0
-                0x0000000000003770                __aeabi_idiv0
+ .text          0x0000000000000764      0x314 ClockServer.o
+                0x0000000000000854                clockNotifier
+                0x0000000000000764                add_wtid
+                0x00000000000008b0                clockServer
+ .text          0x0000000000000a78      0x1d4 helper.o
+                0x0000000000000a78                myMemCpy
+                0x0000000000000b78                reverse
+                0x0000000000000c28                memcpy
+                0x0000000000000b1c                myStrcmp
+                0x0000000000000bb4                myItoa
+                0x0000000000000a9c                myAtoi
+ .text          0x0000000000000c4c      0x56c kernelFunction.o
+                0x0000000000000ffc                handle_block
+                0x0000000000000c4c                handle
+                0x0000000000000d60                handle_msg_passing
+ .text          0x00000000000011b8      0x1bc nameServer.o
+                0x00000000000011b8                nameServer
+ .text          0x0000000000001374      0x194 taskDescriptor.o
+                0x0000000000001374                schedule
+                0x00000000000014d8                getTaskDes
+                0x000000000000144c                pq_delete
+                0x00000000000013b8                pq_insert
+                0x00000000000013f4                pq_movetoend
+ .text          0x0000000000001508       0xdc userFunction.o
+                0x000000000000151c                user
+                0x0000000000001508                idle
+                0x0000000000001540                first
+ .text          0x00000000000015e4      0x47c contextSwitch.o
+                0x00000000000015e4                activate
+                0x0000000000001820                initialize
+ .text          0x0000000000001a60      0x2b0 syscall.o
+                0x0000000000001a60                Send
+                0x0000000000001c60                MyParentTid
+                0x0000000000001c90                Pass
+                0x0000000000001bd4                Create
+                0x0000000000001cc8                AwaitEvent
+                0x0000000000001af4                Receive
+                0x0000000000001b64                Reply
+                0x0000000000001c30                MyTid
+                0x0000000000001cac                Exit
+ .text          0x0000000000001d10      0xc54 bwio.o
+                0x0000000000002088                bwputr
+                0x00000000000025f4                bwi2a
+                0x0000000000001d10                bwsetfifo
+                0x0000000000001ee4                bwputc
+                0x0000000000002344                bwa2d
+                0x0000000000001dd8                bwsetspeed
+                0x0000000000001fa8                c2x
+                0x00000000000023ec                bwa2i
+                0x000000000000228c                bwgetc
+                0x00000000000024b0                bwui2a
+                0x0000000000002658                bwformat
+                0x0000000000002184                bwputw
+                0x000000000000292c                bwprintf
+                0x0000000000002008                bwputx
+                0x0000000000002108                bwputstr
+ .text          0x0000000000002964      0x324 wrapper.o
+                0x0000000000002a80                Getc
+                0x0000000000002b00                Putc
+                0x00000000000029f8                WhoIs
+                0x0000000000002c30                DelayUntil
+                0x0000000000002964                RegisterAs
+                0x0000000000002bdc                Delay
+                0x0000000000002b88                Time
+ .text          0x0000000000002c88      0xae4 ioServer.o
+                0x0000000000003694                COM2PutNotifier
+                0x0000000000002f80                COM1PutServer
+                0x000000000000347c                COM2PutServer
+                0x0000000000002c88                COM1GetServer
+                0x0000000000003184                COM2GetServer
+ .text          0x000000000000376c      0x110 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)
+                0x000000000000376c                __udivsi3
+                0x0000000000003864                __aeabi_uidivmod
+ .text          0x000000000000387c       0xcc /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_umodsi3.o)
+                0x000000000000387c                __umodsi3
+ .text          0x0000000000003948        0x4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_dvmd_tls.o)
+                0x0000000000003948                __aeabi_ldiv0
+                0x0000000000003948                __div0
+                0x0000000000003948                __aeabi_idiv0
  *(.got)
- .got           0x0000000000003774       0x20 kernel.o
+ .got           0x000000000000394c       0x20 kernel.o
  *(.got.plt)
- .got.plt       0x0000000000003794        0xc kernel.o
-                0x0000000000003794                _GLOBAL_OFFSET_TABLE_
+ .got.plt       0x000000000000396c        0xc kernel.o
+                0x000000000000396c                _GLOBAL_OFFSET_TABLE_
  *(.rodata)
- .rodata        0x00000000000037a0       0x4c kernel.o
+ .rodata        0x0000000000003978       0x18 kernel.o
+ .rodata        0x0000000000003990       0x40 ioServer.o
  *(.rodata.str1.4)
  .rodata.str1.4
-                0x00000000000037ec        0xc ClockServer.o
+                0x00000000000039d0        0xc ClockServer.o
  .rodata.str1.4
-                0x00000000000037f8       0x37 nameServer.o
+                0x00000000000039dc       0x37 nameServer.o
                                          0x38 (size before relaxing)
- *fill*         0x000000000000382f        0x1 00
+ *fill*         0x0000000000003a13        0x1 00
  .rodata.str1.4
-                0x0000000000003830       0x19 userFunction.o
-                                         0x1c (size before relaxing)
- *fill*         0x0000000000003849        0x3 00
- .rodata.str1.4
-                0x000000000000384c       0x72 wrapper.o
+                0x0000000000003a14       0x72 wrapper.o
                                          0x80 (size before relaxing)
- *fill*         0x00000000000038be        0x2 00
- .rodata.str1.4
-                0x00000000000038c0       0xda ioServer.o
-                                        0x11c (size before relaxing)
  *(.glue_7)
- *fill*         0x000000000000399a        0x2 00
+ *fill*         0x0000000000003a86        0x2 00
  *(.glue_7t)
 
 .rel.dyn
