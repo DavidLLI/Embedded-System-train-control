@@ -210,7 +210,7 @@ main:
 	ble	.L9
 	mov	r0, #1
 	mov	r1, #0
-	bl	bwsetfifo(PLT)
+	bl	setfifo(PLT)
 	sub	r1, fp, #320
 	sub	r3, fp, #3824
 	sub	r3, r3, #12

@@ -3,6 +3,7 @@
 #include "ts7200.h"
 #include "contextSwitch.h"
 #include "helper.h"
+#include "bwio.h"
 
 
 void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
@@ -191,6 +192,16 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			blk->event_type = request.arg1;
 			blk->task = request.task;
 
+			int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+			switch(blk->event_type) {
+				case xmt2:
+					*UART2ctrl |= TIEN_MASK;
+					break;
+				default:
+					break;
+
+			}
+
 			if(pair->head != 0 && pair->tail != 0) {
 				(pair->tail)->nxt = blk;
 				blk->prv = (pair->tail);
@@ -228,6 +239,8 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			} else if (*UART2_INTR_OFFSET & RIS_MASK) {
 				event = rcv2;
 				//*UART2_INTR_OFFSET = 1;
+				//int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+				//*UART2ctrl &= ~(RIEN_MASK);
 			} else if (*UART2_INTR_OFFSET & TIS_MASK) {
 				event = xmt2;
 
@@ -244,7 +257,16 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 					if(current->event_type == event) {
 						//bwprintf(COM2, "event: %d\n\r", event);
 						(current->task)->state = Ready;
-						(current->task)->rtn_value = 0;
+						if(event == rcv2) {
+							int *data = (int *)(UART2_BASE + UART_DATA_OFFSET);
+							char c = *data;
+							(current->task)->rtn_value = c;
+							//int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+							//*UART2ctrl |= RIEN_MASK;
+						} else {
+							(current->task)->rtn_value = 0;
+						}
+						
 
 						if(current == pair->head && current == pair->tail) {
 							pair->head = 0;

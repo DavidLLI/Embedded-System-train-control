@@ -1,6 +1,6 @@
 #include "nameServer.h"
 #include "syscall.h"
-#include "bwio.h"
+//#include "bwio.h"
 #include "helper.h"
 
 struct server {
@@ -17,17 +17,17 @@ void nameServer(void) {
 	int svr_counter = 0;
 
 	for(;;) {
-		char msg[sizeof(struct ns_request)];
-		char reply[32];
+		
+		int reply = -1;
 		struct ns_request req;
 		int sender;
 
 		//bwprintf(COM2, "ns before Receive\n\r");
-		int ret = Receive(&sender, msg, sizeof(struct ns_request));
+		int ret = Receive(&sender, &req, sizeof(struct ns_request));
 		//bwprintf(COM2, "ns after Receive\n\r");
 
-		if(ret != sizeof(struct ns_request)) bwprintf(COM2, "nameServer(), reveive error.\n\r");
-		myMemCpy(&req, msg, sizeof(struct ns_request));
+		//if(ret != sizeof(struct ns_request)) bwprintf(COM2, "nameServer(), reveive error.\n\r");
+		
 
 		//bwprintf(COM2, "type:%d, name:%s\n\r, size: %d", req.type, req.name, sizeof(struct ns_request));
 
@@ -51,13 +51,11 @@ void nameServer(void) {
 						svr->nxt = 0;
 						tail = svr;
 					}
-					myItoa(0, reply);			
-				} else {
-					myItoa(-1, reply);
+					reply = 0;			
 				}
 
 				//bwprintf(COM2, "ns before reply to %d\n\r", sender);
-				Reply(sender, reply, sizeof(reply)/sizeof(char));
+				Reply(sender, &reply, sizeof(int));
 				//bwprintf(COM2, "ns after Receive\n\r");
 				//bwprintf(COM2, "%s registered\n\r", tail->name);
 				break;
@@ -65,10 +63,9 @@ void nameServer(void) {
 				;
 				//bwprintf(COM2, "ns accept who req\n\r");
 				struct server *current = head;
-				myItoa(-1, reply);
 				while(current != 0) {
 					if(myStrcmp(current->name, req.name) == 0) {
-						myItoa(current->tid, reply);
+						reply = current->tid;
 						//bwprintf(COM2, "ns found whois %s\n\r", reply);
 						break;
 					}
@@ -76,11 +73,13 @@ void nameServer(void) {
 				}
 
 				//bwprintf(COM2, "ns before reply to %d\n\r", sender);
-				Reply(sender, reply, sizeof(reply)/sizeof(char));
+				Reply(sender, &reply, sizeof(int));
 				//bwprintf(COM2, "ns after reply\n\r");
 				break;
 			default:
-				bwprintf(COM2, "Invalid request type\n\r");
+				//Invalid request type
+				//bwprintf(COM2, "Invalid request type\n\r");
+				break;
 		}
 	}
 }

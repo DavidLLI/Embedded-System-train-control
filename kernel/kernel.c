@@ -1,8 +1,9 @@
 #include "contextSwitch.h"
-#include "bwio.h"
 #include "taskDescriptor.h"
 #include "kernelFunction.h"
 #include "ts7200.h"
+#include "syscall.h"
+//#include "bwio.h"
 
 
 #define FOREVER for(;;)
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
 
 	// initialize
 	//bwprintf(COM2, "init start\n\r");
-	bwsetfifo(COM2, OFF);
+	setfifo(COM2, OFF);
 	initialize(td_pq, td_ary, &task_id_counter); // tds is an array of TDs
 
 	//set load
