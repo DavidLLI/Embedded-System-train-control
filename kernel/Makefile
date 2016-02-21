@@ -36,7 +36,7 @@ nameServer.o: ../src/nameServer.c
 	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 userFunction.o: ../src/userFunction.c 
-	$(XCC) -c -o $@ $< $(CFLAGS)
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 contextSwitch.o: ../src/contextSwitch.c 
 	$(XCC) -c -o $@ $< $(CFLAGS)

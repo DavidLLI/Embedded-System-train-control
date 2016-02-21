@@ -173,131 +173,145 @@ activate:
 	.global	initialize
 	.type	initialize, %function
 initialize:
-	@ args = 0, pretend = 0, frame = 48
+	@ args = 0, pretend = 0, frame = 60
 	@ frame_needed = 1, uses_anonymous_args = 0
 	mov	ip, sp
 	stmfd	sp!, {sl, fp, ip, lr, pc}
 	sub	fp, ip, #4
-	sub	sp, sp, #48
+	sub	sp, sp, #60
 	ldr	sl, .L11
 .L10:
 	add	sl, pc, sl
-	str	r0, [fp, #-56]
-	str	r1, [fp, #-60]
-	str	r2, [fp, #-64]
-	ldr	r3, [fp, #-60]
-	str	r3, [fp, #-40]
-	ldr	r2, [fp, #-40]
+	str	r0, [fp, #-68]
+	str	r1, [fp, #-72]
+	str	r2, [fp, #-76]
+	ldr	r3, [fp, #-72]
+	str	r3, [fp, #-52]
+	ldr	r2, [fp, #-52]
 	mov	r3, #0
 	str	r3, [r2, #0]
-	ldr	r3, [fp, #-64]
+	ldr	r3, [fp, #-76]
 	ldr	r3, [r3, #0]
 	mov	r2, r3
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	str	r2, [r3, #4]
-	ldr	r2, [fp, #-40]
+	ldr	r2, [fp, #-52]
 	mov	r3, #0
 	str	r3, [r2, #8]
-	ldr	r2, [fp, #-40]
+	ldr	r2, [fp, #-52]
 	mov	r3, #0
 	str	r3, [r2, #12]
-	ldr	r2, [fp, #-40]
+	ldr	r2, [fp, #-52]
 	mov	r3, #0
 	str	r3, [r2, #16]
-	ldr	r2, [fp, #-40]
+	ldr	r2, [fp, #-52]
 	ldr	r3, .L11+4
 	str	r3, [r2, #20]
-	ldr	r2, [fp, #-40]
+	ldr	r2, [fp, #-52]
 	mov	r3, #80
 	str	r3, [r2, #24]
-	ldr	r2, [fp, #-40]
+	ldr	r2, [fp, #-52]
 	mov	r3, #0
 	str	r3, [r2, #28]
 	ldr	r3, .L11+8
 	ldr	r3, [sl, r3]
 	mov	r2, #2195456
 	add	r3, r3, r2
-	str	r3, [fp, #-44]
-	ldr	r3, [fp, #-40]
+	str	r3, [fp, #-56]
+	ldr	r3, [fp, #-52]
 	ldr	r3, [r3, #20]
 	sub	r2, r3, #48
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	str	r2, [r3, #20]
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	ldr	r3, [r3, #20]
 	mov	r2, r3
-	ldr	r3, [fp, #-44]
+	ldr	r3, [fp, #-56]
 	str	r3, [r2, #0]
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	ldr	r3, [r3, #20]
 	sub	r2, r3, #4
 	ldr	r3, .L11+4
 	str	r3, [r2, #0]
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	ldr	r3, [r3, #20]
 	sub	r2, r3, #4
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	str	r2, [r3, #20]
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	ldr	r3, [r3, #12]
 	mov	r3, r3, asl #3
 	mov	r2, r3
-	ldr	r3, [fp, #-56]
+	ldr	r3, [fp, #-68]
 	add	r2, r2, r3
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	str	r3, [r2, #0]
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	ldr	r3, [r3, #12]
 	mov	r3, r3, asl #3
 	mov	r2, r3
-	ldr	r3, [fp, #-56]
+	ldr	r3, [fp, #-68]
 	add	r2, r2, r3
-	ldr	r3, [fp, #-40]
+	ldr	r3, [fp, #-52]
 	str	r3, [r2, #4]
-	ldr	r3, [fp, #-64]
+	ldr	r3, [fp, #-76]
 	ldr	r3, [r3, #0]
 	add	r2, r3, #1
-	ldr	r3, [fp, #-64]
+	ldr	r3, [fp, #-76]
 	str	r2, [r3, #0]
 	mov	r3, #40
-	str	r3, [fp, #-36]
-	mov	r3, #56
-	str	r3, [fp, #-32]
-	mov	r3, #0
 	str	r3, [fp, #-48]
+	mov	r3, #56
+	str	r3, [fp, #-44]
 	mov	r3, #0
-	str	r3, [fp, #-52]
+	str	r3, [fp, #-60]
+	mov	r3, #0
+	str	r3, [fp, #-64]
 	ldr ip, =__SWI_HANDLER
 	mov r3, ip
-	str	r3, [fp, #-48]
-	ldr	r3, [fp, #-48]
+	str	r3, [fp, #-60]
+	ldr	r3, [fp, #-60]
 	add	r2, r3, #2195456
-	ldr	r3, [fp, #-36]
+	ldr	r3, [fp, #-48]
 	str	r2, [r3, #0]
 	ldr ip, =__HWI_HANDLER
 	mov r3, ip
-	str	r3, [fp, #-52]
-	ldr	r3, [fp, #-52]
+	str	r3, [fp, #-64]
+	ldr	r3, [fp, #-64]
 	add	r2, r3, #2195456
-	ldr	r3, [fp, #-32]
+	ldr	r3, [fp, #-44]
 	str	r2, [r3, #0]
 	ldr	r3, .L11+12
-	str	r3, [fp, #-28]
-	ldr	r2, [fp, #-28]
+	str	r3, [fp, #-40]
+	ldr	r2, [fp, #-40]
 	mov	r3, #524288
 	str	r3, [r2, #0]
 	ldr	r3, .L11+16
-	str	r3, [fp, #-24]
-	ldr	r2, [fp, #-24]
-	ldr	r3, .L11+20
+	str	r3, [fp, #-36]
+	ldr	r2, [fp, #-36]
+	mov	r3, #100663296
 	str	r3, [r2, #0]
+	ldr	r3, .L11+20
+	str	r3, [fp, #-32]
+	ldr	r2, [fp, #-32]
 	ldr	r3, .L11+24
-	str	r3, [fp, #-20]
-	ldr	r3, [fp, #-20]
+	str	r3, [r2, #0]
+	ldr	r3, .L11+28
+	str	r3, [fp, #-28]
+	ldr	r3, [fp, #-28]
 	ldr	r3, [r3, #0]
 	orr	r2, r3, #200
-	ldr	r3, [fp, #-20]
+	ldr	r3, [fp, #-28]
 	str	r2, [r3, #0]
+	ldr	r3, .L11+32
+	str	r3, [fp, #-24]
+	ldr	r3, [fp, #-24]
+	ldr	r3, [r3, #0]
+	orr	r2, r3, #16
+	ldr	r3, [fp, #-24]
+	str	r2, [r3, #0]
+	ldr	r3, .L11+36
+	str	r3, [fp, #-20]
 	sub	sp, fp, #16
 	ldmfd	sp, {sl, fp, sp, pc}
 .L12:
@@ -307,8 +321,11 @@ initialize:
 	.word	8384512
 	.word	first(GOT)
 	.word	-2146697200
+	.word	-2146762736
 	.word	-2139029376
 	.word	5079
 	.word	-2139029368
+	.word	-2138243052
+	.word	-2138308588
 	.size	initialize, .-initialize
 	.ident	"GCC: (GNU) 4.0.2"
