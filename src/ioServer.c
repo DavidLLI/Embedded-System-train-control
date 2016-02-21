@@ -3,7 +3,7 @@
 #include "ts7200.h"
 //#include "bwio.h"
 
-#define BUFFER_SIZE 200
+#define BUFFER_SIZE 512
 
 
 void COM1GetServer() {
@@ -108,6 +108,7 @@ void COM1PutServer() {
 }
 
 void COM2GetServer() {
+	Create(3, &COM2GetNotifier);
 	RegisterAs("COM2GetServer");
 	int recv_id = 0;
 	
@@ -164,7 +165,7 @@ void COM2GetServer() {
 }
 
 void COM2PutServer() {
-	Create(3, &COM2PutNotifier);
+	Create(4, &COM2PutNotifier);
 	int ret = RegisterAs("COM2PutServer");
 	//bwprintf(COM2, "server register ret %d\n\r", ret);
 	int recv_id = 0;
@@ -229,7 +230,7 @@ void COM2PutServer() {
 
 
 void COM1GetNotifier() {
-	int svrTid = WhoIs("COM1GetServer");
+	int svrTid =  MyParentTid();
 
 	for (;;) {
 		int ret = AwaitEvent(rcv1);
@@ -244,7 +245,7 @@ void COM1GetNotifier() {
 }
 
 void COM1PutNotifier() {
-	int svrTid = WhoIs("COM1PutServer");
+	int svrTid = MyParentTid();
 
 	for(;;) {	
 		int ret = AwaitEvent(xmt1);
@@ -264,7 +265,7 @@ void COM1PutNotifier() {
 }
 
 void COM2GetNotifier() {
-	int svrTid = WhoIs("COM2GetServer");
+	int svrTid = MyParentTid();
 
 	for (;;) {
 

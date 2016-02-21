@@ -294,6 +294,11 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
 	*VIC2xIntEnable = 524288;
 
+	//enable IRQ in ICU
+	int *VIC1xIntEnable = (int *) (VIC1_BASE + VICxIntEnable_OFFSET);
+	*VIC1xIntEnable = (3 << 25);
+	//*VIC1xIntEnable = (15 << 23);
+
 	//set clock
 	//set load
 	int *timer_load = (int *)TIMER3_BASE;
@@ -302,5 +307,15 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	//set control bit
 	int *timer_ctrl = (int *)(TIMER3_BASE + CRTL_OFFSET);
 	*timer_ctrl = *timer_ctrl | ENABLE_MASK | MODE_MASK | CLKSEL_MASK;
+
+	// enable UART interrupt
+	int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+	*UART2ctrl |= RIEN_MASK;
+	//*UART2ctrl |= TIEN_MASK;
+
+	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
+	//*UART1ctrl |= RIEN_MASK;
+	//*UART1ctrl |= TIEN_MASK;
+	//*UART1ctrl |= MSIEN_MASK;
 }
 

@@ -19,38 +19,20 @@ void idle(void) {
 	Printf(COM2, "Hello\n\r");
 	int i=0;
 	for(;;) {
-		//char c = Getc(COM2);
+		char c = Getc(COM2);
 		//Printf(COM2, "get return\n\r");
 		//Delay(1);
-		char c = 'a'+ (i % 26);
-		i++;
+		//char c = 'a'+ (i % 26);
+		//i++;
 		Putc(COM2, c);		
 	}
 
-	Exit();
-}
-
-
-void first(void) {
-
-	int id_temp = 0;
-	id_temp = Create(1, &nameServer);		// 1
-	id_temp = Create(1, &clockServer);		// 2
-	id_temp = Create(2, &clockNotifier);	// 3
-	id_temp = Create(31, &idle);			// 4
-	//id_temp = Create(3, &COM2PutServer);	// 5
-	//id_temp = Create(4, &COM2GetServer);	// 6
-	//id_temp = Create(4, &COM2PutNotifier);	// 7
-	//id_temp = Create(5, &COM2GetNotifier);	// 8
-	id_temp = Create(6, &user);				// 9
-
-	//bwprintf(COM2, "first exit\n\r");
 	Exit();
 }*/
 
 
 void user(void) {
-	bwprintf(COM2, "\033[2J");
+	Printf(COM2, "\033[2J");
 	//Putc(COM2, 'a');
 	//Printf(COM2, "Hello\n\r");
 	//for(;;) {
@@ -85,7 +67,7 @@ void user(void) {
 					sec -= 60;
 				}
 			}
-			bwprintf(COM2, "\033[1;1HTime elapsed: %dm : %d.%ds", min, sec, ms / 10 );
+			Printf(COM2, "\033[1;1HTime elapsed: %dm : %d.%ds", min, sec, ms / 10 );
 		}
 		
 	}
@@ -115,8 +97,8 @@ void first(void) {
 	Create(3, &clockServer);		// 2
 	
 	Create(31, &idle);			// 4
-	//Create(4, &COM2PutServer);	// 5
-	//Create(4, &COM2GetServer);	// 6
+	Create(6, &COM2PutServer);	// 5
+	Create(5, &COM2GetServer);	// 6
 	//Create(1, &bootstrap);
 
 	//Create(30, &user_init);
