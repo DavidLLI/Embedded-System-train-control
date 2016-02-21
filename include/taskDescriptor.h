@@ -23,6 +23,7 @@ typedef struct taskDescriptor {
 	unsigned int stack_ptr;
 	unsigned int SPSR;
 	int rtn_value;
+	int swi_hwi;
 	
 	struct taskDescriptor *td_prv;
 	struct taskDescriptor *td_nxt;

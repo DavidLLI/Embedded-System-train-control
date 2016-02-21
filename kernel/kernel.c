@@ -85,11 +85,12 @@ int main(int argc, char *argv[]) {
 
 
 	FOREVER {
+
 		// schedule
 		//bwprintf(COM2, "before schedule\n\r");
 		td *active = schedule(td_pq);
 
-		if(active->priority == 31 && task_counter == 7) {
+		if(active->priority == 31 && task_counter == 10) {
 			bwprintf(COM2, "Idle percent: %d.%d\n\r", (idle_counter / 10) / hwi_counter, (idle_counter / 10) % hwi_counter);
 			break;
 		}
@@ -101,7 +102,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// active
-		//bwprintf(COM2, "before active\n\r");
+		
 		activate(active, &request);
 
 		if(active->priority == 31) {

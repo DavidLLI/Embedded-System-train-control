@@ -7,7 +7,7 @@
 
 
 void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
-
+	//bwprintf(COM2, "handle\n\r");
 	switch(request.type) {
 		case 0: // Create
 			;
@@ -181,6 +181,8 @@ void handle_msg_passing(td *td_ary, req request,
 
 
 void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
+
+	(request.task)->swi_hwi = 0;
 	switch(request.type) {
 		case 8: // AwaitEvent
 			;
@@ -217,6 +219,7 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			break;
 		case 9: // hardware interrupt
 			;
+			(request.task)->swi_hwi = 1;
 			//bwprintf(COM2, "Hardware Interrupt\n\r");
 			int event = -1;
 			int *UART1_INTR_OFFSET = (int *) (UART1_BASE + UART_INTR_OFFSET);

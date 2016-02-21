@@ -41,7 +41,7 @@ schedule:
 	b	.L10
 .L8:
 	ldr	r3, [fp, #-20]
-	ldr	r3, [r3, #36]
+	ldr	r3, [r3, #40]
 	str	r3, [fp, #-20]
 	b	.L6
 .L4:
@@ -87,13 +87,13 @@ pq_insert:
 	beq	.L14
 	ldr	r2, [fp, #-16]
 	ldr	r3, [fp, #-28]
-	str	r3, [r2, #36]
+	str	r3, [r2, #40]
 	ldr	r2, [fp, #-28]
 	ldr	r3, [fp, #-16]
-	str	r3, [r2, #32]
+	str	r3, [r2, #36]
 	ldr	r2, [fp, #-28]
 	mov	r3, #0
-	str	r3, [r2, #36]
+	str	r3, [r2, #40]
 	ldr	r3, [fp, #-20]
 	mov	r3, r3, asl #3
 	mov	r2, r3
@@ -119,10 +119,10 @@ pq_insert:
 	str	r3, [r2, #0]
 	ldr	r2, [fp, #-28]
 	mov	r3, #0
-	str	r3, [r2, #32]
+	str	r3, [r2, #36]
 	ldr	r2, [fp, #-28]
 	mov	r3, #0
-	str	r3, [r2, #36]
+	str	r3, [r2, #40]
 .L17:
 	sub	sp, fp, #12
 	ldmfd	sp, {fp, sp, pc}
@@ -173,22 +173,22 @@ pq_movetoend:
 	ldr	r3, [fp, #-28]
 	add	r2, r2, r3
 	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #36]
+	ldr	r3, [r3, #40]
 	str	r3, [r2, #0]
 	b	.L23
 .L21:
 	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #32]
+	ldr	r2, [r3, #36]
 	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #36]
-	str	r3, [r2, #36]
+	ldr	r3, [r3, #40]
+	str	r3, [r2, #40]
 .L23:
 	ldr	r2, [fp, #-32]
 	ldr	r3, [fp, #-20]
-	str	r3, [r2, #32]
+	str	r3, [r2, #36]
 	ldr	r2, [fp, #-20]
 	ldr	r3, [fp, #-32]
-	str	r3, [r2, #36]
+	str	r3, [r2, #40]
 	ldr	r3, [fp, #-24]
 	mov	r3, r3, asl #3
 	mov	r2, r3
@@ -198,7 +198,7 @@ pq_movetoend:
 	str	r3, [r2, #4]
 	ldr	r2, [fp, #-32]
 	mov	r3, #0
-	str	r3, [r2, #36]
+	str	r3, [r2, #40]
 .L24:
 	sub	sp, fp, #12
 	ldmfd	sp, {fp, sp, pc}
@@ -269,12 +269,12 @@ pq_delete:
 	ldr	r3, [fp, #-28]
 	add	r2, r2, r3
 	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #36]
+	ldr	r3, [r3, #40]
 	str	r3, [r2, #0]
 	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #36]
+	ldr	r2, [r3, #40]
 	mov	r3, #0
-	str	r3, [r2, #32]
+	str	r3, [r2, #36]
 	b	.L34
 .L30:
 	ldr	r2, [fp, #-32]
@@ -287,24 +287,24 @@ pq_delete:
 	ldr	r3, [fp, #-28]
 	add	r2, r2, r3
 	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #32]
+	ldr	r3, [r3, #36]
 	str	r3, [r2, #4]
 	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #32]
+	ldr	r2, [r3, #36]
 	mov	r3, #0
-	str	r3, [r2, #36]
+	str	r3, [r2, #40]
 	b	.L34
 .L32:
 	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #32]
+	ldr	r2, [r3, #36]
+	ldr	r3, [fp, #-32]
+	ldr	r3, [r3, #40]
+	str	r3, [r2, #40]
+	ldr	r3, [fp, #-32]
+	ldr	r2, [r3, #40]
 	ldr	r3, [fp, #-32]
 	ldr	r3, [r3, #36]
 	str	r3, [r2, #36]
-	ldr	r3, [fp, #-32]
-	ldr	r2, [r3, #36]
-	ldr	r3, [fp, #-32]
-	ldr	r3, [r3, #32]
-	str	r3, [r2, #32]
 .L34:
 	sub	sp, fp, #12
 	ldmfd	sp, {fp, sp, pc}
@@ -328,7 +328,9 @@ getTaskDes:
 	mov	r3, r2
 	mov	r3, r3, asl #2
 	add	r3, r3, r2
-	mov	r3, r3, asl #3
+	mov	r3, r3, asl #1
+	add	r3, r3, r2
+	mov	r3, r3, asl #2
 	mov	r2, r3
 	ldr	r3, [fp, #-20]
 	add	r3, r2, r3
@@ -339,7 +341,9 @@ getTaskDes:
 	mov	r3, r2
 	mov	r3, r3, asl #2
 	add	r3, r3, r2
-	mov	r3, r3, asl #3
+	mov	r3, r3, asl #1
+	add	r3, r3, r2
+	mov	r3, r3, asl #2
 	mov	r2, r3
 	ldr	r3, [fp, #-20]
 	add	r2, r2, r3

@@ -1,4 +1,5 @@
 #include "taskDescriptor.h"
+#include "bwio.h"
 
 
 td *schedule(pair *td_pq) {
@@ -45,6 +46,7 @@ void pq_insert(pair *td_pq, td *td) {
 }
 
 void pq_movetoend(pair *td_pq, td *td) {
+	//bwprintf(COM2, "movetoend\n\r");
 	td->state = Ready;
 	int priority = td->priority;
 

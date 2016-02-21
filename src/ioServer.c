@@ -164,6 +164,7 @@ void COM2GetServer() {
 }
 
 void COM2PutServer() {
+	Create(3, &COM2PutNotifier);
 	int ret = RegisterAs("COM2PutServer");
 	//bwprintf(COM2, "server register ret %d\n\r", ret);
 	int recv_id = 0;
@@ -281,7 +282,7 @@ void COM2GetNotifier() {
 }
 
 void COM2PutNotifier() {
-	int svrTid = WhoIs("COM2PutServer");
+	int svrTid = MyParentTid();
 	//bwprintf(COM2, "put noti\n\r");
 
 	for(;;) {

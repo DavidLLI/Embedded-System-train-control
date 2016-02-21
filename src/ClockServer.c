@@ -30,7 +30,7 @@ void add_wtid(wtid *task_arr, int *task_counter, int time_counter, int tid) {
 
 void clockNotifier(void) {
 	//bwprintf(COM2, "clock notifier start\n\r");
-	int timer_tid = WhoIs("ClockServer");
+	int timer_tid = MyParentTid();
 	for (;;) {
 		//bwprintf(COM2, "notifier before await\n\r");
 		AwaitEvent(timer3);
@@ -43,6 +43,8 @@ void clockNotifier(void) {
 }
 
 void clockServer(void) {
+
+	Create(2, &clockNotifier);
 	//bwprintf(COM2, "clock server start\n\r");
 	RegisterAs("ClockServer");
 	//bwprintf(COM2, "before clcokserver tid\n\r");
