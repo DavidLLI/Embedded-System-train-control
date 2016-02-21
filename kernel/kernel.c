@@ -68,7 +68,14 @@ int main(int argc, char *argv[]) {
 
 	// initialize
 	//bwprintf(COM2, "init start\n\r");
+	setfifo(COM1, OFF);
 	setfifo(COM2, OFF);
+	setspeed(COM1, 2400);
+
+	//set stop bits
+	int *bits = (int *) (UART1_BASE + UART_LCRH_OFFSET);
+	*bits = *bits | STP2_MASK;
+
 	initialize(td_pq, td_ary, &task_id_counter); // tds is an array of TDs
 
 	//set load
@@ -130,9 +137,7 @@ int main(int argc, char *argv[]) {
 		//bwprintf(COM2, "handle return\n\r");
 
 	}
-	
-	
 
-	return 0;
+	return;
 }
 

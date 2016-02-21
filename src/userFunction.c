@@ -5,6 +5,7 @@
 #include "ClockServer.h"
 #include "ts7200.h"
 #include "ioServer.h"
+#include "train.h"
 
 #define MSG_LEN 64
 
@@ -14,23 +15,20 @@ void idle(void) {
 	}
 }
 
-/*void user(void) {
-	Putc(COM2, 'a');
-	Printf(COM2, "Hello\n\r");
-	int i=0;
-	for(;;) {
-		char c = Getc(COM2);
-		//Printf(COM2, "get return\n\r");
-		//Delay(1);
-		//char c = 'a'+ (i % 26);
-		//i++;
-		Putc(COM2, c);		
-	}
+void user(void) {
+	Putc(COM2, 'u');
+
+	Putc(COM1, 0x61);
+	Putc(COM1, 0x60);
+	Putc(COM1, 0x61);
+	Putc(COM1, 0x60);
+	Putc(COM1, 0x61);
+	Putc(COM1, 0x60);
 
 	Exit();
-}*/
+}
 
-
+/*
 void user(void) {
 	Printf(COM2, "\033[2J");
 	//Putc(COM2, 'a');
@@ -74,6 +72,7 @@ void user(void) {
 
 	Exit();
 }
+*/
 
 /*void bootstrap(void) {
 	Create(1, &nameServer);		// 1
@@ -99,11 +98,11 @@ void first(void) {
 	Create(31, &idle);			// 4
 	Create(6, &COM2PutServer);	// 5
 	Create(5, &COM2GetServer);	// 6
-	//Create(1, &bootstrap);
+	Create(9, &COM1PutServer);	// 5
+	Create(10, &COM1GetServer);	// 6
 
-	//Create(30, &user_init);
-	Create(6, &user);
-	//bwprintf(COM2, "first exit\n\r");
+	Create(15, &init);
+
 	Exit();
 }
 

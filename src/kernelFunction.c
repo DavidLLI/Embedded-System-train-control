@@ -181,8 +181,11 @@ void handle_msg_passing(td *td_ary, req request,
 
 
 void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
-
 	(request.task)->swi_hwi = 0;
+
+	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
+	int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
+
 	switch(request.type) {
 		case 8: // AwaitEvent
 			;
@@ -194,14 +197,14 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			blk->event_type = request.arg1;
 			blk->task = request.task;
 
-			int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
 			switch(blk->event_type) {
+				case xmt1:
+					*UART1ctrl |= TIEN_MASK;
 				case xmt2:
 					*UART2ctrl |= TIEN_MASK;
 					break;
 				default:
 					break;
-
 			}
 
 			if(pair->head != 0 && pair->tail != 0) {
@@ -230,7 +233,6 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 
 				volatile int *timer_clr = (int *) (TIMER3_BASE + CLR_OFFSET);
 				*timer_clr = 1;
-
 				//int *VIC2xIntEnClear = (int *) (VIC2_BASE + VICxIntEnClear_OFFSET);
 				//*VIC2xIntEnClear = 524288;
 			} else if (*UART1_INTR_OFFSET & RIS_MASK) {
@@ -238,7 +240,8 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 				//*UART1_INTR_OFFSET = 1;
 			} else if (*UART1_INTR_OFFSET & TIS_MASK) {
 				event = xmt1;
-				//*UART1_INTR_OFFSET = 1;
+				
+				*UART1ctrl &= ~(TIEN_MASK);
 			} else if (*UART2_INTR_OFFSET & RIS_MASK) {
 				event = rcv2;
 				//*UART2_INTR_OFFSET = 1;
@@ -247,7 +250,6 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			} else if (*UART2_INTR_OFFSET & TIS_MASK) {
 				event = xmt2;
 
-				int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
 				*UART2ctrl &= ~(TIEN_MASK);
 				//*UART2_INTR_OFFSET = 1;
 			}

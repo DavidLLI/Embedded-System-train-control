@@ -5,12 +5,18 @@
 
 #define BUFFER_SIZE 512
 
+#define COM1GetNotifier_Priority 8
+#define COM1PutNotifier_Priority 7
+#define COM2GetNotifier_Priority 3
+#define COM2PutNotifier_Priority 4
+
+
 
 void COM1GetServer() {
+	Create(COM1GetNotifier_Priority, &COM1GetNotifier);
 	RegisterAs("COM1GetServer");
-	ioReq req;
 	int recv_id = 0;
-
+	
 	char ring_buf[BUFFER_SIZE];
 	int read_index = 0;
 	int write_index = 0;
@@ -22,7 +28,9 @@ void COM1GetServer() {
 	int queue_count = 0;
 
 	for (;;) {
+		ioReq req;
 		Receive(&recv_id, &req, sizeof(struct ioRequest));
+		//Printf(COM2, "recv_id: %d, req_type: %d\n\r", recv_id, req.type);
 		switch (req.type) {
 			case 0: // Notifier
 				;
@@ -62,10 +70,10 @@ void COM1GetServer() {
 }
 
 void COM1PutServer() {
+	Create(COM1PutNotifier_Priority, &COM1PutNotifier);
 	RegisterAs("COM1PutServer");
-	ioReq req;
 	int recv_id = 0;
-
+	
 	char ring_buf[BUFFER_SIZE];
 	int read_index = 0;
 	int write_index = 0;
@@ -74,17 +82,28 @@ void COM1PutServer() {
 	char notifierWaiting = 0;
 	int notifierID = 0;
 
+	int *flags = (int *) (UART2_BASE + UART_FLAG_OFFSET);
+
 	for (;;) {
+		volatile ioReq req;
+		//char msg[sizeof(struct ioRequest)];
+
+		//bwprintf(COM2, "server before received\n\r");
 		Receive(&recv_id, &req, sizeof(struct ioRequest));
+
+		//myMemCpy(&req, msg, sizeof(struct ioRequest));
+		//bwprintf(COM2, "server received req %d from id %d\n\r", req.type, recv_id);
 		switch (req.type) {
 			case 0: // Notifier
 				if (item_count > 0) {
 					char data = ring_buf[read_index];
 					read_index = (read_index + 1) % BUFFER_SIZE;
 					item_count--;
+					//bwprintf(COM2, "noti, server reply\n\r");
 					Reply(recv_id, &data, sizeof(char));
 				}
 				else {
+					//bwprintf(COM2, "noti, no put\n\r");
 					notifierWaiting = 1;
 					notifierID = recv_id;
 				}
@@ -92,23 +111,28 @@ void COM1PutServer() {
 			case 1: // Put
 				if (notifierWaiting == 1) {
 					char reply = req.ch;
+					//bwprintf(COM2, "put server reply to noti\n\r");
 					Reply(notifierID, &reply, sizeof(char));
 					notifierWaiting = 0;
 				}
 				else {
 					ring_buf[write_index] = req.ch;
+					//bwprintf(COM2, "put, no noti wait\n\r");
 					write_index = (write_index + 1) % BUFFER_SIZE;
 					item_count++;
 				}
 				char reply = 0;
 				Reply(recv_id, &reply, sizeof(char));
 				break;
+			default:
+				//unknown request
+				break;
 		}
 	}
 }
 
 void COM2GetServer() {
-	Create(3, &COM2GetNotifier);
+	Create(COM2GetNotifier_Priority, &COM2GetNotifier);
 	RegisterAs("COM2GetServer");
 	int recv_id = 0;
 	
@@ -165,7 +189,7 @@ void COM2GetServer() {
 }
 
 void COM2PutServer() {
-	Create(4, &COM2PutNotifier);
+	Create(COM2PutNotifier_Priority, &COM2PutNotifier);
 	int ret = RegisterAs("COM2PutServer");
 	//bwprintf(COM2, "server register ret %d\n\r", ret);
 	int recv_id = 0;
@@ -246,9 +270,12 @@ void COM1GetNotifier() {
 
 void COM1PutNotifier() {
 	int svrTid = MyParentTid();
+	int first = 1;
 
+	//Putc(COM2, 'e');
 	for(;;) {	
 		int ret = AwaitEvent(xmt1);
+		//Putc(COM2, 'r');
 
 		ioReq req;
 		req.type = 0;
@@ -257,10 +284,28 @@ void COM1PutNotifier() {
 		char c;
 
 		ret = Send(svrTid, &req, sizeof(struct ioRequest), &c, sizeof(char));
+		int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
+		int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
 
-		int *data = (int *)(UART1_BASE + UART_DATA_OFFSET);
+		for(;;) {
+			if(first && (*flag & CTS_MASK)) {
+				int *data = (int *) (UART1_BASE + UART_DATA_OFFSET);
+				*data = c;
+				first = 0;
 
-		*data = c;
+				//Printf(COM2, "%x", c);
+
+				//Putc(COM2, 's');
+				break;					
+			}
+			else if((*mdmSts & DCTS_MASK) && (*flag & CTS_MASK)) {
+				int *data = (int *) (UART1_BASE + UART_DATA_OFFSET);
+				*data = c;
+				//Putc(COM2, 't');
+				break;			
+			}			
+		}
+
 	}
 }
 

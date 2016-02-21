@@ -289,7 +289,7 @@ initialize:
 	ldr	r3, .L11+16
 	str	r3, [fp, #-36]
 	ldr	r2, [fp, #-36]
-	mov	r3, #100663296
+	mov	r3, #125829120
 	str	r3, [r2, #0]
 	ldr	r3, .L11+20
 	str	r3, [fp, #-32]
@@ -312,6 +312,11 @@ initialize:
 	str	r2, [r3, #0]
 	ldr	r3, .L11+36
 	str	r3, [fp, #-20]
+	ldr	r3, [fp, #-20]
+	ldr	r3, [r3, #0]
+	orr	r2, r3, #16
+	ldr	r3, [fp, #-20]
+	str	r2, [r3, #0]
 	sub	sp, fp, #16
 	ldmfd	sp, {sl, fp, sp, pc}
 .L12:
