@@ -317,16 +317,6 @@ initialize:
 	orr	r2, r3, #16
 	ldr	r3, [fp, #-20]
 	str	r2, [r3, #0]
-	ldr	r3, [fp, #-20]
-	ldr	r3, [r3, #0]
-	orr	r2, r3, #8
-	ldr	r3, [fp, #-20]
-	str	r2, [r3, #0]
-	ldr	r3, [fp, #-20]
-	ldr	r3, [r3, #0]
-	orr	r2, r3, #1
-	ldr	r3, [fp, #-20]
-	str	r2, [r3, #0]
 	sub	sp, fp, #16
 	ldmfd	sp, {sl, fp, sp, pc}
 .L12:
