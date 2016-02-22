@@ -89,7 +89,7 @@ void timer(void) {
 		cur_time = Time();
 		int idle = IdlePct();
 		int pct = ((idle / 10) / cur_time);
-		Printf(COM2, "\033[%d;1H\033[K%d,%d,%d", CMD_ROW + 3, idle, cur_time, pct);
+		Printf(COM2, "\033[%d;1H\033[KIdle Percent: %d", CMD_ROW + 3, pct);
 		if (cur_time > prev_time) {
 
 			ms += ((cur_time - prev_time) * 10);
@@ -131,7 +131,7 @@ void sensorData(void) {
 	char sensor_data = 0;
 	int num_of_sensor = 0;
 	for (;;) {
-		Delay(2);
+		Delay(3);
 		if (recv_counter == 80) {
 			//Delay(15);
 			Putc(COM1, 0x85);
@@ -196,7 +196,7 @@ void trainCommunication(void) {
 	//-----------------------
 	for(;;) {
 
-		Delay(2);
+		Delay(3);
 		for(;;) {
 			char c = Getc(COM2);
 
@@ -314,9 +314,9 @@ void trainCommunication(void) {
 		end = 0;
 	}
 
-	int idlePct = IdlePct();
+	//int idlePct = IdlePct();
 
-	Printf(COM2, "Idle percentage: %d\n\r", idlePct);
+	//Printf(COM2, "Idle percentage: %d\n\r", idlePct);
 
 	KExit();
 }
