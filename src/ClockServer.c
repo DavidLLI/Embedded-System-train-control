@@ -94,7 +94,12 @@ void clockServer(void) {
 					add_wtid(task_arr, &task_counter, recv_buffer.ticks + ticksElapsed, recv_tid);
 					break;
 				case 2:
-					add_wtid(task_arr, &task_counter, recv_buffer.ticks, recv_tid);
+					if (recv_buffer.ticks >= ticksElapsed) {
+						add_wtid(task_arr, &task_counter, recv_buffer.ticks, recv_tid);
+					}
+					else {
+						Reply(recv_tid, &c, sizeof(char));
+					}
 					break;
 				default:
 					break;

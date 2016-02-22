@@ -317,7 +317,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
 	*UART1ctrl |= RIEN_MASK;
 	//*UART1ctrl |= TIEN_MASK;
-	*UART1ctrl |= MSIEN_MASK;
-	*UART1ctrl |= 0x1;
+	//*UART1ctrl |= MSIEN_MASK;
+	//*UART1ctrl |= 0x1;
 }
 

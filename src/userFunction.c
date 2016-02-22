@@ -97,9 +97,9 @@ void first(void) {
 	
 	Create(31, &idle);			// 4
 	Create(26, &COM2PutServer);	// 5
-	Create(5, &COM2GetServer);	// 6
-	Create(9, &COM1PutServer);	// 5
-	Create(5, &COM1GetServer);	// 6
+	Create(28, &COM2GetServer);	// 6
+	Create(8, &COM1PutServer);	// 5
+	Create(4, &COM1GetServer);	// 6
 
 	Create(29, &init);
 

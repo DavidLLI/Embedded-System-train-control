@@ -124,23 +124,31 @@ void sensorData(void) {
 	}
 	int read_pos = 0;
 
+	int cur_time = 0;
+	char bit = 0;
+	char last_bit_mask = 0;
+	int j = 0;
+	char sensor_data = 0;
+	int num_of_sensor = 0;
 	for (;;) {
-		Delay(5);
+		Delay(2);
 		if (recv_counter == 80) {
+			//Delay(15);
 			Putc(COM1, 0x85);
 			recv_counter = 0;
+			//cur_time = Time();
 		}	
-		char sensor_data = 0;
+		sensor_data = 0;
 		sensor_data = Getc(COM1);
 		
 		for (i = 0; i < 8; i++) {
-			char bit = (sensor_data >> i);
-			char last_bit_mask = 1;
+			bit = (sensor_data >> i);
+			last_bit_mask = 1;
 			bit = (bit & last_bit_mask);
 			if (bit == 1 && all_sensors[recv_counter] == 0) {
 				all_sensors[recv_counter] = 1;
 				if (read_pos == 10) {
-					int j = 0;
+					
 					for (j = 1; j < 10; j++) {
 						rts[j - 1] = rts[j];
 					}
@@ -150,9 +158,8 @@ void sensorData(void) {
 					rts[read_pos] = recv_counter;
 					read_pos = read_pos + 1; 
 				}
-				int j = 0;
 				for (j = 0; j < read_pos; j++) {
-					int num_of_sensor = (rts[j] % 16) + 1;
+					num_of_sensor = (rts[j] % 16) + 1;
 					if (num_of_sensor <= 8) {
 						num_of_sensor = 9 - num_of_sensor;
 					}
@@ -238,30 +245,35 @@ void trainCommunication(void) {
 
 				//set speed to 0
 				
-				Putc(COM1, 0); 			//speed
-				Putc(COM1, cmd_arg1); 	//train number
+				Printf(COM1, "%c%c", 0, cmd_arg1);
+				//Putc(COM1, 0); 			//speed
+				//Putc(COM1, cmd_arg1); 	//train number
 
 
 				//reverse
 				Delay(500);
-				Putc(COM1, 15); 			//reverse
-				Putc(COM1, cmd_arg1); 	//train number
+				Printf(COM1, "%c%c", 15, cmd_arg1);
+				//Putc(COM1, 15); 			//reverse
+				//Putc(COM1, cmd_arg1); 	//train number
 
 				//set speed back
 				Delay(10);
-				Putc(COM1, lastSpeed); 	//speed
-				Putc(COM1, cmd_arg1); 	//train number												
+				Printf(COM1, "%c%c", lastSpeed, cmd_arg1);
+				//Putc(COM1, lastSpeed); 	//speed
+				//Putc(COM1, cmd_arg1); 	//train number												
 				break;	
 			case 3: //sw
 				Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, cmd_arg1, cmd_arg2);
 
 				if(cmd_arg2 == 'S' || cmd_arg2 == 's') {
-					Putc(COM1, 0x21); //straight
+					Printf(COM1, "%c%c", 0x21, cmd_arg1);
+					//Putc(COM1, 0x21); //straight
 				} else if(cmd_arg2 == 'C' || cmd_arg2 == 'c') {
-					Putc(COM1, 0x22); //curve
+					Printf(COM1, "%c%c", 0x22, cmd_arg1);
+					//Putc(COM1, 0x22); //curve
 				}
 				
-				Putc(COM1, cmd_arg1); //switch number
+				//Putc(COM1, cmd_arg1); //switch number
 
 				int row = 0;
 				if(cmd_arg1 <= 18) {
