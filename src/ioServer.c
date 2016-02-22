@@ -9,6 +9,8 @@
 #define COM1PutNotifier_Priority 7
 #define COM2GetNotifier_Priority 3
 #define COM2PutNotifier_Priority 4
+#define Courier1_Priority 11
+#define Courier2_Priority 12
 
 
 
@@ -72,6 +74,7 @@ void COM1GetServer() {
 void COM1PutServer() {
 	Create(COM1PutNotifier_Priority, &COM1PutNotifier);
 	RegisterAs("COM1PutServer");
+	Create(Courier1_Priority, &Courier1);
 	int recv_id = 0;
 	
 	char ring_buf[BUFFER_SIZE];
@@ -116,10 +119,12 @@ void COM1PutServer() {
 					notifierWaiting = 0;
 				}
 				else {
-					ring_buf[write_index] = req.ch;
-					//bwprintf(COM2, "put, no noti wait\n\r");
-					write_index = (write_index + 1) % BUFFER_SIZE;
-					item_count++;
+					if(item_count < BUFFER_SIZE - 1) {
+						ring_buf[write_index] = req.ch;
+						//bwprintf(COM2, "put, no noti wait\n\r");
+						write_index = (write_index + 1) % BUFFER_SIZE;
+						item_count++;
+					}
 				}
 				char reply = 0;
 				Reply(recv_id, &reply, sizeof(char));
@@ -191,6 +196,7 @@ void COM2GetServer() {
 void COM2PutServer() {
 	Create(COM2PutNotifier_Priority, &COM2PutNotifier);
 	int ret = RegisterAs("COM2PutServer");
+	Create(Courier2_Priority, &Courier2);
 	//bwprintf(COM2, "server register ret %d\n\r", ret);
 	int recv_id = 0;
 	
@@ -236,10 +242,12 @@ void COM2PutServer() {
 					notifierWaiting = 0;
 				}
 				else {
-					ring_buf[write_index] = req.ch;
-					//bwprintf(COM2, "put, no noti wait\n\r");
-					write_index = (write_index + 1) % BUFFER_SIZE;
-					item_count++;
+					if (item_count < BUFFER_SIZE - 1) {
+						ring_buf[write_index] = req.ch;
+						//bwprintf(COM2, "put, no noti wait\n\r");
+						write_index = (write_index + 1) % BUFFER_SIZE;
+						item_count++;
+					}
 				}
 				char reply = 0;
 				Reply(recv_id, &reply, sizeof(char));
@@ -275,7 +283,7 @@ void COM1PutNotifier() {
 	//Putc(COM2, 'e');
 	for(;;) {	
 		int ret = AwaitEvent(xmt1);
-		//Putc(COM2, 'r');
+		//Printf(COM2, "Return from event\n\r");
 
 		ioReq req;
 		req.type = 0;
@@ -284,6 +292,9 @@ void COM1PutNotifier() {
 		char c;
 
 		ret = Send(svrTid, &req, sizeof(struct ioRequest), &c, sizeof(char));
+
+		//int *data = (int *) (UART1_BASE + UART_DATA_OFFSET);
+		//*data = c;
 		int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
 		int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
 
@@ -303,7 +314,8 @@ void COM1PutNotifier() {
 				*data = c;
 				//Putc(COM2, 't');
 				break;			
-			}			
+			}	
+			Delay(1);		
 		}
 
 	}
@@ -346,5 +358,49 @@ void COM2PutNotifier() {
 		int *data = (int *)(UART2_BASE + UART_DATA_OFFSET);
 
 		*data = c;
+	}
+}
+
+void Courier1() {
+	RegisterAs("Courier1");
+	int recv_id = 0;
+	char buffer[100];
+	int i = 0;
+	int size = 0;
+	for (i = 0; i < 100; i++) {
+		buffer[i] = 0;
+	}
+	for(;;) {
+
+		size = Receive(&recv_id, buffer, 100);
+		char c = 0;
+		Reply(recv_id, c, sizeof(char));
+		int i = 0;
+		for (i = 0; i < size; i++) {
+			Putc(COM1, buffer[i]);
+			buffer[i] = 0;
+		}
+	}
+}
+
+void Courier2() {
+	RegisterAs("Courier2");
+	int recv_id = 0;
+	char buffer[100];
+	int i = 0;
+	int size = 0;
+	for (i = 0; i < 100; i++) {
+		buffer[i] = 0;
+	}
+	for(;;) {
+
+		size = Receive(&recv_id, buffer, 100);
+		char c = 0;
+		Reply(recv_id, c, sizeof(char));
+		int i = 0;
+		for (i = 0; i < size; i++) {
+			Putc(COM2, buffer[i]);
+			buffer[i] = 0;
+		}
 	}
 }

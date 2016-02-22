@@ -108,44 +108,48 @@ int DelayUntil(int ticks) {
 	return 0;
 }
 
+int Insert(char* channel, char c, int* counter) {
+	channel[*counter] = c;
+	(*counter) ++;
+}
 
 char myc2x( char ch ) {
 	if ( (ch <= 9) ) return '0' + ch;
 	return 'a' + ch - 10;
 }
 
-int putx( int channel, char c ) {
+int putx( char* channel, char c, int *counter ) {
 	char chh, chl;
 
 	chh = myc2x( c / 16 );
 	chl = myc2x( c % 16 );
-	Putc( channel, chh );
-	return Putc( channel, chl );
+	Insert( channel, chh, counter );
+	return Insert( channel, chl, counter );
 }
 
-int putr( int channel, unsigned int reg ) {
+int putr( char* channel, unsigned int reg, int* counter ) {
 	int byte;
 	char *ch = (char *) &reg;
 
-	for( byte = 3; byte >= 0; byte-- ) putx( channel, ch[byte] );
-	return Putc( channel, ' ' );
+	for( byte = 3; byte >= 0; byte-- ) putx( channel, ch[byte], counter );
+	return Insert( channel, ' ', counter );
 }
 
-int putstr( int channel, char *str ) {
+int putstr( char* channel, char *str, int* counter ) {
 	while( *str ) {
-		if( Putc( channel, *str ) < 0 ) return -1;
+		if( Insert( channel, *str, counter ) < 0 ) return -1;
 		str++;
 	}
 	return 0;
 }
 
-void putw( int channel, int n, char fc, char *bf ) {
+void putw( char* channel, int n, char fc, char *bf, int* counter ) {
 	char ch;
 	char *p = bf;
 
 	while( *p++ && n > 0 ) n--;
-	while( n-- > 0 ) Putc( channel, fc );
-	while( ( ch = *bf++ ) ) Putc( channel, ch );
+	while( n-- > 0 ) Insert( channel, fc, counter );
+	while( ( ch = *bf++ ) ) Insert( channel, ch, counter );
 }
 
 
@@ -196,7 +200,7 @@ void i2a( int num, char *bf ) {
 	ui2a( num, 10, bf );
 }
 
-void format ( int channel, char *fmt, va_list va ) {
+void format ( char* channel, char *fmt, va_list va, int *counter) {
 	char bf[12];
 	char ch, lz;
 	int w;
@@ -204,7 +208,7 @@ void format ( int channel, char *fmt, va_list va ) {
 	
 	while ( ( ch = *(fmt++) ) ) {
 		if ( ch != '%' )
-			Putc( channel, ch );
+			Insert( channel, ch, counter );
 		else {
 			lz = 0; w = 0;
 			ch = *(fmt++);
@@ -227,25 +231,25 @@ void format ( int channel, char *fmt, va_list va ) {
 			switch( ch ) {
 			case 0: return;
 			case 'c':
-				Putc( channel, va_arg( va, char ) );
+				Insert( channel, va_arg( va, char ), counter );
 				break;
 			case 's':
-				putw( channel, w, 0, va_arg( va, char* ) );
+				putw( channel, w, 0, va_arg( va, char* ), counter );
 				break;
 			case 'u':
 				ui2a( va_arg( va, unsigned int ), 10, bf );
-				putw( channel, w, lz, bf );
+				putw( channel, w, lz, bf, counter );
 				break;
 			case 'd':
 				i2a( va_arg( va, int ), bf );
-				putw( channel, w, lz, bf );
+				putw( channel, w, lz, bf, counter );
 				break;
 			case 'x':
 				ui2a( va_arg( va, unsigned int ), 16, bf );
-				putw( channel, w, lz, bf );
+				putw( channel, w, lz, bf, counter );
 				break;
 			case '%':
-				Putc( channel, ch );
+				Insert( channel, ch, counter );
 				break;
 			}
 		}
@@ -253,11 +257,24 @@ void format ( int channel, char *fmt, va_list va ) {
 }
 
 void Printf( int channel, char *fmt, ... ) {
+		int courier_id = 0;
+		if (channel == COM1) {
+			courier_id = WhoIs("Courier1");
+		}
+		else {
+			courier_id = WhoIs("Courier2");
+		}
+
+		int counter = 0;
+		char buffer[100];
         va_list va;
 
         va_start(va,fmt);
-        format( channel, fmt, va );
+        format( buffer, fmt, va, &counter );
         va_end(va);
+
+        char c = 0;
+        Send(courier_id, buffer, counter * sizeof(char), c, sizeof(char));
 }
 
 int setfifo( int channel, int state ) {

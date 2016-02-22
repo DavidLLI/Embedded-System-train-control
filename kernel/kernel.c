@@ -90,6 +90,8 @@ int main(int argc, char *argv[]) {
 	volatile unsigned int idle_counter = 0; //0.1ms
 	volatile unsigned int task_counter = 1;
 
+	int asserted = 0;
+
 
 	FOREVER {
 
@@ -131,7 +133,7 @@ int main(int argc, char *argv[]) {
 		//handle
 		handle(td_pq, td_ary, request, &task_id_counter);
 		handle_msg_passing(td_ary, request, msg_queue, msg_queue_len, recv_arr, reply_arr);
-		handle_block(blk_ary, &pair, request);
+		handle_block(blk_ary, &pair, request, &asserted);
 
 
 		//bwprintf(COM2, "handle return\n\r");

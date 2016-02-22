@@ -3,6 +3,12 @@
 
 void init(void);
 
+void train_application(void);
+
 void timer(void);
+
+void sensorData(void);
+
+void trainCommunication(void);
 
 #endif

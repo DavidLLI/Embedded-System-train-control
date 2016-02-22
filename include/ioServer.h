@@ -17,5 +17,9 @@ void COM2GetNotifier();
 
 void COM2PutNotifier();
 
+void Courier1(void);
+
+void Courier2(void);
+
 #endif
 

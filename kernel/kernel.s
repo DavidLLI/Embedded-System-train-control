@@ -10,13 +10,13 @@
 	.global	main
 	.type	main, %function
 main:
-	@ args = 0, pretend = 0, frame = 100328
+	@ args = 0, pretend = 0, frame = 100332
 	@ frame_needed = 1, uses_anonymous_args = 0
 	mov	ip, sp
 	stmfd	sp!, {r4, r5, r6, sl, fp, ip, lr, pc}
 	sub	fp, ip, #4
 	sub	sp, sp, #100352
-	sub	sp, sp, #8
+	sub	sp, sp, #12
 	ldr	sl, .L27
 .L26:
 	add	sl, pc, sl
@@ -265,6 +265,10 @@ main:
 	mov	r3, #1
 	sub	r1, fp, #28
 	str	r3, [r1, r2]
+	ldr	r2, .L27+68
+	mov	r3, #0
+	sub	r1, fp, #28
+	str	r3, [r1, r2]
 .L11:
 	sub	r3, fp, #324
 	mov	r0, r3
@@ -283,7 +287,7 @@ main:
 	ldr	r3, .L27+60
 	sub	r1, fp, #28
 	ldr	r2, [r1, r3]
-	ldr	r3, .L27+68
+	ldr	r3, .L27+72
 	umull	r1, r3, r2, r3
 	mov	r2, r3, lsr #3
 	ldr	r3, .L27+56
@@ -297,7 +301,7 @@ main:
 	ldr	r3, .L27+60
 	sub	r1, fp, #28
 	ldr	r2, [r1, r3]
-	ldr	r3, .L27+68
+	ldr	r3, .L27+72
 	umull	r1, r3, r2, r3
 	mov	r2, r3, lsr #3
 	ldr	r3, .L27+56
@@ -309,7 +313,7 @@ main:
 	mov	r3, r0
 	mov	ip, r3
 	mov	r0, #1
-	ldr	r3, .L27+72
+	ldr	r3, .L27+76
 	add	r3, sl, r3
 	mov	r1, r3
 	mov	r2, r4
@@ -322,12 +326,12 @@ main:
 	cmp	r3, #31
 	bne	.L15
 	ldr	r2, [fp, #-48]
-	ldr	r3, .L27+76
+	ldr	r3, .L27+80
 	str	r3, [r2, #0]
 .L15:
 	sub	r3, fp, #99328
 	sub	r3, r3, #28
-	sub	r3, r3, #984
+	sub	r3, r3, #988
 	ldr	r0, [fp, #-36]
 	mov	r1, r3
 	bl	activate(PLT)
@@ -341,13 +345,13 @@ main:
 	ldr	r3, [fp, #-32]
 	rsb	r3, r3, #5056
 	add	r3, r3, #23
-	ldr	r2, .L27+80
+	ldr	r2, .L27+84
 	sub	r1, fp, #28
 	str	r3, [r1, r2]
-	ldr	r3, .L27+80
+	ldr	r3, .L27+84
 	sub	r2, fp, #28
 	ldr	r1, [r2, r3]
-	ldr	r3, .L27+84
+	ldr	r3, .L27+88
 	smull	r2, r3, r1, r3
 	mov	r2, r3, asr #1
 	mov	r3, r1, asr #31
@@ -361,14 +365,14 @@ main:
 	sub	r1, fp, #28
 	str	r2, [r1, r3]
 .L17:
-	ldr	r3, .L27+88
+	ldr	r3, .L27+92
 	mov	r2, #4
 	sub	r1, fp, #28
 	add	r3, r1, r3
 	add	r2, r3, r2
 	ldr	r3, [fp, #-36]
 	str	r3, [r2, #0]
-	ldr	r3, .L27+88
+	ldr	r3, .L27+92
 	sub	r2, fp, #28
 	ldr	r3, [r2, r3]
 	cmp	r3, #9
@@ -382,7 +386,7 @@ main:
 	str	r2, [r1, r3]
 	b	.L21
 .L19:
-	ldr	r3, .L27+88
+	ldr	r3, .L27+92
 	sub	r2, fp, #28
 	ldr	r3, [r2, r3]
 	cmp	r3, #0
@@ -396,7 +400,7 @@ main:
 	str	r2, [r1, r3]
 	b	.L21
 .L22:
-	ldr	r3, .L27+88
+	ldr	r3, .L27+92
 	sub	r2, fp, #28
 	ldr	r3, [r2, r3]
 	cmp	r3, #4
@@ -417,7 +421,7 @@ main:
 	sub	r4, fp, #4160
 	sub	r4, r4, #28
 	sub	r4, r4, #8
-	ldr	r5, .L27+88
+	ldr	r5, .L27+92
 	sub	r3, fp, #68
 	str	r3, [sp, #20]
 	mov	r2, #8
@@ -439,7 +443,7 @@ main:
 	sub	lr, fp, #4160
 	sub	lr, lr, #28
 	sub	lr, lr, #8
-	ldr	r4, .L27+88
+	ldr	r4, .L27+92
 	sub	r3, fp, #97280
 	sub	r3, r3, #28
 	sub	r3, r3, #528
@@ -474,7 +478,11 @@ main:
 	sub	r5, fp, #5888
 	sub	r5, r5, #28
 	sub	r5, r5, #48
-	ldr	r6, .L27+88
+	ldr	r6, .L27+92
+	sub	r3, fp, #99328
+	sub	r3, r3, #28
+	sub	r3, r3, #960
+	str	r3, [sp, #20]
 	mov	r2, #8
 	sub	r1, fp, #28
 	add	r3, r1, r6
@@ -494,15 +502,15 @@ main:
 	b	.L11
 .L1:
 	sub	r3, fp, #98304
-	ldr	r0, [r3, #-2052]
+	ldr	r0, [r3, #-2056]
 	sub	sp, fp, #28
 	ldmfd	sp, {r4, r5, r6, sl, fp, sp, pc}
 .L28:
 	.align	2
 .L27:
 	.word	_GLOBAL_OFFSET_TABLE_-(.L26+8)
-	.word	-100320
 	.word	-100324
+	.word	-100328
 	.word	-296
 	.word	-292
 	.word	-4168
@@ -517,11 +525,12 @@ main:
 	.word	-100276
 	.word	-100280
 	.word	-100284
+	.word	-100288
 	.word	-858993459
 	.word	.LC0(GOTOFF)
 	.word	5079
-	.word	-100316
+	.word	-100320
 	.word	1717986919
-	.word	-100312
+	.word	-100316
 	.size	main, .-main
 	.ident	"GCC: (GNU) 4.0.2"

@@ -293,6 +293,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	//enable IRQ
 	int *VIC2xIntEnable = (int *) (VIC2_BASE + VICxIntEnable_OFFSET);
 	*VIC2xIntEnable = 524288;
+	//*VIC2xIntEnable |= (1 << 20);
 
 	//enable IRQ in ICU
 	int *VIC1xIntEnable = (int *) (VIC1_BASE + VICxIntEnable_OFFSET);
@@ -316,6 +317,7 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
 	*UART1ctrl |= RIEN_MASK;
 	//*UART1ctrl |= TIEN_MASK;
-	//*UART1ctrl |= MSIEN_MASK;
+	*UART1ctrl |= MSIEN_MASK;
+	*UART1ctrl |= 0x1;
 }
 

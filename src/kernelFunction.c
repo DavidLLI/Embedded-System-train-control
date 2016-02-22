@@ -180,7 +180,7 @@ void handle_msg_passing(td *td_ary, req request,
 }
 
 
-void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
+void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, int *asserted) {
 	(request.task)->swi_hwi = 0;
 
 	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
@@ -200,6 +200,7 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 			switch(blk->event_type) {
 				case xmt1:
 					*UART1ctrl |= TIEN_MASK;
+					break;
 				case xmt2:
 					*UART2ctrl |= TIEN_MASK;
 					break;
@@ -240,8 +241,20 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 				//*UART1_INTR_OFFSET = 1;
 			} else if (*UART1_INTR_OFFSET & TIS_MASK) {
 				event = xmt1;
-				
+				//bwprintf(COM2, "transmit com1 interrupt\n\r");
+				/*if (*asserted == 1) {
+					event = xmt1;
+					*asserted = 0;
+				}
+				else {
+					*asserted = 1;
+				}
+				int nops_i = 0;
+				for (nops_i = 0; nops_i < 30; nops_i++) {
+					asm volatile ("nop");
+				}*/
 				*UART1ctrl &= ~(TIEN_MASK);
+
 			} else if (*UART2_INTR_OFFSET & RIS_MASK) {
 				event = rcv2;
 				//*UART2_INTR_OFFSET = 1;
@@ -253,6 +266,18 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 				*UART2ctrl &= ~(TIEN_MASK);
 				//*UART2_INTR_OFFSET = 1;
 			}
+			/*if(*UART1_INTR_OFFSET & MIS_MASK) {
+				//bwprintf(COM2, "modem status interrupt\n\r");
+				if (*asserted == 1) {
+					event = xmt1;
+					*asserted = 0;
+				}
+				else {
+					*asserted = 1;
+				}
+				// Clear the modem status interrupt
+				*UART1_INTR_OFFSET = 1;
+			}*/
 
 			//bwprintf(COM2, "event: %d\n\r", event);
 			struct blk_td *current = pair->head;
@@ -268,6 +293,10 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request) {
 							(current->task)->rtn_value = c;
 							//int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
 							//*UART2ctrl |= RIEN_MASK;
+						} else if(event == rcv1) {
+							int *data = (int *)(UART1_BASE + UART_DATA_OFFSET);
+							char c = *data;
+							(current->task)->rtn_value = c;
 						} else {
 							(current->task)->rtn_value = 0;
 						}
