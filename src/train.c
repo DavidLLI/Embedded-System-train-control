@@ -61,14 +61,12 @@ void init(void) {
 		Printf(COM1, "%c%c%c", 34, (char) switchNum, 32);
 
 		//print to COM2
-		Printf(COM2, "\033[%d;%dHC", SWITCH_ROW + switchIndex, SWITCH_COL);
-
-		if(switchIndex == 22)  {
-			Printf(COM2, "\033[%d;1H\033[KInitialization Compelete. Let's go Thomas.", STATUS_ROW);
-		}
+		Printf(COM2, "\033[%d;%dHc", SWITCH_ROW + switchIndex, SWITCH_COL);
 
 		//Delay(15);
 	}
+
+	Printf(COM2, "\033[%d;1H\033[KInitialization Compelete. Let's go Thomas.", STATUS_ROW);
 
 	Create(17, &timer);
 	Create(16, &sensorData);
@@ -86,8 +84,12 @@ void timer(void) {
 	int prev_time = 0;
 
 	for (;;) {
+
 		Delay(10);
 		cur_time = Time();
+		int idle = IdlePct();
+		int pct = ((idle / 10) / cur_time);
+		Printf(COM2, "\033[%d;1H\033[K%d,%d,%d", CMD_ROW + 3, idle, cur_time, pct);
 		if (cur_time > prev_time) {
 
 			ms += ((cur_time - prev_time) * 10);
@@ -123,7 +125,7 @@ void sensorData(void) {
 	int read_pos = 0;
 
 	for (;;) {
-		Delay(1);
+		Delay(5);
 		if (recv_counter == 80) {
 			Putc(COM1, 0x85);
 			recv_counter = 0;
@@ -186,7 +188,8 @@ void trainCommunication(void) {
 	//read from terminals
 	//-----------------------
 	for(;;) {
-		Delay(1);
+
+		Delay(2);
 		for(;;) {
 			char c = Getc(COM2);
 
@@ -288,6 +291,7 @@ void trainCommunication(void) {
 				Putc(COM1, 0x61);
 				break;
 		}
+		Printf(COM2, "\033[%d;1H\033[K", CMD_ROW);
 
 		if(quit) break;
 

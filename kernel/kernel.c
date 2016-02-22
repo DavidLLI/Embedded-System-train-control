@@ -84,15 +84,12 @@ int main(int argc, char *argv[]) {
 	volatile int *timer_value = (int *)(TIMER2_BASE + VAL_OFFSET);
 	*timer_ctrl = *timer_ctrl | ENABLE_MASK | MODE_MASK | CLKSEL_MASK;
 
-
-
-	volatile unsigned int hwi_counter = 0; //10ms
-	volatile unsigned int idle_counter = 0; //0.1ms
+	volatile unsigned int idle_counter = 0; //0.01ms
 	volatile unsigned int task_counter = 1;
 
 	int exit = 0;
 
-	int asserted = 0;
+	int asserted = 1;
 
 	FOREVER {
 
@@ -103,7 +100,7 @@ int main(int argc, char *argv[]) {
 		req request;
 
 		if(active->priority == 31) {
-			*timer_load = 5079;		
+			*timer_load = 5079;
 		}
 
 		// active
@@ -121,11 +118,8 @@ int main(int argc, char *argv[]) {
 		request.task = active;
 
 		switch(request.type) {
-			case hdwInt:
-				hwi_counter++;
-				break;
 			case idleStat:
-				request.task->rtn_value = (idle_counter / 10) / hwi_counter;
+				request.task->rtn_value = idle_counter;
 				break;
 			case kexit:
 				exit = 1;

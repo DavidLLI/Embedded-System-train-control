@@ -96,12 +96,12 @@ void first(void) {
 	Create(3, &clockServer);		// 2
 	
 	Create(31, &idle);			// 4
-	Create(6, &COM2PutServer);	// 5
+	Create(26, &COM2PutServer);	// 5
 	Create(5, &COM2GetServer);	// 6
 	Create(9, &COM1PutServer);	// 5
-	Create(10, &COM1GetServer);	// 6
+	Create(5, &COM1GetServer);	// 6
 
-	Create(15, &init);
+	Create(29, &init);
 
 	Exit();
 }

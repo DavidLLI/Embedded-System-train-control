@@ -5,12 +5,12 @@
 
 #define BUFFER_SIZE 512
 
-#define COM1GetNotifier_Priority 8
+#define COM1GetNotifier_Priority 4
 #define COM1PutNotifier_Priority 7
 #define COM2GetNotifier_Priority 3
-#define COM2PutNotifier_Priority 4
+#define COM2PutNotifier_Priority 25
 #define Courier1_Priority 11
-#define Courier2_Priority 12
+#define Courier2_Priority 27
 
 
 
@@ -293,8 +293,9 @@ void COM1PutNotifier() {
 
 		ret = Send(svrTid, &req, sizeof(struct ioRequest), &c, sizeof(char));
 
-		//int *data = (int *) (UART1_BASE + UART_DATA_OFFSET);
-		//*data = c;
+		int *data = (int *) (UART1_BASE + UART_DATA_OFFSET);
+		*data = c;
+		/*
 		int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
 		int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
 
@@ -317,6 +318,7 @@ void COM1PutNotifier() {
 			}	
 			Delay(1);		
 		}
+		*/
 
 	}
 }

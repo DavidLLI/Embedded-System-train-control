@@ -199,7 +199,11 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 
 			switch(blk->event_type) {
 				case xmt1:
-					*UART1ctrl |= TIEN_MASK;
+					if(*asserted == 2) {
+						*asserted = 0;
+					} else {
+						*UART1ctrl |= TIEN_MASK;
+					}
 					break;
 				case xmt2:
 					*UART2ctrl |= TIEN_MASK;
@@ -254,6 +258,7 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 					asm volatile ("nop");
 				}*/
 				*UART1ctrl &= ~(TIEN_MASK);
+				*asserted = 2;
 
 			} else if (*UART2_INTR_OFFSET & RIS_MASK) {
 				event = rcv2;
@@ -266,6 +271,14 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 				*UART2ctrl &= ~(TIEN_MASK);
 				//*UART2_INTR_OFFSET = 1;
 			}
+
+			int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
+			int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
+			if((*mdmSts & DCTS_MASK) && (*flag & CTS_MASK) && (*asserted == 0)) {
+				*UART1ctrl |= TIEN_MASK;
+				*asserted = 2;
+			}
+			
 			/*if(*UART1_INTR_OFFSET & MIS_MASK) {
 				//bwprintf(COM2, "modem status interrupt\n\r");
 				if (*asserted == 1) {
