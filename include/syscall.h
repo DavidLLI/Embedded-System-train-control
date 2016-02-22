@@ -8,7 +8,14 @@ enum sys_request {
 	mytid,			// 1
 	myparentid,		// 2
 	pass,			// 3
-	exit			// 4
+	exit,			// 4
+	send,			// 5
+	receive,		// 6
+	reply,			// 7
+	await,			// 8
+	hdwInt,			// 9
+	idleStat,		// 10
+	kexit,			// 11
 };
 
 
@@ -39,6 +46,10 @@ void Pass(void);
 void Exit(void);
 
 int AwaitEvent(int event);
+
+int IdlePct(void);
+
+int KExit(void);
 
 #endif
 

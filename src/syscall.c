@@ -274,3 +274,48 @@ int AwaitEvent(int event) {
 	return rtn;
 }
 
+
+int IdlePct(void) {
+	asm volatile (
+		"stmfd sp!, {r4-r9, lr}"
+	);
+
+	asm volatile (
+		"swi #10"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {r4-r9, lr}"
+	);
+
+	volatile int rtn;
+	asm volatile (
+		"mov %0, r0"
+		: "=r" (rtn)
+	);
+
+	return rtn;	
+}
+
+int KExit(void) {
+	asm volatile (
+		"stmfd sp!, {r4-r9, lr}"
+	);
+
+	asm volatile (
+		"swi #11"
+	);
+
+	asm volatile (
+		"ldmfd sp!, {r4-r9, lr}"
+	);
+
+	volatile int rtn;
+	asm volatile (
+		"mov %0, r0"
+		: "=r" (rtn)
+	);
+
+	return rtn;	
+}
+

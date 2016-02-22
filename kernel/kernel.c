@@ -90,19 +90,15 @@ int main(int argc, char *argv[]) {
 	volatile unsigned int idle_counter = 0; //0.1ms
 	volatile unsigned int task_counter = 1;
 
-	int asserted = 0;
+	int exit = 0;
 
+	int asserted = 0;
 
 	FOREVER {
 
 		// schedule
 		//bwprintf(COM2, "before schedule\n\r");
 		td *active = schedule(td_pq);
-
-		if(active->priority == 31 && task_counter == 10) {
-			bwprintf(COM2, "Idle percent: %d.%d\n\r", (idle_counter / 10) / hwi_counter, (idle_counter / 10) % hwi_counter);
-			break;
-		}
 
 		req request;
 
@@ -124,10 +120,22 @@ int main(int argc, char *argv[]) {
 
 		request.task = active;
 
-		if(request.type == 9) hwi_counter++;
-		else if(request.type == 0) task_counter++;
-		else if(request.type == 4) task_counter--;
-		
+		switch(request.type) {
+			case hdwInt:
+				hwi_counter++;
+				break;
+			case idleStat:
+				request.task->rtn_value = (idle_counter / 10) / hwi_counter;
+				break;
+			case kexit:
+				exit = 1;
+				break;
+			default:
+				break;
+		}
+
+		if(exit) break;
+
 		pq_movetoend(td_pq, active);
 
 		//handle

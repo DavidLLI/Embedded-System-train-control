@@ -178,8 +178,8 @@ void trainCommunication(void) {
 	}
 
 	int end = 0;
-
 	int lastSpeed = 0;
+	int quit = 0;
 	
 
 	//-----------------------
@@ -274,6 +274,7 @@ void trainCommunication(void) {
 				break;
 			case 4: //q
 				Printf(COM2, "\033[%d;1H\033[KQuit", STATUS_ROW);
+				quit = 1;
 				break;
 			case 5: //invalid
 				Printf(COM2, "\033[%d;1H\033[KInvalid Command", STATUS_ROW);
@@ -288,6 +289,8 @@ void trainCommunication(void) {
 				break;
 		}
 
+		if(quit) break;
+
 		int clear_i = 0;
 		for(clear_i = 0; clear_i < 50; clear_i++) {
 			cmd[clear_i] = 0;
@@ -295,7 +298,11 @@ void trainCommunication(void) {
 		end = 0;
 	}
 
-	Exit();
+	int idlePct = IdlePct();
+
+	Printf(COM2, "Idle percentage: %d\n\r", idlePct);
+
+	KExit();
 }
 
 
