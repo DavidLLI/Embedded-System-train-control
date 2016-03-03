@@ -19,8 +19,7 @@ int main(int argc, char *argv[]) {
        	"ORR	r1, r1, #(0x1 << 12)\n\t" 	//enable L-cache
         "MCR	p15, 0, r1, c1, c0, 0"
 	);
-
-	 									
+									
 	// declare kernel data structures
 	int task_id_counter = 0;
 
@@ -39,7 +38,6 @@ int main(int argc, char *argv[]) {
 		td_ary[td_ary_i].td_nxt = 0;
 	}
 	
-
 	// blocked tasks
 	struct blk_td blk_ary[88];
 	struct blk_pair pair;
@@ -85,7 +83,6 @@ int main(int argc, char *argv[]) {
 	*timer_ctrl = *timer_ctrl | ENABLE_MASK | MODE_MASK | CLKSEL_MASK;
 
 	volatile unsigned int idle_counter = 0; //0.01ms
-	volatile unsigned int task_counter = 1;
 
 	int exit = 0;
 
@@ -94,7 +91,6 @@ int main(int argc, char *argv[]) {
 	FOREVER {
 
 		// schedule
-		//bwprintf(COM2, "before schedule\n\r");
 		td *active = schedule(td_pq);
 
 		req request;
@@ -103,10 +99,10 @@ int main(int argc, char *argv[]) {
 			*timer_load = 5079;
 		}
 
-		// active
-		
+		// activate
 		activate(active, &request);
 
+		//time
 		if(active->priority == 31) {
 			int current = *timer_value;	
 
@@ -114,7 +110,6 @@ int main(int argc, char *argv[]) {
 			idle_counter += (interval / 5);
 		}
 		
-
 		request.task = active;
 
 		switch(request.type) {
@@ -136,12 +131,8 @@ int main(int argc, char *argv[]) {
 		handle(td_pq, td_ary, request, &task_id_counter);
 		handle_msg_passing(td_ary, request, msg_queue, msg_queue_len, recv_arr, reply_arr);
 		handle_block(blk_ary, &pair, request, &asserted);
-
-
-		//bwprintf(COM2, "handle return\n\r");
-
 	}
 
-	return;
+	return 0;
 }
 

@@ -124,7 +124,6 @@ void sensorData(void) {
 	}
 	int read_pos = 0;
 
-	int cur_time = 0;
 	char bit = 0;
 	char last_bit_mask = 0;
 	int j = 0;
@@ -244,36 +243,24 @@ void trainCommunication(void) {
 				Printf(COM2, "\033[%d;1H\033[KReverse train %d", STATUS_ROW, cmd_arg1);
 
 				//set speed to 0
-				
 				Printf(COM1, "%c%c", 0, cmd_arg1);
-				//Putc(COM1, 0); 			//speed
-				//Putc(COM1, cmd_arg1); 	//train number
-
+				Delay(500);
 
 				//reverse
-				Delay(500);
 				Printf(COM1, "%c%c", 15, cmd_arg1);
-				//Putc(COM1, 15); 			//reverse
-				//Putc(COM1, cmd_arg1); 	//train number
 
 				//set speed back
 				Delay(10);
-				Printf(COM1, "%c%c", lastSpeed, cmd_arg1);
-				//Putc(COM1, lastSpeed); 	//speed
-				//Putc(COM1, cmd_arg1); 	//train number												
+				Printf(COM1, "%c%c", lastSpeed, cmd_arg1);											
 				break;	
 			case 3: //sw
 				Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, cmd_arg1, cmd_arg2);
 
 				if(cmd_arg2 == 'S' || cmd_arg2 == 's') {
 					Printf(COM1, "%c%c", 0x21, cmd_arg1);
-					//Putc(COM1, 0x21); //straight
 				} else if(cmd_arg2 == 'C' || cmd_arg2 == 'c') {
 					Printf(COM1, "%c%c", 0x22, cmd_arg1);
-					//Putc(COM1, 0x22); //curve
 				}
-				
-				//Putc(COM1, cmd_arg1); //switch number
 
 				int row = 0;
 				if(cmd_arg1 <= 18) {
@@ -302,6 +289,8 @@ void trainCommunication(void) {
 				Printf(COM2, "\033[%d;1H\033[KStop", STATUS_ROW);
 				Putc(COM1, 0x61);
 				break;
+			case 8: //sp (sensor) (distance past sensor)
+
 		}
 		Printf(COM2, "\033[%d;1H\033[K", CMD_ROW);
 

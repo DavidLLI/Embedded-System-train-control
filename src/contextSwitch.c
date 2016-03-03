@@ -35,27 +35,13 @@ void activate(td* tds, req *request) {
 		:"=r"(temp_stack_ptr)
 	);
 	
-	// Pop user register from user stack
 	asm volatile(
-		"ldmfd	sp, {sp, lr}"
-	);
-	
-	asm volatile (
-		"mov ip, lr"
-	);
-
-	// Return to svc mode
-	asm volatile (
-		"msr cpsr, #0xd3"
-	);
-
-	asm volatile (
+		"ldmfd	sp, {sp, lr}\n\r"		// Pop user register from user stack
+		"mov ip, lr\n\r"
+		"msr cpsr, #0xd3\n\r" 			// Return to svc mode
 		"mov lr, ip"
 	);
-	
 
-
-	
 	// Put return value into r0
 	volatile int rtn_value = tds->rtn_value;
 	asm volatile (
@@ -63,30 +49,18 @@ void activate(td* tds, req *request) {
 		:"=r"(rtn_value)
 	);
 
-	// Pop user register from user stack
 	asm volatile(
-		"msr CPSR_c, #0xdf\n\t"
+		"msr CPSR_c, #0xdf\n\t"			// Pop user register from user stack
 		"ldmfd	sp!, {r1-r12, lr}\n\t"
-		"msr cpsr, #0xd3"
-	);
-
-	asm volatile (
+		"msr cpsr, #0xd3\n\r"
 		"movs pc, lr"
 	);
 
-
-	
 	////////////////////////////////////////////////
 	////////////////////////////////////////////////
 	////////////////////////////////////////////////
-
-	// IRQ Handler
-	//asm volatile ( "__IRQ_HANDLER:" );
-
-	// SWI Handler
-	asm volatile ("__HWI_HANDLER:");
-
 	asm volatile (
+		"__HWI_HANDLER:\n\t" 			// HWI Handler
 		"msr CPSR_c, #0xdf\n\t"
 		"stmfd sp!, {r1-r12, lr}\n\t"
 		"msr CPSR, #0xd2\n\t"
@@ -94,25 +68,14 @@ void activate(td* tds, req *request) {
 		"msr CPSR, #0xd3\n\t"
 		"sub lr, ip, #4\n\t"
 		"mov r9, #0\n\t"
-		"b __END_OF_BRANCH__"
-	);
-
-	// SWI Handler
-	asm volatile ( "__SWI_HANDLER:" );
-
-	asm volatile (
+		"b __END_OF_BRANCH__\n\t"
+		"__SWI_HANDLER:\n\r" 			// SWI Handler
 		"msr CPSR_c, #0xdf\n\t"
 		"stmfd sp!, {r1-r12, lr}\n\t"
 		"msr cpsr, #0xd3\n\t"
 		"mov r9, #1\n\t"
-		"__END_OF_BRANCH__:"
-	);
-
-
-
-	// Pop kernel register from the stack (Automatic)
-	asm volatile (
-		"ldmfd sp!, {fp}"
+		"__END_OF_BRANCH__:\n\r"
+		"ldmfd sp!, {fp}" 				// Pop kernel register from the stack (Automatic)
 	);
 	
 	asm volatile (
@@ -122,11 +85,6 @@ void activate(td* tds, req *request) {
 	tds->rtn_value = temp;
 
 	// Fill in request and argument
-
-	
-	
-
-
 	asm volatile (
 		"mov %0, r4"
 		:"=r"(temp)
@@ -161,43 +119,22 @@ void activate(td* tds, req *request) {
 		"mov %0, r9"
 		:"=r"(hwi)
 	);
-
 	
-
-	
-
-	// Acquire lr
 	asm volatile(
-		"mov ip, lr"
-	);
-	// Change to system state
-	asm volatile (
-		"msr CPSR_c, #0xdf"
-	);
-	// Overwrite lr with lr_value
-	asm volatile (
-		"mov lr, ip"
-	);
-	// Push user register onto stack
-	asm volatile(
-		"mov ip, sp"
-	);
-	asm volatile (
-		"stmfd sp!, {ip, lr}"
-	);
-	// Acquire stack pointer
-	asm volatile (
-		"mov ip, sp"
-	);
-	// Return to supervisor mode
-	asm volatile (
-		"msr cpsr, #0xd3"
+		"mov ip, lr\n\t" 				// Acquire lr
+		"msr CPSR_c, #0xdf\n\t" 		// Change to system state
+		"mov lr, ip\n\t" 				// Overwrite lr with lr_value
+		"mov ip, sp\n\t" 				// Push user register onto stack
+		"stmfd sp!, {ip, lr}\n\t"
+		"mov ip, sp\n\t" 				// Acquire stack pointer
+		"msr cpsr, #0xd3" 				// Return to supervisor mode
 	);
 
 	asm volatile (
 		"mov %0, ip"
 		:"=r"(temp)
 	);
+
 	// Acquire SPSR
 	volatile int spsr_value = 0;
 	asm volatile (
@@ -252,17 +189,13 @@ void initialize(pair *td_pq, td *td_ary, int *task_id_counter) {
 
 	volatile int usr_entry_point = (int) (&first + 0x00218000);
 
-
 	td1->stack_ptr -= 48;
 	*((int *)td1->stack_ptr) = usr_entry_point;
 	*((int *)td1->stack_ptr - 1) = STACK_BASE;
 	td1->stack_ptr -= 4;
 
-
-	//bwprintf(COM2, "%x\n\r", td1->stack_ptr);
-
-	td_pq[td1->priority].td_head = td1;
-	td_pq[td1->priority].td_tail = td1; 
+	td_pq[td1->priority].td_head = (td *) td1;
+	td_pq[td1->priority].td_tail = (td *) td1; 
 
 	(*task_id_counter)++;
 

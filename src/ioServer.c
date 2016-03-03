@@ -85,10 +85,8 @@ void COM1PutServer() {
 	char notifierWaiting = 0;
 	int notifierID = 0;
 
-	int *flags = (int *) (UART2_BASE + UART_FLAG_OFFSET);
-
 	for (;;) {
-		volatile ioReq req;
+		ioReq req;
 		//char msg[sizeof(struct ioRequest)];
 
 		//bwprintf(COM2, "server before received\n\r");
@@ -195,7 +193,7 @@ void COM2GetServer() {
 
 void COM2PutServer() {
 	Create(COM2PutNotifier_Priority, &COM2PutNotifier);
-	int ret = RegisterAs("COM2PutServer");
+	RegisterAs("COM2PutServer");
 	Create(Courier2_Priority, &Courier2);
 	//bwprintf(COM2, "server register ret %d\n\r", ret);
 	int recv_id = 0;
@@ -208,10 +206,8 @@ void COM2PutServer() {
 	char notifierWaiting = 0;
 	int notifierID = 0;
 
-	int *flags = (int *) (UART2_BASE + UART_FLAG_OFFSET);
-
 	for (;;) {
-		volatile ioReq req;
+		ioReq req;
 		//char msg[sizeof(struct ioRequest)];
 
 		//bwprintf(COM2, "server before received\n\r");
@@ -278,7 +274,6 @@ void COM1GetNotifier() {
 
 void COM1PutNotifier() {
 	int svrTid = MyParentTid();
-	int first = 1;
 
 	//Putc(COM2, 'e');
 	for(;;) {	
@@ -376,7 +371,7 @@ void Courier1() {
 
 		size = Receive(&recv_id, buffer, 100);
 		char c = 0;
-		Reply(recv_id, c, sizeof(char));
+		Reply(recv_id, &c, sizeof(char));
 		int i = 0;
 		for (i = 0; i < size; i++) {
 			Putc(COM1, buffer[i]);
@@ -398,7 +393,7 @@ void Courier2() {
 
 		size = Receive(&recv_id, buffer, 100);
 		char c = 0;
-		Reply(recv_id, c, sizeof(char));
+		Reply(recv_id, &c, sizeof(char));
 		int i = 0;
 		for (i = 0; i < size; i++) {
 			Putc(COM2, buffer[i]);

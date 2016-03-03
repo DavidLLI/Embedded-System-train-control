@@ -36,9 +36,9 @@ activate:
 	mov sp, r3
 	str	r3, [fp, #-44]
 	ldmfd	sp, {sp, lr}
-	mov ip, lr
-	msr cpsr, #0xd3
-	mov lr, ip
+mov ip, lr
+msr cpsr, #0xd3
+mov lr, ip
 	ldr	r3, [fp, #-64]
 	ldr	r3, [r3, #28]
 	str	r3, [fp, #-48]
@@ -47,7 +47,7 @@ activate:
 	msr CPSR_c, #0xdf
 	ldmfd	sp!, {r1-r12, lr}
 	msr cpsr, #0xd3
-	movs pc, lr
+movs pc, lr
 	__HWI_HANDLER:
 	msr CPSR_c, #0xdf
 	stmfd sp!, {r1-r12, lr}
@@ -58,12 +58,12 @@ activate:
 	mov r9, #0
 	b __END_OF_BRANCH__
 	__SWI_HANDLER:
-	msr CPSR_c, #0xdf
+msr CPSR_c, #0xdf
 	stmfd sp!, {r1-r12, lr}
 	msr cpsr, #0xd3
 	mov r9, #1
 	__END_OF_BRANCH__:
-	ldmfd sp!, {fp}
+ldmfd sp!, {fp}
 	mov r3, r0
 	str	r3, [fp, #-32]
 	ldr	r2, [fp, #-32]

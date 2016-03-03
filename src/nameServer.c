@@ -23,7 +23,7 @@ void nameServer(void) {
 		int sender;
 
 		//bwprintf(COM2, "ns before Receive\n\r");
-		int ret = Receive(&sender, &req, sizeof(struct ns_request));
+		Receive(&sender, &req, sizeof(struct ns_request));
 		//bwprintf(COM2, "ns after Receive\n\r");
 
 		//if(ret != sizeof(struct ns_request)) bwprintf(COM2, "nameServer(), reveive error.\n\r");

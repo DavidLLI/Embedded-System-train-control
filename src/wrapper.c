@@ -17,7 +17,7 @@ int RegisterAs(char *name) {
 	int reply;
 
 	//bwprintf(COM2, "reg before send\n\r");
-	int ret = Send(1, &r, sizeof(struct ns_request), &reply, sizeof(int));
+	Send(1, &r, sizeof(struct ns_request), &reply, sizeof(int));
 	//if(ret != sizeof(int)) bwprintf(COM2, "RegisterAs(), Send error.\n\r");
 	//bwprintf(COM2, "reg after send\n\r");
 
@@ -34,7 +34,7 @@ int WhoIs(char *name) {
 	myMemCpy(r.name, name, 32);
 
 	//bwprintf(COM2, "who before send\n\r");
-	int ret = Send(1, &r, sizeof(struct ns_request), &reply, sizeof(int));
+	Send(1, &r, sizeof(struct ns_request), &reply, sizeof(int));
 	//if(ret != sizeof(int)) bwprintf(COM2, "WhoIs(), Send error.\n\r");
 	//bwprintf(COM2, "who after send\n\r");
 
@@ -111,6 +111,7 @@ int DelayUntil(int ticks) {
 int Insert(char* channel, char c, int* counter) {
 	channel[*counter] = c;
 	(*counter) ++;
+	return 0;
 }
 
 char myc2x( char ch ) {
@@ -274,7 +275,7 @@ void Printf( int channel, char *fmt, ... ) {
         va_end(va);
 
         char c = 0;
-        Send(courier_id, buffer, counter * sizeof(char), c, sizeof(char));
+        Send(courier_id, buffer, counter * sizeof(char), &c, sizeof(char));
 }
 
 int setfifo( int channel, int state ) {

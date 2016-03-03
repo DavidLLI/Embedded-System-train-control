@@ -33,6 +33,8 @@ int parse_digit3(char *cb, int *arg, int index1, int index2, int index3) {
     }
 }
 
+
+// arg1:int
 int parse_arg1(char *cb, int *arg1) {
     if(cb[2] == ' ') { // "cd "
         if(cb[4] == '\r') { // "cd x\r"
@@ -49,6 +51,7 @@ int parse_arg1(char *cb, int *arg1) {
     return 0;
 }
 
+// arg1:int, arg2:int
 int parse_arg2(char *cb, int *arg1, int *arg2) {
     if(cb[2] == ' ') { // "cd "
         if(cb[4] == ' ') { // "cd x "
@@ -59,6 +62,9 @@ int parse_arg2(char *cb, int *arg1, int *arg2) {
                     if(p_flag2) return 1;
                 } else if(cb[7] == '\r') { // "cd x xx\r"
                     int p_flag2 = parse_digit2(cb, arg2, 5, 6);
+                    if(p_flag2) return 1;
+                } else if(cb[8] == '\r') { // "cd x xxx\r"
+                    int p_flag2 = parse_digit3(cb, arg2, 5, 6, 7);
                     if(p_flag2) return 1;
                 }
             } 
@@ -71,13 +77,31 @@ int parse_arg2(char *cb, int *arg1, int *arg2) {
                 } else if(cb[8] == '\r') { // "cd xx xx\r"
                     int p_flag2 = parse_digit2(cb, arg2, 6, 7);
                     if(p_flag2) return 1;
+                } else if(cb[9] == '\r') { // "cd xx xxx\r"
+                    int p_flag2 = parse_digit3(cb, arg2, 6, 7, 8);
+                    if(p_flag2) return 1;
                 }
             }
+        } else if(cb[6] == ' ') { // "cd xxx"
+            int p_flag1 = parse_digit3(cb, arg1, 3, 4, 5);
+            if(p_flag1) {
+                if(cb[8] == '\r') { // "cd xxx x\r"
+                    int p_flag2 = parse_digit1(cb, arg2, 7);
+                    if(p_flag2) return 1;
+                } else if(cb[9] == '\r') { // "cd xxx xx\r"
+                    int p_flag2 = parse_digit2(cb, arg2, 7, 8);
+                    if(p_flag2) return 1;
+                } else if(cb[10] == '\r') { // "cd xxx xxx\r"
+                    int p_flag2 = parse_digit3(cb, arg2, 7, 8, 9);
+                    if(p_flag2) return 1;
+                }
+            }            
         }
     }
     return 0;
 }
 
+// arg1:int, arg2:char
 int parse_arg3(char *cb, int *arg1, int *arg2) {
     if(cb[2] == ' ') { // "cd "
         if(cb[4] == ' ') { // "cd x\r"
@@ -143,15 +167,21 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2) {
                 && cb[4] == '\r') {
                 *type = 7;
                 return;
-            }
-
-            if(cb[1] == 'w') {
+            } else if(cb[1] == 'w') {
                 int flag = parse_arg3(cb, arg1, arg2);
                 if(flag) {
                     *type = 3;
                     return;
                 }                 
+            } else if(cb[1] == 'p') {
+                int flag = parse_arg2(cb, arg1, arg2);
+                if(flag) {
+                    *type = 8;
+                    return;
+                }   
             }
+
+            
             break;
         case 'q':
             if(cb[1] == '\r') {
