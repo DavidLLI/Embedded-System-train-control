@@ -95,9 +95,9 @@ int main(int argc, char *argv[]) {
 
 		req request;
 
-		if(active->priority == 31) {
+		//if(active->priority == 31) {
 			*timer_load = 5079;
-		}
+		//}
 
 		// activate
 		activate(active, &request);
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 			int current = *timer_value;	
 
 			volatile int interval = 5079 - current;
-			idle_counter += (interval / 5);
+			idle_counter += (interval);
 		}
 		
 		request.task = active;

@@ -48,13 +48,13 @@ wrapper.o: ../src/wrapper.c
 	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 ioServer.o: ../src/ioServer.c 
-	$(XCC) -c -o $@ $< $(CFLAGS)
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 train.o: ../src/train.c 
-	$(XCC) -c -o $@ $< $(CFLAGS)
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 	
 command.o: ../src/command.c 
-	$(XCC) -c -o $@ $< $(CFLAGS)	
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)	
 
 bwio.o: ../src/bwio.c 
 	$(XCC) -c -o $@ $< $(CFLAGS)

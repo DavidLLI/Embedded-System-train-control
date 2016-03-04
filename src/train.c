@@ -19,10 +19,11 @@ void init(void) {
 	Printf(COM2, "\033[2J");
 
 	int square_sensor;
-	for(square_sensor = 0; square_sensor < 10; square_sensor++) {
-		Printf(COM2, "\033[%d;%dH", SWITCH_ROW + square_sensor, 17);
-		Printf(COM2, "|");
-	}
+	Printf(COM2, "\033[%d;%dH", SWITCH_ROW + 0, 10);
+	Printf(COM2, "Previous:");
+
+	Printf(COM2, "\033[%d;%dH", SWITCH_ROW + 1, 11);
+	Printf(COM2, "Current:");
 
 	Printf(COM2, "\033[%d;1H", CMD_ROW + 1);
 	Printf(COM2, "--------------------------");
@@ -52,7 +53,7 @@ void init(void) {
 	int switchNum = 0;
 
 	for(switchIndex = 0; switchIndex < 22; switchIndex++) {
-		Printf(COM2, "\033[%d;1H\033[KInitializing......", STATUS_ROW);
+		Printf(COM2, "\033[%d;1H\033[KInitializing...... It will take around 10 seconds", STATUS_ROW);
 
 		if(switchIndex >= 18) switchNum = switchIndex + 135;
 		else switchNum = switchIndex + 1;
@@ -66,9 +67,11 @@ void init(void) {
 		//Delay(15);
 	}
 
+	Create(17, &timer);
+
+	Delay(1000);
 	Printf(COM2, "\033[%d;1H\033[KInitialization Compelete. Let's go Thomas.", STATUS_ROW);
 
-	Create(17, &timer);
 	Create(16, &sensorData);
 	Create(17, &trainCommunication);
 
@@ -88,8 +91,10 @@ void timer(void) {
 		Delay(10);
 		cur_time = Time();
 		int idle = IdlePct();
-		int pct = ((idle / 10) / cur_time);
-		Printf(COM2, "\033[%d;1H\033[KIdle Percent: %d", CMD_ROW + 3, pct);
+		int pct = ((idle / 50) / cur_time);
+		int remain = ((idle / 50) % cur_time);
+		remain = remain * 100 / cur_time;
+		Printf(COM2, "\033[%d;1H\033[K%d.%d", CMD_ROW + 3, pct, remain);
 		if (cur_time > prev_time) {
 
 			ms += ((cur_time - prev_time) * 10);
@@ -146,16 +151,14 @@ void sensorData(void) {
 			bit = (bit & last_bit_mask);
 			if (bit == 1 && all_sensors[recv_counter] == 0) {
 				all_sensors[recv_counter] = 1;
-				if (read_pos == 10) {
+				if (read_pos == 2) {
 					
-					for (j = 1; j < 10; j++) {
-						rts[j - 1] = rts[j];
-					}
-					rts[9] = recv_counter;
+					rts[0] = rts[1];
+					rts[1] = recv_counter;
 				}
 				else {
 					rts[read_pos] = recv_counter;
-					read_pos = read_pos + 1; 
+					read_pos = read_pos + 1;
 				}
 				for (j = 0; j < read_pos; j++) {
 					num_of_sensor = (rts[j] % 16) + 1;
@@ -165,8 +168,13 @@ void sensorData(void) {
 					else if (num_of_sensor > 8) {
 						num_of_sensor = 17 - num_of_sensor + 8;
 					}
-					Printf(COM2, "\033[%d;%dH   ", SENSOR_ROW + j, SENSOR_COL);
-					Printf(COM2, "\033[%d;%dH%c%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+					//Printf(COM2, "\033[%d;%dH   ", SENSOR_ROW + j, SENSOR_COL);
+					if (num_of_sensor >= 10) {
+						Printf(COM2, "\033[%d;%dH%c%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+					}
+					else {
+						Printf(COM2, "\033[%d;%dH%c0%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+					}
 				}
 			}
 			else if (bit == 0 && all_sensors[recv_counter] == 1) {
@@ -195,7 +203,7 @@ void trainCommunication(void) {
 	//-----------------------
 	for(;;) {
 
-		Delay(3);
+		//Delay(1);
 		for(;;) {
 			char c = Getc(COM2);
 
@@ -290,6 +298,7 @@ void trainCommunication(void) {
 				Putc(COM1, 0x61);
 				break;
 			case 8: //sp (sensor) (distance past sensor)
+				break;
 
 		}
 		Printf(COM2, "\033[%d;1H\033[K", CMD_ROW);

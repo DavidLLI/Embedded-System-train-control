@@ -273,24 +273,21 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 			}
 
 			int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
-			int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
+			/*int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
 			if((*mdmSts & DCTS_MASK) && (*flag & CTS_MASK) && (*asserted == 0)) {
 				*UART1ctrl |= TIEN_MASK;
 				*asserted = 2;
-			}
+			}*/
 			
-			/*if(*UART1_INTR_OFFSET & MIS_MASK) {
+			if(*UART1_INTR_OFFSET & MIS_MASK) {
 				//bwprintf(COM2, "modem status interrupt\n\r");
-				if (*asserted == 1) {
-					event = xmt1;
-					*asserted = 0;
-				}
-				else {
-					*asserted = 1;
+				if (*asserted == 0 && (*flag & CTS_MASK)) {
+					*UART1ctrl |= TIEN_MASK;
+					//event = xmt1;
 				}
 				// Clear the modem status interrupt
 				*UART1_INTR_OFFSET = 1;
-			}*/
+			}
 
 			//bwprintf(COM2, "event: %d\n\r", event);
 			struct blk_td *current = pair->head;
