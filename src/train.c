@@ -59,10 +59,18 @@ void init(void) {
 		else switchNum = switchIndex + 1;
 
 		//send command
-		Printf(COM1, "%c%c%c", 34, (char) switchNum, 32);
+		if (switchNum == 10 || switchNum == 16) {
+			Printf(COM1, "%c%c%c", 33, (char) switchNum, 32);
+			//print to COM2
+			Printf(COM2, "\033[%d;%dHs", SWITCH_ROW + switchIndex, SWITCH_COL);
+		}
+		else {
+			Printf(COM1, "%c%c%c", 34, (char) switchNum, 32);
+			//print to COM2
+			Printf(COM2, "\033[%d;%dHc", SWITCH_ROW + switchIndex, SWITCH_COL);
+		}
 
-		//print to COM2
-		Printf(COM2, "\033[%d;%dHc", SWITCH_ROW + switchIndex, SWITCH_COL);
+		
 
 		//Delay(15);
 	}
@@ -134,10 +142,18 @@ void sensorData(void) {
 	int j = 0;
 	char sensor_data = 0;
 	int num_of_sensor = 0;
+
+	char sc1 = 'E';
+	int sn1 = 6;
+	char sc2 = 'C';
+	int sn2 = 12;
+	int time1;
+	int time2;
+
 	for (;;) {
-		Delay(3);
+		//Delay(3);
 		if (recv_counter == 80) {
-			//Delay(15);
+			Delay(1);
 			Putc(COM1, 0x85);
 			recv_counter = 0;
 			//cur_time = Time();
@@ -150,6 +166,22 @@ void sensorData(void) {
 			last_bit_mask = 1;
 			bit = (bit & last_bit_mask);
 			if (bit == 1 && all_sensors[recv_counter] == 0) {
+
+				int n = (recv_counter % 16) + 1;
+				if (n <= 8) {
+					n = 9 - n;
+				}
+				else if (n > 8) {
+					n = 17 - n + 8;
+				}
+				char c = (recv_counter / 16) + 'A';
+
+				if (c == sc1 && n == sn1) time1 = Time();
+				if (c == sc2 && n == sn2) {
+					time2 = Time();
+					Printf(COM2, "\033[%d;%dH%d", STATUS_ROW + 3, STATUS_COL, time2 - time1);
+				}
+
 				all_sensors[recv_counter] = 1;
 				if (read_pos == 2) {
 					
