@@ -33,8 +33,34 @@ int findPathDist(char *switchPos, track_node *src_node, char des_char, int des_i
                 }
                 break;
             case  NODE_BRANCH:
-                distance += src_node->edge[DIR_CURVED].dist;
-                src_node = src_node->edge[DIR_CURVED].dest;
+            	;
+				int sw_num = -1;
+				if((src_node->name)[3] == 0) {
+					sw_num = (src_node->name)[2] - '0';	
+				} else if((src_node->name)[4] == 0) {
+					sw_num = ((src_node->name)[2] - '0') * 10 + ((src_node->name)[3] - '0');
+				} else {
+					sw_num = ((src_node->name)[2] - '0') * 100 + ((src_node->name)[3] - '0') * 10 + ((src_node->name)[4] - '0');
+				}
+
+				int index = -1;
+				if(sw_num <= 18) {
+					index = sw_num - 1;
+				} else {
+					index = sw_num - 135;
+				}
+
+				char pos = switchPos[index];
+				switch(pos) {
+					case 's':
+						distance += src_node->edge[DIR_STRAIGHT].dist;
+                		src_node = src_node->edge[DIR_STRAIGHT].dest;
+						break;
+					case 'c':
+						distance += src_node->edge[DIR_CURVED].dist;
+	                	src_node = src_node->edge[DIR_CURVED].dest;
+						break;
+				}			
                 break;
             case NODE_MERGE:
                 distance += src_node->edge[DIR_AHEAD].dist;
@@ -75,6 +101,9 @@ void handleSP(void) {
 	//int sp_char = 'a';
 	//int sp_int = 0;
 
+	int time1 = 0;
+	int time2 = 0;
+
 	for(;;) {
 
 		//if(stop && sp_char == cur_schar && sp_int == cur_sint) {
@@ -84,17 +113,17 @@ void handleSP(void) {
 
 		int rcv_id;
 		trainReq req;
+		char r = 'a';
 		Receive(&rcv_id, &req, sizeof(trainReq));
-		int time1 = 0;
-		int time2 = 0;
+		
 
 		switch(req.src) {
 			case 's':
 				cur_schar = req.schar;
 				cur_sint = req.sint;
-				char c = 0;
+				
 				time1 = Time();
-				Reply(rcv_id, &c, sizeof(char));
+				Reply(rcv_id, &r, sizeof(char));
 				/*
 				if(cur_node != 0) {
 					updateCurNode(track, cur_node, schar, sint);
@@ -116,10 +145,21 @@ void handleSP(void) {
 				break;
 			case 't':
 				switch(req.type) {
+					case 3:
+						;
+						int index = -1;
+						if(req.arg1 <= 18) {
+							index = req.arg1 - 1;
+						} else {
+							index = req.arg1 - 135;
+						}
+
+						switchPos[index] = req.arg2;
+
+
+						Reply(rcv_id, &r, sizeof(char));
 					case 8:
 						;
-
-						
 						track_node* src_node = 0;
 						int t_i = 0;
 						for(t_i = 0;t_i < TRACK_MAX; t_i++) {
@@ -137,7 +177,8 @@ void handleSP(void) {
 						int delayTime = ((distance + req.arg2 - 850) * 10) / 65;
 
 						time2 = Time();
-						Delay(delayTime - 10);
+						Delay(delayTime - time2 + time1);
+						Printf(COM2, "\033[%d;%dHtime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);
 						Printf(COM1, "%c%c", 0, 63);
 
 						/*
@@ -145,8 +186,7 @@ void handleSP(void) {
 						sp_int = req.sint;
 						stop = 1;
 						*/
-						char c = 'a';
-						Reply(rcv_id, &c, sizeof(char));
+						Reply(rcv_id, &r, sizeof(char));
 						break;
 				}
 				break;
@@ -449,8 +489,10 @@ void trainCommunication(void) {
 
 				if(cmd_arg2 == 'S' || cmd_arg2 == 's') {
 					Printf(COM1, "%c%c", 0x21, cmd_arg1);
+					req.arg2 = 's';
 				} else if(cmd_arg2 == 'C' || cmd_arg2 == 'c') {
 					Printf(COM1, "%c%c", 0x22, cmd_arg1);
+					req.arg2 = 'c';
 				}
 
 				
@@ -489,7 +531,7 @@ void trainCommunication(void) {
 				Putc(COM1, 0x61);
 				break;
 			case 8: //sp (sensor) (distance past sensor)
-				Printf(COM2, "\033[%d;1H\033[KStop train at sensor %c%d with distance %d mm", STATUS_ROW, ssr_char, ssr_int, cmd_arg2);
+				Printf(COM2, "\033[%d;1H\033[KStop train at %dmm ahead sensor %c%d", STATUS_ROW, cmd_arg2, ssr_char, ssr_int);
 				req.src = 't';
 				req.type = 8;
 				req.arg2 = cmd_arg2;
