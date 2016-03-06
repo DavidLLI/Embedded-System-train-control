@@ -1,6 +1,8 @@
 #include "train.h"
 #include "syscall.h"
 #include "command.h"
+#include "track_node.h"
+#include "track_data.h"
 
 #define TIME_ROW 1
 	#define TIME_COL 1
@@ -15,10 +17,146 @@
 #define STATUS_ROW 31
 	#define STATUS_COL 1
 
+int findPathDist(char *switchPos, track_node *src_node, char des_char, int des_int) {
+    int distance = 0;
+
+    int i = 0;
+    for(;;) {
+    	//Printf(COM2, "\033[%d;%dH%s", STATUS_ROW + 6 + i, STATUS_COL, src_node->name);
+        switch(src_node->type) {
+            case NODE_SENSOR:
+                if(nameEqual(src_node->name, des_char, des_int)) {
+                    return distance;
+                } else {
+                    distance += src_node->edge[DIR_AHEAD].dist;
+                    src_node = src_node->edge[DIR_AHEAD].dest;
+                }
+                break;
+            case  NODE_BRANCH:
+                distance += src_node->edge[DIR_CURVED].dist;
+                src_node = src_node->edge[DIR_CURVED].dest;
+                break;
+            case NODE_MERGE:
+                distance += src_node->edge[DIR_AHEAD].dist;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
+            default:
+                break;
+        }
+        i++;
+        if(i >= TRACK_MAX) {
+            //Printf(COM2, "\033[%d;%dHexceed max", 31 + 5, STATUS_COL);
+            break;
+        }
+    }
+    return -1;
+}
+
+void handleSP(void) {
+	RegisterAs("handleSP");
+	
+	track_node track[TRACK_MAX];
+	init_tracka(track);
+
+	char switchPos[22];
+	int s_i;
+	for(s_i = 0; s_i < 22; s_i++) {
+		switchPos[s_i] = 'c';
+	}
+
+	//track_node *cur_node = 0;
+	int cur_schar = 'a';
+	int cur_sint = 0;
+
+	Create(16, &sensorData);
+	Create(17, &trainCommunication);
+
+	//int stop = 0;
+	//int sp_char = 'a';
+	//int sp_int = 0;
+
+	for(;;) {
+
+		//if(stop && sp_char == cur_schar && sp_int == cur_sint) {
+		//	Printf(COM1, "%c%c", 0, 63);
+		//	stop = 0;
+		//}
+
+		int rcv_id;
+		trainReq req;
+		Receive(&rcv_id, &req, sizeof(trainReq));
+		int time1 = 0;
+		int time2 = 0;
+
+		switch(req.src) {
+			case 's':
+				cur_schar = req.schar;
+				cur_sint = req.sint;
+				char c = 0;
+				time1 = Time();
+				Reply(rcv_id, &c, sizeof(char));
+				/*
+				if(cur_node != 0) {
+					updateCurNode(track, cur_node, schar, sint);
+				} else {
+					char shiwei = '0' + sint / 10;
+					char gewei = '0' + sint % 10;
+
+					int i = 0;
+					for(i = 0;i < TRACK_MAX; i++) {
+						if(track[i].type == NODE_SENSOR) {
+							if(nameEqual(track[i].name, schar, sint)) {
+								cur_node = track[i];
+								break;
+							}						
+						}
+					}
+				}
+				*/
+				break;
+			case 't':
+				switch(req.type) {
+					case 8:
+						;
+
+						
+						track_node* src_node = 0;
+						int t_i = 0;
+						for(t_i = 0;t_i < TRACK_MAX; t_i++) {
+						    if(track[t_i].type == NODE_SENSOR) {
+						        if(nameEqual(track[t_i].name, cur_schar, cur_sint)) {
+						            src_node = &(track[t_i]);
+						            break;
+						        }                       
+						    }
+						}
+
+						int distance = findPathDist(switchPos, src_node, req.schar, req.sint);
+						Printf(COM2, "\033[%d;%dH%s-->%c%d, distance: %d", STATUS_ROW + 5, STATUS_COL, src_node->name, req.schar, req.sint, distance + req.arg2);
+						
+						int delayTime = ((distance + req.arg2 - 850) * 10) / 65;
+
+						time2 = Time();
+						Delay(delayTime - 10);
+						Printf(COM1, "%c%c", 0, 63);
+
+						/*
+						sp_char = req.schar;
+						sp_int = req.sint;
+						stop = 1;
+						*/
+						char c = 'a';
+						Reply(rcv_id, &c, sizeof(char));
+						break;
+				}
+				break;
+		}
+	}
+}
+
 void init(void) {
 	Printf(COM2, "\033[2J");
 
-	int square_sensor;
 	Printf(COM2, "\033[%d;%dH", SWITCH_ROW + 0, 10);
 	Printf(COM2, "Previous:");
 
@@ -59,16 +197,16 @@ void init(void) {
 		else switchNum = switchIndex + 1;
 
 		//send command
-		if (switchNum == 10 || switchNum == 16) {
-			Printf(COM1, "%c%c%c", 33, (char) switchNum, 32);
+		//if (switchNum == 10 || switchNum == 16) {
+			//Printf(COM1, "%c%c%c", 33, (char) switchNum, 32);
 			//print to COM2
-			Printf(COM2, "\033[%d;%dHs", SWITCH_ROW + switchIndex, SWITCH_COL);
-		}
-		else {
+			//Printf(COM2, "\033[%d;%dHs", SWITCH_ROW + switchIndex, SWITCH_COL);
+		//}
+		//else {
 			Printf(COM1, "%c%c%c", 34, (char) switchNum, 32);
 			//print to COM2
 			Printf(COM2, "\033[%d;%dHc", SWITCH_ROW + switchIndex, SWITCH_COL);
-		}
+		//}
 
 		
 
@@ -80,8 +218,7 @@ void init(void) {
 	Delay(1000);
 	Printf(COM2, "\033[%d;1H\033[KInitialization Compelete. Let's go Thomas.", STATUS_ROW);
 
-	Create(16, &sensorData);
-	Create(17, &trainCommunication);
+	Create(16, &handleSP);
 
 	Exit();
 }
@@ -124,7 +261,7 @@ void timer(void) {
 }
 
 void sensorData(void) {
-
+	int handleSPID = WhoIs("handleSP");
 	int i = 0;
 	char all_sensors[80];
 	for (i = 0; i < 80; i++) {
@@ -145,10 +282,10 @@ void sensorData(void) {
 
 	char sc1 = 'E';
 	int sn1 = 6;
-	char sc2 = 'C';
-	int sn2 = 12;
-	int time1;
-	int time2;
+	char sc2 = 'B';
+	int sn2 = 16;
+	int time1 = 0;
+	int time2 = 0;
 
 	for (;;) {
 		//Delay(3);
@@ -175,6 +312,14 @@ void sensorData(void) {
 					n = 17 - n + 8;
 				}
 				char c = (recv_counter / 16) + 'A';
+
+				trainReq req;
+				req.src = 's';
+				req.schar = c;
+				req.sint = n;
+				char r;
+
+				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
 
 				if (c == sc1 && n == sn1) time1 = Time();
 				if (c == sc2 && n == sn2) {
@@ -219,6 +364,7 @@ void sensorData(void) {
 }	
 
 void trainCommunication(void) {
+	int handleSPID = WhoIs("handleSP");
 	char cmd[50];
 	int cmd_i = 0;
 	for(cmd_i = 0; cmd_i < 50; cmd_i++) {
@@ -268,8 +414,13 @@ void trainCommunication(void) {
 		int cmd_type; // 1 - tr; 2 - rv; 3 - sw; 4 - q; 5 - invalid
 		int cmd_arg1;
 		int cmd_arg2;
+		char ssr_char;
+		int ssr_int;
 
-		parse_command(cmd, &cmd_type, &cmd_arg1, &cmd_arg2);
+		parse_command(cmd, &cmd_type, &cmd_arg1, &cmd_arg2, &ssr_char, &ssr_int);
+
+		trainReq req;
+		char r;
 
 		switch(cmd_type) {
 			case 1: //tr
@@ -302,6 +453,14 @@ void trainCommunication(void) {
 					Printf(COM1, "%c%c", 0x22, cmd_arg1);
 				}
 
+				
+				req.src = 't';
+				req.type = 3;
+				req.arg1 = cmd_arg1;
+				req.arg2 = cmd_arg2;
+
+				//Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
+
 				int row = 0;
 				if(cmd_arg1 <= 18) {
 					row = cmd_arg1;
@@ -330,6 +489,14 @@ void trainCommunication(void) {
 				Putc(COM1, 0x61);
 				break;
 			case 8: //sp (sensor) (distance past sensor)
+				Printf(COM2, "\033[%d;1H\033[KStop train at sensor %c%d with distance %d mm", STATUS_ROW, ssr_char, ssr_int, cmd_arg2);
+				req.src = 't';
+				req.type = 8;
+				req.arg2 = cmd_arg2;
+				req.schar = ssr_char;
+				req.sint = ssr_int;
+
+				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
 				break;
 
 		}
@@ -350,5 +517,7 @@ void trainCommunication(void) {
 
 	KExit();
 }
+
+
 
 

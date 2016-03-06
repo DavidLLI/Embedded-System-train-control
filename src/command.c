@@ -139,8 +139,53 @@ int parse_arg3(char *cb, int *arg1, int *arg2) {
     return 0;
 }
 
+// schar:char, sint:int, arg2:int
+int parse_arg4(char *cb, char *schar, int *sint, int *arg2) {
+    if(cb[2] == ' ') { // 'sp '
+        if(cb[5] == ' ') { // 'sp A1'
+            char c = cb[3];
+            if(c - 'A' >= 0 && c - 'A' <= 26) {
+                *schar = c;
+                int p_flag1 = parse_digit1(cb, sint, 4);
+                if(p_flag1) {
+                    int p_flag2 = 0;
+                    if(cb[7] == '\r') { // 'sp A1 1\r'
+                        p_flag2 = parse_digit1(cb, arg2, 6);
+                    } else if(cb[8] == '\r') { // 'sp A1 11\r'
+                        p_flag2 = parse_digit2(cb, arg2, 6, 7);
+                    } else if(cb[9] == '\r') { // 'sp A1 11\r'
+                        p_flag2 = parse_digit3(cb, arg2, 6, 7, 8);
+                    }
+                    if(p_flag2) {
+                        return 1;
+                    }
+                }
+            } 
+        } else if(cb[6] == ' ') { // 'sp A11'
+            char c = cb[3];
+            if(c - 'A' >= 0 && c - 'A' <= 26) {
+                *schar = c;
+                int p_flag1 = parse_digit2(cb, sint, 4, 5);
+                if(p_flag1) {
+                    int p_flag2 = 0;
+                    if(cb[8] == '\r') { // 'sp A11 1\r'
+                        p_flag2 = parse_digit1(cb, arg2, 7);
+                    } else if(cb[9] == '\r') { // 'sp A11 11\r'
+                        p_flag2 = parse_digit2(cb, arg2, 7, 8);
+                    } else if(cb[10] == '\r') { // 'sp A11 11\r'
+                        p_flag2 = parse_digit3(cb, arg2, 7, 8, 9);
+                    }
+                    if(p_flag2) {
+                        return 1;
+                    }
+                }
+            } 
+        }
+    } 
+}
 
-void parse_command(char *cb, int *type, int *arg1, int *arg2) {
+
+void parse_command(char *cb, int *type, int *arg1, int *arg2, char *schar, int *sint) {
     switch(cb[0]) {
         case 't':
             if(cb[1] == 'r') { // "tr"
@@ -174,14 +219,12 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2) {
                     return;
                 }                 
             } else if(cb[1] == 'p') {
-                int flag = parse_arg2(cb, arg1, arg2);
+                int flag = parse_arg4(cb, schar, sint, arg2);
                 if(flag) {
                     *type = 8;
                     return;
                 }   
             }
-
-            
             break;
         case 'q':
             if(cb[1] == '\r') {
