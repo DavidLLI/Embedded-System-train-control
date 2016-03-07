@@ -4,13 +4,13 @@
 	.global	main
 	.type	main, %function
 main:
-	@ args = 0, pretend = 0, frame = 100328
+	@ args = 0, pretend = 0, frame = 100332
 	@ frame_needed = 1, uses_anonymous_args = 0
 	mov	ip, sp
 	stmfd	sp!, {r4, r5, r6, fp, ip, lr, pc}
 	sub	fp, ip, #4
 	sub	sp, sp, #100352
-	sub	sp, sp, #8
+	sub	sp, sp, #12
 	ldr	r3, .L20
 	sub	r2, fp, #24
 	str	r0, [r2, r3]
@@ -254,6 +254,10 @@ main:
 	mov	r3, #1
 	sub	r1, fp, #24
 	str	r3, [r1, r2]
+	ldr	r2, .L20+60
+	mov	r3, #0
+	sub	r1, fp, #24
+	str	r3, [r1, r2]
 .L11:
 	sub	r3, fp, #324
 	mov	r0, r3
@@ -261,11 +265,11 @@ main:
 	mov	r3, r0
 	str	r3, [fp, #-32]
 	ldr	r2, [fp, #-48]
-	ldr	r3, .L20+60
+	ldr	r3, .L20+64
 	str	r3, [r2, #0]
 	sub	r3, fp, #99328
 	sub	r3, r3, #24
-	sub	r3, r3, #984
+	sub	r3, r3, #988
 	ldr	r0, [fp, #-32]
 	mov	r1, r3
 	bl	activate(PLT)
@@ -279,13 +283,13 @@ main:
 	ldr	r3, [fp, #-28]
 	rsb	r3, r3, #5056
 	add	r3, r3, #23
-	ldr	r2, .L20+64
+	ldr	r2, .L20+68
 	sub	r1, fp, #24
 	str	r3, [r1, r2]
 	ldr	r3, .L20+52
 	sub	r1, fp, #24
 	ldr	r2, [r1, r3]
-	ldr	r3, .L20+64
+	ldr	r3, .L20+68
 	sub	r1, fp, #24
 	ldr	r3, [r1, r3]
 	add	r2, r2, r3
@@ -293,29 +297,29 @@ main:
 	sub	r1, fp, #24
 	str	r2, [r1, r3]
 .L12:
-	ldr	r3, .L20+68
+	ldr	r3, .L20+72
 	mov	r2, #4
 	sub	r1, fp, #24
 	add	r3, r1, r3
 	add	r2, r3, r2
 	ldr	r3, [fp, #-32]
 	str	r3, [r2, #0]
-	ldr	r3, .L20+68
+	ldr	r3, .L20+72
 	sub	r2, fp, #24
 	ldr	r1, [r2, r3]
 	sub	r2, fp, #98304
-	str	r1, [r2, #-2048]
+	str	r1, [r2, #-2052]
 	sub	r2, fp, #98304
-	ldr	r2, [r2, #-2048]
+	ldr	r2, [r2, #-2052]
 	cmp	r2, #10
 	beq	.L15
 	sub	r3, fp, #98304
-	ldr	r3, [r3, #-2048]
+	ldr	r3, [r3, #-2052]
 	cmp	r3, #11
 	beq	.L16
 	b	.L14
 .L15:
-	ldr	r3, .L20+68
+	ldr	r3, .L20+72
 	mov	r2, #4
 	sub	r1, fp, #24
 	add	r3, r1, r3
@@ -341,7 +345,7 @@ main:
 	sub	r4, fp, #4160
 	sub	r4, r4, #24
 	sub	r4, r4, #12
-	ldr	r5, .L20+68
+	ldr	r5, .L20+72
 	sub	r3, fp, #68
 	str	r3, [sp, #20]
 	mov	r2, #8
@@ -363,7 +367,7 @@ main:
 	sub	lr, fp, #4160
 	sub	lr, lr, #24
 	sub	lr, lr, #12
-	ldr	r4, .L20+68
+	ldr	r4, .L20+72
 	sub	r3, fp, #97280
 	sub	r3, r3, #24
 	sub	r3, r3, #532
@@ -398,11 +402,15 @@ main:
 	sub	r5, fp, #5888
 	sub	r5, r5, #24
 	sub	r5, r5, #52
-	ldr	r6, .L20+68
+	ldr	r6, .L20+72
 	sub	r3, fp, #99328
 	sub	r3, r3, #24
 	sub	r3, r3, #956
 	str	r3, [sp, #20]
+	sub	r3, fp, #99328
+	sub	r3, r3, #24
+	sub	r3, r3, #960
+	str	r3, [sp, #24]
 	mov	r2, #8
 	sub	r1, fp, #24
 	add	r3, r1, r6
@@ -428,8 +436,8 @@ main:
 .L21:
 	.align	2
 .L20:
-	.word	-100320
 	.word	-100324
+	.word	-100328
 	.word	-300
 	.word	-296
 	.word	-4172
@@ -443,8 +451,9 @@ main:
 	.word	-2139029468
 	.word	-100280
 	.word	-100284
+	.word	-100288
 	.word	5079
+	.word	-100320
 	.word	-100316
-	.word	-100312
 	.size	main, .-main
 	.ident	"GCC: (GNU) 4.0.2"

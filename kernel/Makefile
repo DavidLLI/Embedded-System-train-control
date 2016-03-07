@@ -52,10 +52,10 @@ ioServer.o: ../src/ioServer.c
 	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 track_data.o: ../src/track_data.c 
-	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+	$(XCC) -c -o $@ $< $(CFLAGS)
 
 train.o: ../src/train.c 
-	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+	$(XCC) -c -o $@ $< $(CFLAGS)
 	
 command.o: ../src/command.c 
 	$(XCC) -O2 -c -o $@ $< $(CFLAGS)	

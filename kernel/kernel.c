@@ -86,7 +86,10 @@ int main(int argc, char *argv[]) {
 
 	int exit = 0;
 
-	int asserted = 1;
+	// for COM1 transmit
+	//int asserted = 1;
+	int CTS_status = 1;
+	int transmit_ready = 0;
 
 	FOREVER {
 
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
 		//handle
 		handle(td_pq, td_ary, request, &task_id_counter);
 		handle_msg_passing(td_ary, request, msg_queue, msg_queue_len, recv_arr, reply_arr);
-		handle_block(blk_ary, &pair, request, &asserted);
+		handle_block(blk_ary, &pair, request, &CTS_status, &transmit_ready);
 	}
 
 	return 0;
