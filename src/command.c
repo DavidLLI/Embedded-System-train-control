@@ -196,6 +196,15 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2, char *schar, int *
                 }
             }
             break;
+        case 'T':
+            if(cb[1] == 'R') { // "tr"
+                int flag = parse_arg2(cb, arg1, arg2);
+                if(flag) {
+                    *type = 1;
+                    return;
+                }
+            }
+            break;
         case 'r':
             if(cb[1] == 'v') {
                 int flag = parse_arg1(cb, arg1);
@@ -205,6 +214,15 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2, char *schar, int *
                 }                
             }
             break;
+        case 'R':
+            if(cb[1] == 'V') {
+                int flag = parse_arg1(cb, arg1);
+                if(flag) {
+                    *type = 2;
+                    return;
+                }                
+            }
+            break;            
         case 's':
             if(cb[1] == 't' 
                 && cb[2] == 'o' 
@@ -226,12 +244,39 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2, char *schar, int *
                 }   
             }
             break;
+        case 'S':
+            if(cb[1] == 'T' 
+                && cb[2] == 'O' 
+                && cb[3] == 'P' 
+                && cb[4] == '\r') {
+                *type = 7;
+                return;
+            } else if(cb[1] == 'W') {
+                int flag = parse_arg3(cb, arg1, arg2);
+                if(flag) {
+                    *type = 3;
+                    return;
+                }                 
+            } else if(cb[1] == 'P') {
+                int flag = parse_arg4(cb, schar, sint, arg2);
+                if(flag) {
+                    *type = 8;
+                    return;
+                }   
+            }
+            break;            
         case 'q':
             if(cb[1] == '\r') {
                 *type = 4;
                 return;
             }
             break;
+        case 'Q':
+            if(cb[1] == '\r') {
+                *type = 4;
+                return;
+            }
+            break;            
         case 'g':
             if(cb[1] == 'o' && cb[2] == '\r') {
                 *type = 6;

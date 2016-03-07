@@ -29,7 +29,7 @@ void handle_msg_passing(td *td_ary, req request,
 						recv_buf* recv_arr, recv_buf* reply_arr);
 
 
-void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, int* asserted);
+void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, int* CTS_status, int* transmit_ready);
 
 #endif
 
