@@ -3,11 +3,11 @@
 #include "ts7200.h"
 //#include "bwio.h"
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
 
-#define COM1GetNotifier_Priority 3
-#define COM1PutNotifier_Priority 7
-#define COM2GetNotifier_Priority 27
+#define COM1GetNotifier_Priority 4
+#define COM1PutNotifier_Priority 5
+#define COM2GetNotifier_Priority 26
 #define COM2PutNotifier_Priority 25
 #define Courier1_Priority 11
 #define Courier2_Priority 27
