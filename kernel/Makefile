@@ -14,7 +14,8 @@ ASFLAGS	= -mcpu=arm920t -mapcs-32
 LDFLAGS = -init main -Map kernel.map -N  -T orex.ld -L/u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2 -L../lib
 
 OBJ = ClockServer.o helper.o kernelFunction.o nameServer.o taskDescriptor.o userFunction.o \
-	contextSwitch.o command.o syscall.o wrapper.o ioServer.o train.o bwio.o track_data.o
+	contextSwitch.o command.o syscall.o wrapper.o ioServer.o train.o bwio.o track_data.o \
+	coordinator.o
 
 
 
@@ -58,7 +59,10 @@ train.o: ../src/train.c
 	$(XCC) -c -o $@ $< $(CFLAGS)
 	
 command.o: ../src/command.c 
-	$(XCC) -O2 -c -o $@ $< $(CFLAGS)	
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
+
+coordinator.o: ../src/coordinator.c 
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)		
 
 bwio.o: ../src/bwio.c 
 	$(XCC) -c -o $@ $< $(CFLAGS)
