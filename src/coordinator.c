@@ -144,7 +144,7 @@ void trainController(void) {
             case 0:
                 Delay(train_req.delayTime);
                 Printf(COM1, "%c%c", 0, 63);
-                Printf(COM2, "\033[%d;%dH\033[KtrainController: command sent", STATUS_ROW + 10, STATUS_COL);
+                //Printf(COM2, "\033[%d;%dH\033[KtrainController: command sent", STATUS_ROW + 10, STATUS_COL);
         }
 
     }
@@ -165,9 +165,84 @@ track_node* find_track_node(track_node* node_list, char schar, int sint) {
     return ret;
 }
 
+typedef struct train_location_display_request {
+    int type; // 0 for timer, 1 for Coordinator
+    char schar;
+    int sint;
+    int velocity_10;
+    int stop_distance;
+}t_loc_req;
+
+void train_location_display_timer(void) {
+    int display_id = MyParentTid();
+    t_loc_req req;
+    req.type = 0;
+    char c;
+    for (;;) {
+        Delay(10);
+        Send(display_id, &req, sizeof(t_loc_req), &c, sizeof(char));
+    }
+}
+
+void train_location_display(void) {
+    int timer_id = Create(22, train_location_display_timer);
+    int recv_id = 0;
+    t_loc_req req;
+    char cur_schar = 0;
+    int cur_sint = 0;
+    int cur_time = 0;
+    int cur_velocity_10 = 0;
+
+    int stop = 0;
+    int stop_distance = 0;
+
+    Printf(COM2, "\033[35;0H\033[KCurrent Position of the train: ");
+
+    char r;
+
+    for(;;) {
+        Receive(&recv_id, &req, sizeof(t_loc_req));
+        Reply(recv_id, &r, sizeof(char));
+        switch (req.type) {
+            case 0: // Timer
+                ;
+                int temp_time = Time();
+                int mm_int = cur_velocity_10 * (temp_time - cur_time) / 10;
+                int mm_dec = cur_velocity_10 * (temp_time - cur_time) % 10;
+                if (stop == 1) {
+                    stop_distance -= (cur_velocity_10 * (temp_time - cur_time));
+                    if (stop_distance <= 0) {
+                        cur_velocity_10 = 0;
+                    }
+                }
+                Printf(COM2, "\033[35;32H\033[K%c%d+%d.%d", cur_schar, cur_sint, mm_int, mm_dec);
+                break;
+            case 1: // Coordinator sensor
+                cur_schar = req.schar;
+                cur_sint = req.sint;
+                cur_time = Time();
+                if (stop != 1) {
+                    cur_velocity_10 = req.velocity_10;
+                }
+                break;
+            case 2: // Coordinator speed to 0
+                stop = 1;
+                stop_distance = req.stop_distance;
+                cur_velocity_10 = req.velocity_10;
+                break;
+            case 3: // Coordinator speed up
+                stop = 0;
+                cur_velocity_10 = 20;
+                break;
+        }
+    }
+}
+
 void Coordinator(void) {
     int trainCtrl_id = WhoIs("trainController");
     RegisterAs("Coordinator");
+
+    int display_id = Create(21, &train_location_display);
     
     track_node track[TRACK_MAX];
     init_trackb(track);
@@ -266,6 +341,13 @@ void Coordinator(void) {
 
                 }
 
+                t_loc_req dis_req;
+                dis_req.type = 1;
+                dis_req.schar = cur_schar;
+                dis_req.sint = cur_sint;
+                dis_req.velocity_10 = cur_velocity_10;
+                Send(display_id, &dis_req, sizeof(t_loc_req), r, sizeof(char));
+
                 if(sp) {
                     int distance = findPathDist(switchPos, cur_node, des_snum);
                     if(distance < 1500 && distance > stop_distance[cur_record_velocity]) {
@@ -279,7 +361,12 @@ void Coordinator(void) {
                         train_req.delayTime = delayTime - time2 + time1;
                         char reply_c;
                         Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
-                        Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
+                        
+                        dis_req.type = 2;
+                        dis_req.velocity_10 = cur_velocity_10;
+                        dis_req.stop_distance = distance;
+                        Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+                       // Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
                     }
                 }
 
@@ -306,8 +393,22 @@ void Coordinator(void) {
                 switch(req.type) {
                     case 1: // TR
                         ;
+                        if (req.arg1 == 0) {
+                            t_loc_req dis_req;
+                            dis_req.type = 2;
+                            dis_req.velocity_10 = cur_velocity_10 / 2;
+                            dis_req.stop_distance = stop_distance[cur_record_velocity];
+                            Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+                        }
+                        else {
+                            t_loc_req dis_req;
+                            dis_req.type = 3;
+                            dis_req.velocity_10 = cur_velocity_10;
+                            Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+                        }
                         cur_record_velocity = req.arg1;
                         Reply(rcv_id, &r, sizeof(char));
+                        
                         break;
                     case 3: // SW
                         ;
@@ -385,6 +486,11 @@ void Coordinator(void) {
                             train_req.delayTime = delayTime - time2 + time1;
                             char reply_c;
                             Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                            t_loc_req dis_req;
+                            dis_req.type = 2;
+                            dis_req.velocity_10 = cur_velocity_10;
+                            dis_req.stop_distance = distance;
+                            Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
                             //Delay(train_req.delayTime);
                             //Printf(COM1, "%c%c", 0, 63);
                             Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);
