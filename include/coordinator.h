@@ -17,6 +17,9 @@
 #define TRACE_ROW 1
 	#define TRACE_COL 52
 
+#define TRAIN_TIME_ROW 33
+	#define TRAIN_TIME_COL 1
+
 typedef struct Train_Request {
 	char type;
 	int delayTime;
