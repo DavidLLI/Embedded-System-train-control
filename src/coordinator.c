@@ -54,7 +54,7 @@ int findPathDist(char *switchPos, track_node *src_node, int des_snum) {
         }
         
         if(i >= TRACK_MAX) {
-            Printf(COM2, "\033[%d;%dH fint path dist exceed max, i = %d", 35, STATUS_COL + 5, i);
+            //Printf(COM2, "\033[%d;%dH fint path dist exceed max, i = %d", 35, STATUS_COL + 5, i);
             break;
         }
     }
@@ -122,13 +122,59 @@ track_node* find_nxt_node(track_node* track, char *switchPos, track_node* src_no
             }
             
             if(i >= TRACK_MAX) {
-                Printf(COM2, "\033[%d;%dH find nxt node exceed max, dest is %d", STATUS_ROW, STATUS_COL + 5, des_snum);
+                //Printf(COM2, "\033[%d;%dH find nxt node exceed max, dest is %d", STATUS_ROW, STATUS_COL + 5, des_snum);
                 break;
             }
         }
         *interval_distance = -1;
         return 0;
     }    
+}
+
+int find_dist_to_next_sensor(char *switchPos, track_node* src_node) {
+    int distance = src_node->edge[DIR_AHEAD].dist;
+    src_node = src_node->edge[DIR_AHEAD].dest;
+    int i = 0;
+    for(;;) {
+        i++;
+        switch(src_node->type) {
+            case NODE_SENSOR:
+                return distance;
+                break;
+            case NODE_BRANCH:
+                ;
+                int sw_num = src_node->num;
+                int index = -1;
+
+                if(sw_num <= 18) {
+                    index = sw_num - 1;
+                } else {
+                    index = sw_num - 135;
+                }
+
+                char pos = switchPos[index];
+
+                switch(pos) {
+                case 's':
+                    distance += src_node->edge[DIR_STRAIGHT].dist;
+                    src_node = src_node->edge[DIR_STRAIGHT].dest;
+                    break;
+                case 'c':
+                    distance += src_node->edge[DIR_CURVED].dist;
+                    src_node = src_node->edge[DIR_CURVED].dest;
+                    break;
+                }     
+                break;
+            case NODE_MERGE:
+                distance += src_node->edge[DIR_AHEAD].dist;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
+        }
+        
+        if(i >= TRACK_MAX) {
+            return -1;
+        }
+    }
 }
 
 void trainController(void) {
@@ -144,7 +190,7 @@ void trainController(void) {
             case 0:
                 Delay(train_req.delayTime);
                 Printf(COM1, "%c%c", 0, 63);
-                Printf(COM2, "\033[%d;%dH\033[KtrainController: command sent", STATUS_ROW + 10, STATUS_COL);
+                //Printf(COM2, "\033[%d;%dH\033[KtrainController: command sent", STATUS_ROW + 10, STATUS_COL);
         }
 
     }
@@ -204,9 +250,9 @@ void Coordinator(void) {
     Create(17, &sensorData);
     Create(18, &trainCommunication);
 
-    int stop = 1;
-    int sp_char = 'E';
-    int sp_int = 8;
+    //int stop = 1;
+    //int sp_char = 'E';
+    //int sp_int = 8;
 
     int time1 = 0;
     int time2 = 0;
@@ -218,12 +264,14 @@ void Coordinator(void) {
     track_node* prev_node = 0;
     track_node* cur_node = 0;
 
-    int total_data_count = 1;
-    int total_velocity = 65;
+    //int total_data_count = 1;
+    //int total_velocity = 65;
 
     int sp = 0;
     int des_snum = 0;
     int des_dist = 0;
+
+    int expected_time = 0;
 
     for(;;) {
 
@@ -240,12 +288,18 @@ void Coordinator(void) {
 
         switch(req.src) {
             case 's':
+                ;
+                char prv_schar = cur_schar;
+                int prv_sint = cur_sint;
                 cur_schar = req.schar;
                 cur_sint = req.sint;
                 
                 prev_time = time1;
                 time1 = Time();
                 Reply(rcv_id, &r, sizeof(char));
+                
+                Printf(COM2, "\033[%d;%dH\033[KAt sensor %c%d, difference b/w actual and expected %d", 
+                    TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar, prv_sint, time1 - expected_time);                
 
                 prev_node = cur_node;
                 cur_snum = (cur_schar - 'A') * 16 + cur_sint - 1;
@@ -254,17 +308,22 @@ void Coordinator(void) {
                 cur_node = find_nxt_node(track, switchPos, prev_node, cur_snum, &interval_distance);
 
                 if (prev_node != 0 && interval_distance != 0) {
+                    // update current velocity
                     cur_velocity_int = interval_distance / (time1 - prev_time);
                     cur_velocity_dec = interval_distance % (time1 - prev_time);
                     cur_velocity_dec = cur_velocity_dec * 10 / (time1 - prev_time);
                     cur_velocity_10 = cur_velocity_int * 10 + cur_velocity_dec;
-                    //total_velocity += cur_velocity_10;
-                    //total_data_count++;
-
-                    //cur_velocity_10 = total_velocity/total_data_count;
+                    
                     //Printf(COM2, "\033[%d;%dH\033[KCoordinator: snum: %d, cur node: %d, interval dist: %d, cur speed %d", STATUS_ROW + 8, STATUS_COL, cur_snum, cur_node->num, interval_distance, cur_velocity_10);
 
+                    // expected time prv time
+                    int next_dist = find_dist_to_next_sensor(switchPos, cur_node);
+
+                    expected_time = time1 + (next_dist * 10) / cur_velocity_10;                  
                 }
+
+                
+
 
                 if(sp) {
                     int distance = findPathDist(switchPos, cur_node, des_snum);
@@ -279,7 +338,7 @@ void Coordinator(void) {
                         train_req.delayTime = delayTime - time2 + time1;
                         char reply_c;
                         Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
-                        Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
+                        //Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
                     }
                 }
 
@@ -320,14 +379,12 @@ void Coordinator(void) {
 
                         //switchPos[index] = req.arg2;
 
-                        Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, req.arg2);
+                        //Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, req.arg2);
 
                         if(req.arg2 == 's') {
                             switchPos[index] = 's';
                         } else if(req.arg2 == 'c') {
                             switchPos[index] = 'c';
-                        } else {
-                            Printf(COM2, "\033[%d;%dH\033[Kerror pos: %c", index + 2, SWITCH_COL, req.arg2);
                         }
 
                         Reply(rcv_id, &r, sizeof(char));
@@ -347,10 +404,10 @@ void Coordinator(void) {
                         //}
 
                         int distance = findPathDist(switchPos, src_node, snum);
-                        Printf(COM2, "\033[%d;%dH\033[KCoordinator: %s-->%c%d, distance: %d", STATUS_ROW + 5, STATUS_COL, src_node->name, req.schar, req.sint, distance + req.arg2);
+                        //Printf(COM2, "\033[%d;%dH\033[KCoordinator: %s-->%c%d, distance: %d", STATUS_ROW + 5, STATUS_COL, src_node->name, req.schar, req.sint, distance + req.arg2);
 
                         if(distance == -1) {
-                            Printf(COM2, "\033[%d;%dH\033[Kdistance = -1", STATUS_ROW + 6, STATUS_COL);
+                            //Printf(COM2, "\033[%d;%dH\033[Kdistance = -1", STATUS_ROW + 6, STATUS_COL);
                         } else if(distance < stop_distance[cur_record_velocity]) {
                             //src_node = cur_node;
                             track_node* new_src_node = find_track_node(track, req.schar, req.sint);
@@ -369,7 +426,7 @@ void Coordinator(void) {
                                 Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
                                 //Delay(train_req.delayTime);
                                 //Printf(COM1, "%c%c", 0, 63);
-                                Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);                                
+                                //Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);                                
                             } else {
                                 sp = 1;
                                 des_snum = snum;
@@ -387,7 +444,7 @@ void Coordinator(void) {
                             Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
                             //Delay(train_req.delayTime);
                             //Printf(COM1, "%c%c", 0, 63);
-                            Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);
+                            //Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);
                         } else {
                             sp = 1;
                             des_snum = snum;

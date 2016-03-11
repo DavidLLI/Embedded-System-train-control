@@ -436,6 +436,7 @@ void timer(void) {
 		int remain = ((idle / 50) % cur_time);
 		remain = remain * 100 / cur_time;
 		Printf(COM2, "\033[%d;1H\033[K%d.%d", CMD_ROW + 3, pct, remain);
+
 		if (cur_time > prev_time) {
 
 			ms += ((cur_time - prev_time) * 10);
@@ -477,12 +478,14 @@ void sensorData(void) {
 	char sensor_data = 0;
 	int num_of_sensor = 0;
 
+	/*
 	char sc1 = 'E';
 	int sn1 = 6;
 	char sc2 = 'B';
 	int sn2 = 16;
 	int time1 = 0;
 	int time2 = 0;
+	*/
 
 	for (;;) {
 		//Delay(3);
@@ -524,11 +527,13 @@ void sensorData(void) {
 
 					Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
 
+					/*
 					if (c == sc1 && n == sn1) time1 = Time();
 					if (c == sc2 && n == sn2) {
 						time2 = Time();
 						Printf(COM2, "\033[%d;%dH%d", STATUS_ROW + 3, STATUS_COL, time2 - time1);
 					}
+					*/
 
 					all_sensors[recv_counter] = 1;
 					if (read_pos == 2) {
@@ -687,7 +692,7 @@ void trainCommunication(void) {
 				Printf(COM1, "%c", 0x61);
 				break;
 			case 8: //sp (sensor) (distance past sensor)
-				Printf(COM2, "\033[%d;1H\033[KStop train at %dmm ahead sensor %c%d", STATUS_ROW, cmd_arg2, ssr_char, ssr_int);
+				Printf(COM2, "\033[%d;1H\033[KStop train at %d mm ahead sensor %c%d", STATUS_ROW, cmd_arg2, ssr_char, ssr_int);
 				req.src = 't';
 				req.type = 8;
 				req.arg2 = cmd_arg2;
