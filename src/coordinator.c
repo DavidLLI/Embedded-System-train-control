@@ -133,7 +133,7 @@ track_node* find_nxt_node(track_node* track, char *switchPos, track_node* src_no
 
 void trainController(void) {
     RegisterAs("trainController");
-    Create(16, &Coordinator);
+    Create(8, &Coordinator);
     int recv_id = 0;
     t_req train_req;
     for (;;) {
@@ -150,6 +150,21 @@ void trainController(void) {
     }
 }
 
+track_node* find_track_node(track_node* node_list, char schar, int sint) {
+    int snum = (schar - 'A') * 16 + sint - 1;
+    int t_i = 0;
+    track_node* ret;
+    for(t_i = 0;t_i < TRACK_MAX; t_i++) {
+        if(node_list[t_i].type == NODE_SENSOR) {
+            if(node_list[t_i].num == snum) {
+                ret = &(node_list[t_i]);
+                break;
+            }                       
+        }
+    }
+    return ret;
+}
+
 void Coordinator(void) {
     int trainCtrl_id = WhoIs("trainController");
     RegisterAs("Coordinator");
@@ -163,6 +178,24 @@ void Coordinator(void) {
         switchPos[s_i] = 'c';
     }
 
+    int stop_distance[15];
+    stop_distance[0] = 0;
+    stop_distance[1] = 0;
+    stop_distance[2] = 0;
+    stop_distance[3] = 0;
+    stop_distance[4] = 0;
+    stop_distance[5] = 0;
+    stop_distance[6] = 0;
+    stop_distance[7] = 0;
+    stop_distance[8] = 465;
+    stop_distance[9] = 535;
+    stop_distance[10] = 611;
+    stop_distance[11] = 708;
+    stop_distance[12] = 750;
+    stop_distance[13] = 850;
+    stop_distance[14] = 870;
+    int cur_record_velocity = 0;
+
     //track_node *cur_node = 0;
     int cur_schar = 'A';
     int cur_sint = 0;
@@ -171,9 +204,9 @@ void Coordinator(void) {
     Create(17, &sensorData);
     Create(18, &trainCommunication);
 
-    //int stop = 0;
-    //int sp_char = 'a';
-    //int sp_int = 0;
+    int stop = 1;
+    int sp_char = 'E';
+    int sp_int = 8;
 
     int time1 = 0;
     int time2 = 0;
@@ -194,10 +227,10 @@ void Coordinator(void) {
 
     for(;;) {
 
-        //if(stop && sp_char == cur_schar && sp_int == cur_sint) {
-        //  Printf(COM1, "%c%c", 0, 63);
-        //  stop = 0;
-        //}
+        /*if(stop && sp_char == cur_schar && sp_int == cur_sint) {
+          Printf(COM1, "%c%c", 0, 63);
+          stop = 0;
+        }*/
 
         int rcv_id;
         trainReq req;
@@ -229,16 +262,16 @@ void Coordinator(void) {
                     //total_data_count++;
 
                     //cur_velocity_10 = total_velocity/total_data_count;
-                    Printf(COM2, "\033[%d;%dH\033[KCoordinator: snum: %d, cur node: %d, interval dist: %d, cur speed %d", STATUS_ROW + 8, STATUS_COL, cur_snum, cur_node->num, interval_distance, cur_velocity_10);
+                    //Printf(COM2, "\033[%d;%dH\033[KCoordinator: snum: %d, cur node: %d, interval dist: %d, cur speed %d", STATUS_ROW + 8, STATUS_COL, cur_snum, cur_node->num, interval_distance, cur_velocity_10);
 
                 }
 
                 if(sp) {
                     int distance = findPathDist(switchPos, cur_node, des_snum);
-                    if(distance < 1500 && distance > 850) {
+                    if(distance < 1500 && distance > stop_distance[cur_record_velocity]) {
                         sp = 0;
 
-                        int delayTime = ((distance + des_dist - 850) * 10) / cur_velocity_10;
+                        int delayTime = ((distance + des_dist - stop_distance[cur_record_velocity]) * 10) / cur_velocity_10;
 
                         time2 = Time();
                         t_req train_req;
@@ -271,6 +304,11 @@ void Coordinator(void) {
                 break;
             case 't':
                 switch(req.type) {
+                    case 1: // TR
+                        ;
+                        cur_record_velocity = req.arg1;
+                        Reply(rcv_id, &r, sizeof(char));
+                        break;
                     case 3: // SW
                         ;
                         int index = -1;
@@ -313,13 +351,15 @@ void Coordinator(void) {
 
                         if(distance == -1) {
                             Printf(COM2, "\033[%d;%dH\033[Kdistance = -1", STATUS_ROW + 6, STATUS_COL);
-                        } else if(distance < 850) {
+                        } else if(distance < stop_distance[cur_record_velocity]) {
                             //src_node = cur_node;
-                            int al_distance = src_node->edge[DIR_AHEAD].dist;
-                            src_node = src_node->edge[DIR_AHEAD].dest;
-                            al_distance += findPathDist(switchPos, src_node, snum) + distance;
+                            track_node* new_src_node = find_track_node(track, req.schar, req.sint);
+
+                            int al_distance = new_src_node->edge[DIR_AHEAD].dist;
+                            new_src_node = new_src_node->edge[DIR_AHEAD].dest;
+                            al_distance += findPathDist(switchPos, new_src_node, snum) + distance;
                             if(al_distance < 1500) {
-                                int delayTime = ((al_distance + req.arg2 - 850) * 10) / cur_velocity_10;
+                                int delayTime = ((al_distance + req.arg2 - stop_distance[cur_record_velocity]) * 10) / cur_velocity_10;
 
                                 time2 = Time();
                                 t_req train_req;
@@ -337,7 +377,7 @@ void Coordinator(void) {
                             }                     
 
                         } else if(distance < 1500) {
-                            int delayTime = ((distance + req.arg2 - 850) * 10) / cur_velocity_10;
+                            int delayTime = ((distance + req.arg2 - stop_distance[cur_record_velocity]) * 10) / cur_velocity_10;
 
                             time2 = Time();
                             t_req train_req;

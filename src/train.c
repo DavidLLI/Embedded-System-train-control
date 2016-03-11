@@ -420,7 +420,6 @@ void init(void) {
 	Exit();
 }
 
-
 void timer(void) {
 	int min = 0;
 	int sec = 0;
@@ -474,6 +473,7 @@ void sensorData(void) {
 	char bit = 0;
 	char last_bit_mask = 0;
 	int j = 0;
+	char sensor_data_array[10];
 	char sensor_data = 0;
 	int num_of_sensor = 0;
 
@@ -486,76 +486,82 @@ void sensorData(void) {
 
 	for (;;) {
 		//Delay(3);
-		if (recv_counter == 80) {
-			Delay(3);
+//		if (recv_counter == 80) {
+			//Delay(3);
 			Printf(COM1, "%c", 192);
 			Printf(COM1, "%c", 0x85);
 			recv_counter = 0;
 			//cur_time = Time();
-		}	
-		sensor_data = 0;
-		sensor_data = Getc(COM1);
+//		}	
+
+		int s_i = 0;
+		for (s_i = 0; s_i < 10; s_i++) {
+			sensor_data_array[s_i] = Getc(COM1);
+		}
 		
-		for (i = 0; i < 8; i++) {
-			bit = (sensor_data >> i);
-			last_bit_mask = 1;
-			bit = (bit & last_bit_mask);
-			if (bit == 1 && all_sensors[recv_counter] == 0) {
+		for (s_i = 0; s_i < 10; s_i++) {
+			sensor_data = sensor_data_array[s_i];
+			for (i = 0; i < 8; i++) {
+				bit = (sensor_data >> i);
+				last_bit_mask = 1;
+				bit = (bit & last_bit_mask);
+				if (bit == 1 && all_sensors[recv_counter] == 0) {
 
-				int n = (recv_counter % 16) + 1;
-				if (n <= 8) {
-					n = 9 - n;
-				}
-				else if (n > 8) {
-					n = 17 - n + 8;
-				}
-				char c = (recv_counter / 16) + 'A';
-
-				trainReq req;
-				req.src = 's';
-				req.schar = c;
-				req.sint = n;
-				char r;
-
-				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
-
-				if (c == sc1 && n == sn1) time1 = Time();
-				if (c == sc2 && n == sn2) {
-					time2 = Time();
-					Printf(COM2, "\033[%d;%dH%d", STATUS_ROW + 3, STATUS_COL, time2 - time1);
-				}
-
-				all_sensors[recv_counter] = 1;
-				if (read_pos == 2) {
-					
-					rts[0] = rts[1];
-					rts[1] = recv_counter;
-				}
-				else {
-					rts[read_pos] = recv_counter;
-					read_pos = read_pos + 1;
-				}
-				for (j = 0; j < read_pos; j++) {
-					num_of_sensor = (rts[j] % 16) + 1;
-					if (num_of_sensor <= 8) {
-						num_of_sensor = 9 - num_of_sensor;
+					int n = (recv_counter % 16) + 1;
+					if (n <= 8) {
+						n = 9 - n;
 					}
-					else if (num_of_sensor > 8) {
-						num_of_sensor = 17 - num_of_sensor + 8;
+					else if (n > 8) {
+						n = 17 - n + 8;
 					}
-					//Printf(COM2, "\033[%d;%dH   ", SENSOR_ROW + j, SENSOR_COL);
-					if (num_of_sensor >= 10) {
-						Printf(COM2, "\033[%d;%dH%c%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+					char c = (recv_counter / 16) + 'A';
+
+					trainReq req;
+					req.src = 's';
+					req.schar = c;
+					req.sint = n;
+					char r;
+
+					Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
+
+					if (c == sc1 && n == sn1) time1 = Time();
+					if (c == sc2 && n == sn2) {
+						time2 = Time();
+						Printf(COM2, "\033[%d;%dH%d", STATUS_ROW + 3, STATUS_COL, time2 - time1);
+					}
+
+					all_sensors[recv_counter] = 1;
+					if (read_pos == 2) {
+						
+						rts[0] = rts[1];
+						rts[1] = recv_counter;
 					}
 					else {
-						Printf(COM2, "\033[%d;%dH%c0%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+						rts[read_pos] = recv_counter;
+						read_pos = read_pos + 1;
+					}
+					for (j = 0; j < read_pos; j++) {
+						num_of_sensor = (rts[j] % 16) + 1;
+						if (num_of_sensor <= 8) {
+							num_of_sensor = 9 - num_of_sensor;
+						}
+						else if (num_of_sensor > 8) {
+							num_of_sensor = 17 - num_of_sensor + 8;
+						}
+						//Printf(COM2, "\033[%d;%dH   ", SENSOR_ROW + j, SENSOR_COL);
+						if (num_of_sensor >= 10) {
+							Printf(COM2, "\033[%d;%dH%c%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+						}
+						else {
+							Printf(COM2, "\033[%d;%dH%c0%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+						}
 					}
 				}
+				else if (bit == 0 && all_sensors[recv_counter] == 1) {
+					all_sensors[recv_counter] = 0;
+				}
+				recv_counter = recv_counter + 1;
 			}
-			else if (bit == 0 && all_sensors[recv_counter] == 1) {
-				all_sensors[recv_counter] = 0;
-			}
-			recv_counter = recv_counter + 1;
 		}
 	}
 	Exit();
@@ -623,6 +629,10 @@ void trainCommunication(void) {
 		switch(cmd_type) {
 			case 1: //tr
 				Printf(COM2, "\033[%d;1H\033[KSet train %d to speed %d", STATUS_ROW, cmd_arg1, cmd_arg2);
+				req.src = 't';
+				req.type = 1;
+				req.arg1 = cmd_arg2;
+				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
 
 				Printf(COM1, "%c%c", cmd_arg2, cmd_arg1);
 
