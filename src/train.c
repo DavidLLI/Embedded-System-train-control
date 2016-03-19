@@ -375,6 +375,8 @@ void trainCommunication(void) {
 
 	Printf(COM2, "\033[2J");
 
+	Delay(1);
+
 	KExit();
 }
 

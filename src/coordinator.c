@@ -11,6 +11,9 @@
 #define SENSOR_PRI 14
 #define TRAIN_COM_PRI 15
 
+
+
+
 int findPathDist(char *switchPos, track_node *src_node, int des_snum) {
     int distance = 0;
 
@@ -177,7 +180,7 @@ int find_dist_to_next_sensor(char *switchPos, track_node* src_node) {
                 break;
         }
         
-        if(i >= TRACK_MAX) {
+        if(i >= 20) {
             return -1;
         }
     }
@@ -198,7 +201,6 @@ void trainController(void) {
                 Printf(COM1, "%c%c", 0, 63);
                 //Printf(COM2, "\033[%d;%dH\033[KtrainController: command sent", STATUS_ROW + 10, STATUS_COL);
         }
-
     }
 }
 
@@ -323,17 +325,12 @@ void Coordinator(void) {
     stop_distance[14] = 870;
     int cur_record_velocity = 0;
 
-    //track_node *cur_node = 0;
     int cur_schar = 'A';
     int cur_sint = 0;
     int cur_snum = 0;
 
     Create(SENSOR_PRI, &sensorData);
     Create(TRAIN_COM_PRI, &trainCommunication);
-
-    //int stop = 1;
-    //int sp_char = 'E';
-    //int sp_int = 8;
 
     int time1 = 0;
     int time2 = 0;
@@ -345,9 +342,6 @@ void Coordinator(void) {
     track_node* prev_node = 0;
     track_node* cur_node = 0;
 
-    //int total_data_count = 1;
-    //int total_velocity = 65;
-
     int sp = 0;
     int des_snum = 0;
     int des_dist = 0;
@@ -355,11 +349,6 @@ void Coordinator(void) {
     int expected_time = 0;
 
     for(;;) {
-
-        /*if(stop && sp_char == cur_schar && sp_int == cur_sint) {
-          Printf(COM1, "%c%c", 0, 63);
-          stop = 0;
-        }*/
 
         int rcv_id;
         trainReq req;
@@ -379,77 +368,77 @@ void Coordinator(void) {
                 time1 = Time();
                 Reply(rcv_id, &r, sizeof(char));
                 
-                Printf(COM2, "\033[%d;%dH\033[KSensor %c%d, tick diff %d", 
-                    TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar, prv_sint, time1 - expected_time);                
+                if(expected_time != 0) {
+                    Printf(COM2, "\033[%d;%dH\033[KSensor %c%d, tick diff %d", 
+                        TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar, prv_sint, time1 - expected_time);                    
+                } else {
+                    Printf(COM2, "\033[%d;%dH\033[KCalculation error: expected time = 0", TRAIN_TIME_ROW, TRAIN_TIME_COL);
+                }
+                
 
-                prev_node = cur_node;
+                
                 cur_snum = (cur_schar - 'A') * 16 + cur_sint - 1;
 
                 int interval_distance = 0;
-                cur_node = find_nxt_node(track, switchPos, prev_node, cur_snum, &interval_distance);
+                track_node* tmp_node = 0;
+                tmp_node = find_nxt_node(track, switchPos, prev_node, cur_snum, &interval_distance);
 
-                if (prev_node != 0 && interval_distance != 0) {
-                    // update current velocity
-                    cur_velocity_int = interval_distance / (time1 - prev_time);
-                    cur_velocity_dec = interval_distance % (time1 - prev_time);
-                    cur_velocity_dec = cur_velocity_dec * 10 / (time1 - prev_time);
-                    cur_velocity_10 = cur_velocity_int * 10 + cur_velocity_dec;
-                    
-                    //Printf(COM2, "\033[%d;%dH\033[KCoordinator: snum: %d, cur node: %d, interval dist: %d, cur speed %d", STATUS_ROW + 8, STATUS_COL, cur_snum, cur_node->num, interval_distance, cur_velocity_10);
+                if(tmp_node > 0) {
+                    prev_node = cur_node;
+                    cur_node = tmp_node;
 
-                    // expected time prv time
-                    int next_dist = find_dist_to_next_sensor(switchPos, cur_node);
-
-                    expected_time = time1 + (next_dist * 10) / cur_velocity_10;                  
-                }
-
-                t_loc_req dis_req;
-                dis_req.type = 1;
-                dis_req.schar = cur_schar;
-                dis_req.sint = cur_sint;
-                dis_req.velocity_10 = cur_velocity_10;
-                Send(display_id, &dis_req, sizeof(t_loc_req), r, sizeof(char));
-
-                if(sp) {
-                    int distance = findPathDist(switchPos, cur_node, des_snum);
-                    if(distance < 1500 && distance > stop_distance[cur_record_velocity]) {
-                        sp = 0;
-
-                        int delayTime = ((distance + des_dist - stop_distance[cur_record_velocity]) * 10) / cur_velocity_10;
-
-                        time2 = Time();
-                        t_req train_req;
-                        train_req.type = 0;
-                        train_req.delayTime = delayTime - time2 + time1;
-                        char reply_c;
-                        Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                    if (prev_node != 0 && interval_distance != 0) {
+                        // update current velocity
+                        cur_velocity_int = interval_distance / (time1 - prev_time);
+                        cur_velocity_dec = interval_distance % (time1 - prev_time);
+                        cur_velocity_dec = cur_velocity_dec * 10 / (time1 - prev_time);
+                        cur_velocity_10 = cur_velocity_int * 10 + cur_velocity_dec;
                         
-                        dis_req.type = 2;
-                        dis_req.velocity_10 = cur_velocity_10;
-                        dis_req.stop_distance = distance;
-                        Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
-                       // Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
-                    }
-                }
+                        Printf(COM2, "\033[%d;%dH\033[Kcur speed %d", STATUS_ROW + 8, STATUS_COL, cur_velocity_10);
 
-                /*
-                if(cur_node != 0) {
-                    updateCurNode(track, cur_node, schar, sint);
-                } else {
-                    char shiwei = '0' + sint / 10;
-                    char gewei = '0' + sint % 10;
+                        // expected prv time
+                        int next_dist = find_dist_to_next_sensor(switchPos, cur_node);
 
-                    int i = 0;
-                    for(i = 0;i < TRACK_MAX; i++) {
-                        if(track[i].type == NODE_SENSOR) {
-                            if(nameEqual(track[i].name, schar, sint)) {
-                                cur_node = track[i];
-                                break;
-                            }                       
+                        if(next_dist != 0) {
+                            expected_time = time1 + (next_dist * 10) / cur_velocity_10;
+                        } else {
+                            expected_time = 0;                        
                         }
+                                          
                     }
+
+                    t_loc_req dis_req;
+                    dis_req.type = 1;
+                    dis_req.schar = cur_schar;
+                    dis_req.sint = cur_sint;
+                    dis_req.velocity_10 = cur_velocity_10;
+                    Send(display_id, &dis_req, sizeof(t_loc_req), r, sizeof(char));
+
+                    if(sp) {
+                        int distance = findPathDist(switchPos, cur_node, des_snum);
+                        if(distance < 1500 && distance > stop_distance[cur_record_velocity]) {
+                            sp = 0;
+
+                            int delayTime = ((distance + des_dist - stop_distance[cur_record_velocity]) * 10) / cur_velocity_10;
+
+                            time2 = Time();
+                            t_req train_req;
+                            train_req.type = 0;
+                            train_req.delayTime = delayTime - time2 + time1;
+                            char reply_c;
+                            Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                            
+                            dis_req.type = 2;
+                            dis_req.velocity_10 = cur_velocity_10;
+                            dis_req.stop_distance = distance;
+                            Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+                           // Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
+                        }
+                    }                    
+                } else {
+                    Printf(COM2, "\033[%d;%dH\033[KNode not found", STATUS_ROW + 8, STATUS_COL);
                 }
-                */
+
                 break;
             case 't':
                 switch(req.type) {
@@ -481,8 +470,6 @@ void Coordinator(void) {
                             index = req.arg1 - 135;
                         }
 
-                        //switchPos[index] = req.arg2;
-
                         Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, req.arg2);
 
                         if(req.arg2 == 's') {
@@ -496,16 +483,8 @@ void Coordinator(void) {
                     case 8: //SP
                         ;
                         track_node* src_node = cur_node;
-                        //int t_i = 0;
+
                         int snum = (req.schar - 'A') * 16 + req.sint - 1;
-                        //for(t_i = 0;t_i < TRACK_MAX; t_i++) {
-                        //    if(track[t_i].type == NODE_SENSOR) {
-                        //        if(track[t_i].num == snum) {
-                        //            src_node = &(track[t_i]);
-                        //            break;
-                        //        }                       
-                        //    }
-                        //}
 
                         int distance = findPathDist(switchPos, src_node, snum);
                         //Printf(COM2, "\033[%d;%dH\033[KCoordinator: %s-->%c%d, distance: %d", STATUS_ROW + 5, STATUS_COL, src_node->name, req.schar, req.sint, distance + req.arg2);
@@ -528,8 +507,6 @@ void Coordinator(void) {
                                 train_req.delayTime = delayTime - time2 + time1;
                                 char reply_c;
                                 Send(trainCtrl_id, &train_req, sizeof(t_req), &reply_c, sizeof(char));
-                                //Delay(train_req.delayTime);
-                                //Printf(COM1, "%c%c", 0, 63);
                                 //Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);                                
                             } else {
                                 sp = 1;
@@ -551,8 +528,6 @@ void Coordinator(void) {
                             dis_req.velocity_10 = cur_velocity_10;
                             dis_req.stop_distance = distance;
                             Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
-                            //Delay(train_req.delayTime);
-                            //Printf(COM1, "%c%c", 0, 63);
                             //Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, time2: %d", STATUS_ROW + 6, STATUS_COL, time1, time2);
                         } else {
                             sp = 1;

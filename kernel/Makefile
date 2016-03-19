@@ -19,7 +19,7 @@ OBJ = ClockServer.o helper.o kernelFunction.o nameServer.o taskDescriptor.o user
 
 
 
-all: $(OBJ) kernel.s kernel.elf 
+all: $(OBJ) kernel.o kernel.elf 
 
 
 taskDescriptor.o: ../src/taskDescriptor.c
@@ -68,13 +68,14 @@ bwio.o: ../src/bwio.c
 	$(XCC) -c -o $@ $< $(CFLAGS)
 
 
-kernel.s: kernel.c 
-	$(XCC) -S $(CFLAGS) kernel.c ../src/taskDescriptor.c ../src/contextSwitch.c
+#kernel.s: kernel.c 
+#	$(XCC) -S $(CFLAGS) kernel.c ../src/taskDescriptor.c ../src/contextSwitch.c
 
+#kernel.o: kernel.s taskDescriptor.s contextSwitch.s
+#	$(AS) $(ASFLAGS) -o kernel.o kernel.s
 
-
-kernel.o: kernel.s taskDescriptor.s contextSwitch.s
-	$(AS) $(ASFLAGS) -o kernel.o kernel.s
+kernel.o: kernel.c ../src/taskDescriptor.c ../src/contextSwitch.c
+	$(XCC) -c -o $@ $< $(CFLAGS)
 
 kernel.elf: kernel.o
 	$(LD) $(LDFLAGS) -o $@ kernel.o $(OBJ) -lgcc	
