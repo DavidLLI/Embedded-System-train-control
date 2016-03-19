@@ -94,7 +94,7 @@ void timer(void) {
 		int pct = ((idle / 50) / cur_time);
 		int remain = ((idle / 50) % cur_time);
 		remain = remain * 100 / cur_time;
-		Printf(COM2, "\033[%d;1H\033[K%d.%d", CMD_ROW + 3, pct, remain);
+		Printf(COM2, "\033[%d;1H\033[K%d.%d", IDLE_ROW, pct, remain);
 
 		if (cur_time > prev_time) {
 
@@ -117,7 +117,7 @@ void timer(void) {
 }
 
 void sensorData(void) {
-	int handleSPID = WhoIs("Coordinator");
+	int CoordinatorId = WhoIs("Coordinator");
 	int i = 0;
 	char all_sensors[80];
 	for (i = 0; i < 80; i++) {
@@ -184,7 +184,7 @@ void sensorData(void) {
 					req.sint = n;
 					char r;
 
-					Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
+					Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
 
 					/*
 					if (c == sc1 && n == sn1) time1 = Time();
@@ -232,7 +232,7 @@ void sensorData(void) {
 }	
 
 void trainCommunication(void) {
-	int handleSPID = WhoIs("Coordinator");
+	int CoordinatorId = WhoIs("Coordinator");
 	char cmd[50];
 	int cmd_i = 0;
 	for(cmd_i = 0; cmd_i < 50; cmd_i++) {
@@ -296,7 +296,7 @@ void trainCommunication(void) {
 				req.src = 't';
 				req.type = 1;
 				req.arg1 = cmd_arg2;
-				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
+				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
 
 				Printf(COM1, "%c%c", cmd_arg2, cmd_arg1);
 
@@ -333,7 +333,7 @@ void trainCommunication(void) {
 				req.src = 't';
 				req.type = 3;
 				req.arg1 = cmd_arg1;				
-				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
+				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
 				break;
 			case 4: //q
 				Printf(COM2, "\033[%d;1H\033[KQuit", STATUS_ROW);
@@ -358,7 +358,7 @@ void trainCommunication(void) {
 				req.schar = ssr_char;
 				req.sint = ssr_int;
 
-				Send(handleSPID, &req, sizeof(trainReq), &r, sizeof(char));
+				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
 				break;
 
 		}

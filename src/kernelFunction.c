@@ -24,6 +24,7 @@ void handle(pair *td_pq, td *td_ary, req request, int *task_id_counter) {
 			newtd->stack_ptr = stack_adr;
 			newtd->SPSR = 0x50;
 			newtd->rtn_value = 0;
+			newtd->swi_hwi = 1;
 
 			int usr_entry_point = (int) (request.arg2 + 0x00218000);
 			
@@ -182,7 +183,7 @@ void handle_msg_passing(td *td_ary, req request,
 
 
 void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, int *CTS_status, int *transmit_ready) {
-	(request.task)->swi_hwi = 0;
+	//(request.task)->swi_hwi = 0;
 
 	int *UART1ctrl = (int *) (UART1_BASE + UART_CTLR_OFFSET);
 	int *UART2ctrl = (int *) (UART2_BASE + UART_CTLR_OFFSET);
@@ -200,7 +201,7 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 
 			switch(blk->event_type) {
 				case xmt1:
-					if (*CTS_status == 0) {
+					if (*CTS_status < 2) {
 						*transmit_ready = 2;
 					}
 					else {
@@ -229,11 +230,14 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 			break;
 		case 9: // hardware interrupt
 			;
-			(request.task)->swi_hwi = 1;
+			//(request.task)->swi_hwi = 1;
 			//bwprintf(COM2, "Hardware Interrupt\n\r");
 			int event = -1;
 			int *UART1_INTR_OFFSET = (int *) (UART1_BASE + UART_INTR_OFFSET);
 			int *UART2_INTR_OFFSET = (int *) (UART2_BASE + UART_INTR_OFFSET);
+
+			int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
+			int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
 
 			if(request.arg2 & (1 << 19)) {
 				event = timer3;
@@ -261,7 +265,10 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 				}*/
 				*UART1ctrl &= ~(TIEN_MASK);
 				//*UART1ctrl |= MSIEN_MASK;
-				*transmit_ready = 1;
+				event = xmt1;
+				
+				*CTS_status = 0;
+				*transmit_ready = 0;
 				//*asserted = 2;
 
 			} else if (*UART2_INTR_OFFSET & RIS_MASK) {
@@ -274,36 +281,25 @@ void handle_block(struct blk_td *blk_ary, struct blk_pair *pair, req request, in
 
 				*UART2ctrl &= ~(TIEN_MASK);
 				//*UART2_INTR_OFFSET = 1;
+			} else if(*UART1_INTR_OFFSET & MIS_MASK) {
+				//bwprintf(COM2, "modem status interrupt\n\r");
+				*CTS_status += 1;
+					//event = xmt1;
+				// Clear the modem status interrupt
+				*UART1_INTR_OFFSET &= ~(MIS_MASK);
+
+				if ((*CTS_status == 2) && (*transmit_ready == 2)) {
+					*UART1ctrl |= TIEN_MASK;
+				}
 			}
 
-			int *flag = (int *) (UART1_BASE + UART_FLAG_OFFSET);
-			int *mdmSts = (int *) (UART1_BASE + UART_MDMSTS_OFFSET);
+			
 			/*if((*mdmSts & DCTS_MASK) && (*flag & CTS_MASK) && (*asserted == 0)) {
 				*UART1ctrl |= TIEN_MASK;
 				*asserted = 2;
 			}*/
 			
-			if(*UART1_INTR_OFFSET & MIS_MASK) {
-				//bwprintf(COM2, "modem status interrupt\n\r");
-				if ((*flag & CTS_MASK) && (*mdmSts & DCTS_MASK)) {
-					*CTS_status = 1;
-					*UART1ctrl &= ~(MSIEN_MASK);
-					if (*transmit_ready == 2) {
-						*UART1ctrl |= TIEN_MASK;
-					}
-					
-					//event = xmt1;
-				}
-				// Clear the modem status interrupt
-				*UART1_INTR_OFFSET = 1;
-			}
-
-			if ((*CTS_status == 1) && (*transmit_ready == 1)) {
-				event = xmt1;
-				*UART1ctrl |= MSIEN_MASK;
-				*CTS_status = 0;
-				*transmit_ready = 0;
-			}
+			
 
 			//bwprintf(COM2, "event: %d\n\r", event);
 			struct blk_td *current = pair->head;

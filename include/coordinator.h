@@ -14,11 +14,17 @@
 #define STATUS_ROW 31
 	#define STATUS_COL 1
 
-#define TRACE_ROW 1
-	#define TRACE_COL 52
+#define IDLE_ROW 32
+	#define IDLE_COL 1
 
 #define TRAIN_TIME_ROW 33
 	#define TRAIN_TIME_COL 1
+
+#define SPEED_ROW 34
+	#define SPEED_COL 1
+
+#define LOCATION_ROW 35
+	#define LOCATION_COL 32
 
 typedef struct Train_Request {
 	char type;

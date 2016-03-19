@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 
 	// for COM1 transmit
 	//int asserted = 1;
-	int CTS_status = 1;
+	int CTS_status = 2;
 	int transmit_ready = 0;
 
 	FOREVER {

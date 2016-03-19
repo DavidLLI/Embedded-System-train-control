@@ -181,7 +181,8 @@ int parse_arg4(char *cb, char *schar, int *sint, int *arg2) {
                 }
             } 
         }
-    } 
+    }
+    return 0; 
 }
 
 
