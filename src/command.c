@@ -282,7 +282,26 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2, char *schar, int *
             if(cb[1] == 'o' && cb[2] == '\r') {
                 *type = 6;
                 return;
+            } else if(cb[1] == 't') {
+                int flag = parse_arg4(cb, schar, sint, arg2);
+                if(flag) {
+                    *type = 9;
+                    return;
+                }
             }
+            break;
+        case 'G':
+            if(cb[1] == 'O' && cb[2] == '\r') {
+                *type = 6;
+                return;
+            } else if(cb[1] == 'T') {
+                int flag = parse_arg4(cb, schar, sint, arg2);
+                if(flag) {
+                    *type = 9;
+                    return;
+                }
+            }
+            break;            
     }
     *type = 5;
     return;

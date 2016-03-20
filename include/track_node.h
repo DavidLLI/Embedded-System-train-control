@@ -25,12 +25,14 @@ struct track_edge {
 };
 
 struct track_node {
+  int index;
   const char *name;
   node_type type;
   int num;              /* sensor or switch number */
   track_node *reverse;  /* same location, but opposite direction */
   track_edge edge[2];
-  int free;
+  int ownedBy;
+  char visited;
 };
 
 #endif

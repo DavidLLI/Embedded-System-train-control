@@ -1,6 +1,10 @@
 #ifndef __TRAIN_H__
 #define __TRAIN_H__
 
+#include "coordinator.h"
+#include "syscall.h"
+#include "command.h"
+
 enum train_cmd {
 	tr,
 	rv,

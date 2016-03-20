@@ -1,9 +1,5 @@
 #include "train.h"
-#include "coordinator.h"
-#include "syscall.h"
-#include "command.h"
-#include "track_node.h"
-#include "track_data.h"
+
 
 #define TIMER_PRI 17
 #define TRAINCTRL_PRI 16
@@ -332,7 +328,6 @@ void trainCommunication(void) {
 					req.arg2 = 'c';
 				}
 
-				//Delay(15);
 				Printf(COM1, "%c", 32); //trun off solenoid
 
 				req.src = 't';
@@ -365,6 +360,16 @@ void trainCommunication(void) {
 
 				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
 				break;
+			case 9: //gt (sensor number) (train number)
+				Printf(COM2, "\033[%d;1H\033[KLet train %d go to sensor %c%d", STATUS_ROW, cmd_arg2, ssr_char, ssr_int);
+				req.src = 't';
+				req.type = 9;
+				req.train_num = cmd_arg2;
+				req.schar = ssr_char;
+				req.sint = ssr_int;
+
+				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
+				break;	
 
 		}
 		Printf(COM2, "\033[%d;1H\033[K", CMD_ROW);

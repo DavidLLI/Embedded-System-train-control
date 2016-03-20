@@ -10,8 +10,6 @@
 void init_tracka(track_node *track);
 void init_trackb(track_node *track);
 
-int nameEqual(const char *name, char schar, int sint);
-//int findPathDist(char *switchPos, track_node *src_node, char des_char, int des_int, int dist);
 
 #endif
 

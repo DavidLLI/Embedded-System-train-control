@@ -1,6 +1,13 @@
 #ifndef __COORDINATOR_H__
 #define __COORDINATOR_H__
 
+#include "graph.h"
+#include "train.h"
+#include "syscall.h"
+#include "command.h"
+#include "track_node.h"
+#include "track_data.h"
+
 #define TIME_ROW 1
 	#define TIME_COL 1
 #define SENSOR_ROW 2
@@ -29,7 +36,10 @@
 typedef struct Train_Request {
 	char type;
 	int delayTime;
+	char arg1;
+	char arg2;
 }t_req;
+
 
 void Coordinator(void);
 
