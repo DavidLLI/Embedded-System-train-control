@@ -19,6 +19,7 @@ typedef struct trainRequest {
 	int arg2;
 	char schar;
 	int sint;
+	int train_num;
 } trainReq;
 
 void init(void);

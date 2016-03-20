@@ -74,7 +74,7 @@ void init(void) {
 	Delay(500);
 	Printf(COM2, "\033[%d;1H\033[KInitialization Compelete. Let's go Thomas.", STATUS_ROW);
 
-	Create(TRAINCTRL_PRI, &trainController);
+	Create(TRAINCTRL_PRI, &trainController1);
 
 	Exit();
 }
@@ -147,7 +147,6 @@ void sensorData(void) {
 	*/
 
 	for (;;) {
-		Delay(1);
 //		if (recv_counter == 80) {
 			//Delay(3);
 			Printf(COM1, "%c", 192);
@@ -296,6 +295,12 @@ void trainCommunication(void) {
 				req.src = 't';
 				req.type = 1;
 				req.arg1 = cmd_arg2;
+				if (cmd_arg1 == 63) {
+					req.train_num = 0;
+				}
+				else if (cmd_arg1 == 68) {
+					req.train_num = 1;
+				}
 				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
 
 				Printf(COM1, "%c%c", cmd_arg2, cmd_arg1);

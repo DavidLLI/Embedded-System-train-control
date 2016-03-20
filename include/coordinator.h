@@ -24,7 +24,7 @@
 	#define SPEED_COL 1
 
 #define LOCATION_ROW 35
-	#define LOCATION_COL 32
+	#define LOCATION_COL 33
 
 typedef struct Train_Request {
 	char type;
@@ -33,7 +33,7 @@ typedef struct Train_Request {
 
 void Coordinator(void);
 
-void trainController(void);
+void trainController1(void);
 
 #endif
 
