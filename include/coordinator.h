@@ -10,8 +10,10 @@
 
 #define TIME_ROW 1
 	#define TIME_COL 1
+
 #define SENSOR_ROW 2
 	#define SENSOR_COL 20
+
 #define SWITCH_ROW 2
 	#define SWITCH_COL 48
 
@@ -33,8 +35,13 @@
 #define LOCATION_ROW 35
 	#define LOCATION_COL 33
 
-#define PATH_ROW 35
-	#define PATH_COL 33
+#define COORD_ROW 35
+
+#define TRAINCTRL_ROW 37
+	#define TRAINCTRL_COL 1
+
+#define PATH_ROW 38
+	#define PATH_COL 1
 
 typedef struct Train_Request {
 	char type;

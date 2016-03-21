@@ -298,7 +298,6 @@ track_node* find_track_node(track_node* node_list, int snum) {
     return ret;
 }
 
-
 int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, int *prev, track_node *des_node) {
     //create vertex set
     int i;
@@ -342,6 +341,7 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
                     }
                     
                     break;
+                    /*
                 case NODE_MERGE:
                     v = u.edge[DIR_AHEAD].dest;
 
@@ -366,6 +366,7 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
                         dist[v->index] = alt;
                         prev[v->index] = index;
                     }
+                    */
 
                 case NODE_EXIT:
                     break;
@@ -387,25 +388,24 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
     return 1;
 }
 
-
 int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int* prev, track_node *des) {
     int u = des->index;
     int distance = 0;
     int distance2 = 0;
     int prv_u = -1;
     while(prev[u] != -1) { 
-        track_node prv = track[prv_u];
+        track_node *prv= &(track[prv_u]);
 
         if(track[u].type == NODE_BRANCH) {
             track_node *s = track[u].edge[DIR_STRAIGHT].dest;
             track_node *c = track[u].edge[DIR_CURVED].dest;
 
-            if(prv.num == s->num) {
+            if(prv->num == s->num) {
                 sp[*index].num = track[u].num;
                 sp[*index].state = 's';
                 sp[*index].reverse = 0;
                 (*index)++;
-            } else if(prv.num == c->num) {
+            } else if(prv->num == c->num) {
                 sp[*index].num = track[u].num;
                 sp[*index].state = 'c';
                 sp[*index].reverse = 0;
@@ -413,7 +413,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
             } else {
             }
         }
-
+        /*
         if(track[u].type == NODE_MERGE && prv.edge[DIR_AHEAD].dest->num != track[u].num) {
             track_node *r = track[u].reverse;
             track_node *s = r->edge[DIR_STRAIGHT].dest;
@@ -432,6 +432,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
             } else {
             }
         }
+        */
 
         //printf("%d\n", *index);
 
@@ -440,22 +441,23 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
         u = prev[u];
     }
 
-    if(distance2 == 0) {
+
+    if(distance == 0) {
         u = (des->reverse)->index;
         prv_u = -1;
         while(prev[u] != -1) { 
-            track_node prv = track[prv_u];
+            track_node *prv = &(track[prv_u]);
 
             if(track[u].type == NODE_BRANCH) {
                 track_node *s = track[u].edge[DIR_STRAIGHT].dest;
                 track_node *c = track[u].edge[DIR_CURVED].dest;
 
-                if(prv.num == s->num) {
+                if(prv->num == s->num) {
                     sp[*index].num = track[u].num;
                     sp[*index].state = 's';
                     sp[*index].reverse = 0;
                     (*index)++;
-                } else if(prv.num == c->num) {
+                } else if(prv->num == c->num) {
                     sp[*index].num = track[u].num;
                     sp[*index].state = 'c';
                     sp[*index].reverse = 0;
@@ -464,6 +466,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
                 }
             }
 
+            /*
             if(track[u].type == NODE_MERGE && prv.edge[DIR_AHEAD].dest->num != track[u].num) {
                 track_node *r = track[u].reverse;
                 track_node *s = r->edge[DIR_STRAIGHT].dest;
@@ -482,15 +485,17 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
                 } else {
                 }
             }
+            */
 
+            //printf("%d\n", *index);
 
             distance2 += dist[u];
             prv_u = u;
             u = prev[u];
-        }        
-    }
+        }
 
-    if(distance != 0 && distance <= distance2) return distance;
-    else if(distance2 != 0 && distance2 <= distance) return distance2;
-    else return 0;
+        return distance2;       
+    } else {
+        return distance;
+    }
 }
