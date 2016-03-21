@@ -16,6 +16,101 @@ int minDist(track_node *track, int *dist) {
     return minIndex;
 }
 
+track_node* find_nxt_merge(char *switchPos, track_node* src_node) {
+    int i = 0;
+    for(;;) {
+        i++;
+        //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
+        //Delay(10);
+        switch(src_node->type) {
+            case NODE_MERGE:
+                return src_node;
+            case NODE_BRANCH:
+                ;
+                int sw_num = src_node->num;
+                int index = -1;
+
+                if(sw_num <= 18) {
+                    index = sw_num - 1;
+                } else {
+                    index = sw_num - 135;
+                }
+
+                char pos = switchPos[index];
+
+                //Printf(COM2, "\033[%d;%dH %d, %d, %c", i, TRACE_COL, sw_num, index, pos);
+                switch(pos) {
+                case 's':
+                    src_node = src_node->edge[DIR_STRAIGHT].dest;
+                    break;
+                case 'c':
+                    src_node = src_node->edge[DIR_CURVED].dest;
+                    break;
+                }     
+                break;
+            case NODE_SENSOR:
+                ;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+            default:
+                break;
+        }
+        
+        if(i >= TRACK_MAX) {
+            //Printf(COM2, "\033[%d;%dH find nxt node exceed max, dest is %d", STATUS_ROW, STATUS_COL + 5, des_snum);
+            break;
+        }
+    }
+    return 0;
+}
+
+track_node* find_nxt_sensor(char *switchPos, track_node* src_node) {
+    int i = 0;
+    for(;;) {
+        i++;
+        //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
+        //Delay(10);
+        switch(src_node->type) {
+            case NODE_SENSOR:
+                return src_node;
+            case NODE_BRANCH:
+                ;
+                int sw_num = src_node->num;
+                int index = -1;
+
+                if(sw_num <= 18) {
+                    index = sw_num - 1;
+                } else {
+                    index = sw_num - 135;
+                }
+
+                char pos = switchPos[index];
+
+                //Printf(COM2, "\033[%d;%dH %d, %d, %c", i, TRACE_COL, sw_num, index, pos);
+                switch(pos) {
+                case 's':
+                    src_node = src_node->edge[DIR_STRAIGHT].dest;
+                    break;
+                case 'c':
+                    src_node = src_node->edge[DIR_CURVED].dest;
+                    break;
+                }     
+                break;
+            case NODE_MERGE:
+                ;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
+            default:
+                break;
+        }
+        
+        if(i >= TRACK_MAX) {
+            //Printf(COM2, "\033[%d;%dH find nxt node exceed max, dest is %d", STATUS_ROW, STATUS_COL + 5, des_snum);
+            break;
+        }
+    }
+    return 0;
+}
+
 int findPathDist(char *switchPos, track_node *src_node, int des_snum) {
     int distance = 0;
 
@@ -203,7 +298,6 @@ track_node* find_track_node(track_node* node_list, int snum) {
     return ret;
 }
 
-
 int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, int *prev, track_node *des_node) {
     //create vertex set
     int i;
@@ -247,6 +341,7 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
                     }
                     
                     break;
+                    /*
                 case NODE_MERGE:
                     v = u.edge[DIR_AHEAD].dest;
 
@@ -271,6 +366,7 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
                         dist[v->index] = alt;
                         prev[v->index] = index;
                     }
+                    */
 
                 case NODE_EXIT:
                     break;
@@ -292,25 +388,24 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
     return 1;
 }
 
-
 int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int* prev, track_node *des) {
     int u = des->index;
     int distance = 0;
     int distance2 = 0;
     int prv_u = -1;
     while(prev[u] != -1) { 
-        track_node prv = track[prv_u];
+        track_node *prv= &(track[prv_u]);
 
         if(track[u].type == NODE_BRANCH) {
             track_node *s = track[u].edge[DIR_STRAIGHT].dest;
             track_node *c = track[u].edge[DIR_CURVED].dest;
 
-            if(prv.num == s->num) {
+            if(prv->num == s->num) {
                 sp[*index].num = track[u].num;
                 sp[*index].state = 's';
                 sp[*index].reverse = 0;
                 (*index)++;
-            } else if(prv.num == c->num) {
+            } else if(prv->num == c->num) {
                 sp[*index].num = track[u].num;
                 sp[*index].state = 'c';
                 sp[*index].reverse = 0;
@@ -318,7 +413,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
             } else {
             }
         }
-
+        /*
         if(track[u].type == NODE_MERGE && prv.edge[DIR_AHEAD].dest->num != track[u].num) {
             track_node *r = track[u].reverse;
             track_node *s = r->edge[DIR_STRAIGHT].dest;
@@ -337,6 +432,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
             } else {
             }
         }
+        */
 
         //printf("%d\n", *index);
 
@@ -345,22 +441,23 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
         u = prev[u];
     }
 
-    if(distance2 == 0) {
+
+    if(distance == 0) {
         u = (des->reverse)->index;
         prv_u = -1;
         while(prev[u] != -1) { 
-            track_node prv = track[prv_u];
+            track_node *prv = &(track[prv_u]);
 
             if(track[u].type == NODE_BRANCH) {
                 track_node *s = track[u].edge[DIR_STRAIGHT].dest;
                 track_node *c = track[u].edge[DIR_CURVED].dest;
 
-                if(prv.num == s->num) {
+                if(prv->num == s->num) {
                     sp[*index].num = track[u].num;
                     sp[*index].state = 's';
                     sp[*index].reverse = 0;
                     (*index)++;
-                } else if(prv.num == c->num) {
+                } else if(prv->num == c->num) {
                     sp[*index].num = track[u].num;
                     sp[*index].state = 'c';
                     sp[*index].reverse = 0;
@@ -369,6 +466,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
                 }
             }
 
+            /*
             if(track[u].type == NODE_MERGE && prv.edge[DIR_AHEAD].dest->num != track[u].num) {
                 track_node *r = track[u].reverse;
                 track_node *s = r->edge[DIR_STRAIGHT].dest;
@@ -387,15 +485,17 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
                 } else {
                 }
             }
+            */
 
+            //printf("%d\n", *index);
 
             distance2 += dist[u];
             prv_u = u;
             u = prev[u];
-        }        
-    }
+        }
 
-    if(distance != 0 && distance <= distance2) return distance;
-    else if(distance2 != 0 && distance2 <= distance) return distance2;
-    else return 0;
+        return distance2;       
+    } else {
+        return distance;
+    }
 }
