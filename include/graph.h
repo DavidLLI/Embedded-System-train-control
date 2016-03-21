@@ -23,5 +23,9 @@ int Dijkstra(int trainNum, track_node *track, track_node *src_node, int *dist, i
 
 int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int* prev, track_node *des);
 
+track_node* find_nxt_merge(track_node* track, char *switchPos, track_node* src_node);
+
+track_node* find_nxt_sensor(track_node* track, char *switchPos, track_node* src_node);
+
 #endif
 
