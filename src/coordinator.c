@@ -319,9 +319,9 @@ void Coordinator(void) {
                         cur_velocity_10[cur_train_num] = interval_distance * 10 / 
                                                         (sensorTriggerTime[cur_train_num] - prev_time[cur_train_num]);
                         
-                        Printf(COM2, "\033[%d;%dH\033[Kcur speed %d, time %d, distance %d", 
-                            SPEED_ROW, SPEED_COL, cur_velocity_10[cur_train_num], 
-                            sensorTriggerTime[cur_train_num] - prev_time[cur_train_num], interval_distance);
+                        //Printf(COM2, "\033[%d;%dH\033[Kcur speed %d, time %d, distance %d", 
+                            //SPEED_ROW, SPEED_COL, cur_velocity_10[cur_train_num], 
+                            //sensorTriggerTime[cur_train_num] - prev_time[cur_train_num], interval_distance);
 
                         // expected prv time
                         int next_dist = find_dist_to_next_sensor(switchPos, cur_node[cur_train_num]);
@@ -544,15 +544,6 @@ void Coordinator(void) {
                                     Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));                                    
                                 }
 
-                                // set switch
-                                t_req train_req;
-                                train_req.type = 1;
-                                train_req.arg1 = sp1[sp1_index].num;
-                                train_req.arg2 = sp1[sp1_index].state;
-
-                                char reply_c;
-                                Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));
-
                                 index = -1;
                                 if(sp1[sp1_index].num <= 18) {
                                     index = sp1[sp1_index].num - 1;
@@ -560,12 +551,23 @@ void Coordinator(void) {
                                     index = sp1[sp1_index].num - 135;
                                 }
 
-                                Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, sp1[sp1_index].state);
+                                if(sp1[sp1_index].state != switchPos[index]) {
+                                    // set switch
+                                    t_req train_req;
+                                    train_req.type = 1;
+                                    train_req.arg1 = sp1[sp1_index].num;
+                                    train_req.arg2 = sp1[sp1_index].state;
 
-                                if(sp1[sp1_index].state == 's') {
-                                    switchPos[index] = 's';
-                                } else if(sp1[sp1_index].state == 'c') {
-                                    switchPos[index] = 'c';
+                                    char reply_c;
+                                    Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));
+
+                                    Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, sp1[sp1_index].state);
+
+                                    if(sp1[sp1_index].state == 's') {
+                                        switchPos[index] = 's';
+                                    } else if(sp1[sp1_index].state == 'c') {
+                                        switchPos[index] = 'c';
+                                    }
                                 }
                             }
                         } else {
@@ -603,13 +605,6 @@ void Coordinator(void) {
 
                             int i;
                             for(i = 0; i < sp2_index; i++) {
-                                t_req train_req;
-                                train_req.type = 1;
-                                train_req.arg1 = sp2[sp2_index].num;
-                                train_req.arg2 = sp2[sp2_index].state;
-
-                                char reply_c;
-                                Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));
 
                                 index = -1;
                                 if(sp2[sp2_index].num <= 18) {
@@ -618,12 +613,22 @@ void Coordinator(void) {
                                     index = sp2[sp2_index].num - 135;
                                 }
 
-                                Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, sp2[sp2_index].state);
+                                if(sp2[sp2_index].state != switchPos[index]) {
+                                    t_req train_req;
+                                    train_req.type = 1;
+                                    train_req.arg1 = sp2[sp2_index].num;
+                                    train_req.arg2 = sp2[sp2_index].state;
 
-                                if(sp2[sp2_index].state == 's') {
-                                    switchPos[index] = 's';
-                                } else if(sp2[sp2_index].state == 'c') {
-                                    switchPos[index] = 'c';
+                                    char reply_c;
+                                    Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));
+
+                                    Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, sp2[sp2_index].state);
+
+                                    if(sp2[sp2_index].state == 's') {
+                                        switchPos[index] = 's';
+                                    } else if(sp2[sp2_index].state == 'c') {
+                                        switchPos[index] = 'c';
+                                    }                                    
                                 }
                             }
                         }

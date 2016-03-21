@@ -395,5 +395,7 @@ int getSwitchPath(track_node *track, switchPath *sp, int *index, int *dist, int*
         }        
     }
 
-    return (distance > distance2)? distance: distance2;
+    if(distance != 0 && distance <= distance2) return distance;
+    else if(distance2 != 0 && distance2 <= distance) return distance2;
+    else return 0;
 }

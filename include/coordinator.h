@@ -33,6 +33,9 @@
 #define LOCATION_ROW 35
 	#define LOCATION_COL 33
 
+#define PATH_ROW 35
+	#define PATH_COL 33
+
 typedef struct Train_Request {
 	char type;
 	int delayTime;
