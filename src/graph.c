@@ -1,5 +1,100 @@
 #include "graph.h"
 
+track_node* find_nxt_merge(track_node* track, char *switchPos, track_node* src_node) {
+    int i = 0;
+    for(;;) {
+        i++;
+        //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
+        //Delay(10);
+        switch(src_node->type) {
+            case NODE_MERGE:
+                return src_node;
+            case NODE_BRANCH:
+                ;
+                int sw_num = src_node->num;
+                int index = -1;
+
+                if(sw_num <= 18) {
+                    index = sw_num - 1;
+                } else {
+                    index = sw_num - 135;
+                }
+
+                char pos = switchPos[index];
+
+                //Printf(COM2, "\033[%d;%dH %d, %d, %c", i, TRACE_COL, sw_num, index, pos);
+                switch(pos) {
+                case 's':
+                    src_node = src_node->edge[DIR_STRAIGHT].dest;
+                    break;
+                case 'c':
+                    src_node = src_node->edge[DIR_CURVED].dest;
+                    break;
+                }     
+                break;
+            case NODE_SENSOR:
+                ;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+            default:
+                break;
+        }
+        
+        if(i >= TRACK_MAX) {
+            //Printf(COM2, "\033[%d;%dH find nxt node exceed max, dest is %d", STATUS_ROW, STATUS_COL + 5, des_snum);
+            break;
+        }
+    }
+    return 0;
+}
+
+track_node* find_nxt_sensor(track_node* track, char *switchPos, track_node* src_node) {
+    int i = 0;
+    for(;;) {
+        i++;
+        //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
+        //Delay(10);
+        switch(src_node->type) {
+            case NODE_SENSOR:
+                return src_node;
+            case NODE_BRANCH:
+                ;
+                int sw_num = src_node->num;
+                int index = -1;
+
+                if(sw_num <= 18) {
+                    index = sw_num - 1;
+                } else {
+                    index = sw_num - 135;
+                }
+
+                char pos = switchPos[index];
+
+                //Printf(COM2, "\033[%d;%dH %d, %d, %c", i, TRACE_COL, sw_num, index, pos);
+                switch(pos) {
+                case 's':
+                    src_node = src_node->edge[DIR_STRAIGHT].dest;
+                    break;
+                case 'c':
+                    src_node = src_node->edge[DIR_CURVED].dest;
+                    break;
+                }     
+                break;
+            case NODE_MERGE:
+                ;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
+            default:
+                break;
+        }
+        
+        if(i >= TRACK_MAX) {
+            //Printf(COM2, "\033[%d;%dH find nxt node exceed max, dest is %d", STATUS_ROW, STATUS_COL + 5, des_snum);
+            break;
+        }
+    }
+    return 0;
+}
+
 int minDist(track_node *track, int *dist) {
     int minIndex = -1;
     int minDist = 999999999;
