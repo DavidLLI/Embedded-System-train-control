@@ -240,7 +240,6 @@ void Coordinator(void) {
         char r = 'a';
         Receive(&rcv_id, &req, sizeof(trainReq));
         
-
         switch(req.src) {
             case 's':
                 ;
@@ -257,9 +256,7 @@ void Coordinator(void) {
                     cur_train_num = 0;
                 }
                 // next sensor as expected
-
-                else if (find_nxt_sensor(track, switchPos, cur_node[0]) == tmp_node) { 
-
+                else if (find_nxt_sensor(switchPos, cur_node[0]) == tmp_node) { 
                     cur_train_num = 0;
                 }
                 // self-reverse sensor as expected
@@ -267,14 +264,12 @@ void Coordinator(void) {
                     cur_train_num = 0;
                 }
                 // reverse and next sensor as expected
-
-                else if (find_nxt_sensor(track, switchPos, cur_node[0]->reverse) == tmp_node) {
+                else if (find_nxt_sensor(switchPos, cur_node[0]->reverse) == tmp_node) {
                     cur_train_num = 0;
                 }
                 // Merge and reverse as expected
-                else if (find_nxt_sensor(track, switchPos, 
-                                         find_nxt_merge(track, switchPos, cur_node[0])->reverse)) {
-
+                else if (find_nxt_sensor(switchPos, 
+                                         find_nxt_merge(switchPos, cur_node[0])->reverse)) {
                     cur_train_num = 0;
                 }
                 // train 68 is not registered
@@ -283,9 +278,7 @@ void Coordinator(void) {
                     cur_train_num = 1;
                 }
                 // next sensor as expected
-
-                else if (find_nxt_sensor(track, switchPos, cur_node[1]) == tmp_node) { 
-
+                else if (find_nxt_sensor(switchPos, cur_node[1]) == tmp_node) { 
                     cur_train_num = 1;
                 }
                 // self-reverse sensor as expected
@@ -293,22 +286,16 @@ void Coordinator(void) {
                     cur_train_num = 1;
                 }
                 // reverse and next sensor as expected
-
-                else if (find_nxt_sensor(track, switchPos, cur_node[1]->reverse) == tmp_node) {
+                else if (find_nxt_sensor(switchPos, cur_node[1]->reverse) == tmp_node) {
                     cur_train_num = 1;
                 }
                 // Merge and reverse as expected
-                else if (find_nxt_sensor(track, switchPos, find_nxt_merge(track, switchPos, cur_node[1])->reverse)) {
-
-                    cur_train_num = 1;
-                }
-                // Merge and reverse as expected
-                else if (find_nxt_sensor(track, switchPos, 
-                                         find_nxt_merge(track, switchPos, cur_node[1])->reverse)) {
+                else if (find_nxt_sensor(switchPos, 
+                                         find_nxt_merge(switchPos, cur_node[1])->reverse)) {
                     cur_train_num = 1;
                 }
                 else {
-                    continue;
+                    break;
                 }
 
                 prv_schar[cur_train_num] = cur_schar[cur_train_num];

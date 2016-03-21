@@ -1,6 +1,7 @@
 #include "graph.h"
 
-track_node* find_nxt_merge(track_node* track, char *switchPos, track_node* src_node) {
+
+track_node* find_nxt_merge(char *switchPos, track_node* src_node) {
     int i = 0;
     for(;;) {
         i++;
@@ -47,7 +48,7 @@ track_node* find_nxt_merge(track_node* track, char *switchPos, track_node* src_n
     return 0;
 }
 
-track_node* find_nxt_sensor(track_node* track, char *switchPos, track_node* src_node) {
+track_node* find_nxt_sensor(char *switchPos, track_node* src_node) {
     int i = 0;
     for(;;) {
         i++;
