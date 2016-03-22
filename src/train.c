@@ -2,7 +2,8 @@
 
 
 #define TIMER_PRI 17
-#define TRAINCTRL_PRI 16
+
+#define COORDINATOR_PRI 10
 
 
 
@@ -70,7 +71,8 @@ void init(void) {
 	Delay(500);
 	Printf(COM2, "\033[%d;1H\033[KInitialization Compelete. Let's go Thomas.", STATUS_ROW);
 
-	Create(TRAINCTRL_PRI, &trainController1);
+	
+	Create(COORDINATOR_PRI, &Coordinator);
 
 	Exit();
 }

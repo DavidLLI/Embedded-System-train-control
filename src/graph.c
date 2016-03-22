@@ -3,13 +3,20 @@
 
 track_node* find_nxt_merge(char *switchPos, track_node* src_node) {
     int i = 0;
+    track_node* self = src_node;
     for(;;) {
         i++;
         //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
         //Delay(10);
         switch(src_node->type) {
             case NODE_MERGE:
-                return src_node;
+                if (self != src_node) {
+                    return src_node;
+                }
+                else {
+                    src_node = src_node->edge[DIR_AHEAD].dest;
+                    break;
+                }
             case NODE_BRANCH:
                 ;
                 int sw_num = src_node->num;
@@ -50,13 +57,20 @@ track_node* find_nxt_merge(char *switchPos, track_node* src_node) {
 
 track_node* find_nxt_sensor(char *switchPos, track_node* src_node) {
     int i = 0;
+    track_node* self = src_node;
     for(;;) {
         i++;
         //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
         //Delay(10);
         switch(src_node->type) {
             case NODE_SENSOR:
-                return src_node;
+                if (src_node != self) {
+                    return src_node;
+                }
+                else {
+                    src_node = src_node->edge[DIR_AHEAD].dest;
+                    break;
+                }
             case NODE_BRANCH:
                 ;
                 int sw_num = src_node->num;

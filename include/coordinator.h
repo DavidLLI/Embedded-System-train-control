@@ -53,7 +53,7 @@ typedef struct Train_Request {
 
 void Coordinator(void);
 
-void trainController1(void);
+void trainController(void);
 
 #endif
 
