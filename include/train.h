@@ -16,15 +16,6 @@ enum train_cmd {
 	sp,
 };
 
-typedef struct trainRequest {
-	char src; // 't' - train, 's' - sensor;
-	int type;
-	int arg1;
-	int arg2;
-	char schar;
-	int sint;
-	int train_num;
-} trainReq;
 
 void init(void);
 

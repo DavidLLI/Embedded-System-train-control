@@ -24,16 +24,18 @@ typedef struct train_location_display_request {
     int stop_distance;
 }t_loc_req;
 
+
 void trainController(void) {
     int display_id = WhoIs("LocationDisplay");
     int recv_id = 0;
+
     t_req req;
     for (;;) {
         Receive(&recv_id, &req, sizeof(t_req));
         char c;
         Reply(recv_id, &c, sizeof(char));
         switch (req.type) {
-            case 0:
+            case 0:     // sp
                 ;
                 int train_num = 0;
                 if (req.arg1 == 0) {
@@ -53,7 +55,7 @@ void trainController(void) {
                 char r;
                 Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
                 break;
-            case 1:
+            case 1:     // sw
                 Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", TRAINCTRL_ROW, req.arg1, req.arg2);
                 if(req.arg2 == 'S' || req.arg2 == 's') {
                     Printf(COM1, "%c%c", 0x21, req.arg1);
@@ -65,7 +67,7 @@ void trainController(void) {
 
                 Printf(COM1, "%c", 32); //trun off solenoid
                 break;
-            case 2:
+            case 2:     // rv
                 ;
                 if (req.arg1 == 0) {
                     train_num = TRAIN_NUM1; 
@@ -86,7 +88,7 @@ void trainController(void) {
                 Printf(COM1, "%c%c", req.arg2, train_num);
                 Printf(COM2, "\033[%d;1H\033[KReaccelerate train %d to speed %d", STATUS_ROW, train_num, req.arg2);           
                 break;
-            case 3:
+            case 3:     // tr
                 ;
                 train_num = 0;
                 if (req.arg1 == 0) {
@@ -204,7 +206,7 @@ void Coordinator(void) {
     int display_id = Create(LOC_DISPLAY_PRI, &train_location_display);
     
     track_node track[TRACK_MAX];
-    init_trackb(track);
+    init_tracka(track);
 
     char switchPos[22];
     int s_i;
@@ -252,9 +254,9 @@ void Coordinator(void) {
     track_node* cur_node[TRAIN_MAX];
 
     // stop at sensor snum
-    int sp = 0;
-    int des_snum = 0;
-    int des_dist = 0;
+    int sp[2];
+    int des_snum[4];
+    int des_dist[2];
 
     int expected_time[TRAIN_MAX];
 
@@ -266,6 +268,12 @@ void Coordinator(void) {
     reserve[1] = reserve2;
     int rsv_count[TRAIN_MAX];
     int train_stuck[TRAIN_MAX];
+
+    // swith path
+    switchPath spT1[22];
+    switchPath spT2[22];
+    int spT1_index = 0;
+    int spT2_index = 0;    
 
     // Sensor attribution
     int reversing[TRAIN_MAX];
@@ -376,6 +384,30 @@ void Coordinator(void) {
                     Printf(COM2, "\033[%d;%dH\033[KSensor discarded", PATH_ROW, PATH_COL);
                     break;
                 }
+                
+
+                prv_schar[cur_train_num] = cur_schar[cur_train_num];
+                prv_sint[cur_train_num] = cur_sint[cur_train_num];
+                cur_schar[cur_train_num] = req.schar;
+                cur_sint[cur_train_num] = req.sint;
+                
+                prev_time[cur_train_num] = sensorTriggerTime[cur_train_num];
+                sensorTriggerTime[cur_train_num] = Time();
+                
+                if(expected_time[cur_train_num] != 0) {
+                    Printf(COM2, "\033[%d;%dH\033[KSensor %c%d, tick diff %d", 
+                        TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar[cur_train_num], 
+                        prv_sint[cur_train_num], sensorTriggerTime[cur_train_num] - expected_time[cur_train_num]);                    
+                } else {
+                    Printf(COM2, "\033[%d;%dH\033[KCalculation error: expected time = 0", 
+                        TRAIN_TIME_ROW, TRAIN_TIME_COL);
+                }
+                
+
+                prev_node[cur_train_num] = cur_node[cur_train_num];
+                cur_snum[cur_train_num] = (cur_schar[cur_train_num] - 'A') * 16 + cur_sint[cur_train_num] - 1;
+
+                // Update current node for train cur_train_num
                 cur_node[cur_train_num] = tmp_node;
                 
                 //Printf(COM2, "\033[%d;%dH\033[KNext sensor: %s", PATH_ROW, PATH_COL, find_nxt_sensor(switchPos, cur_node[cur_train_num])->name);
@@ -398,7 +430,7 @@ void Coordinator(void) {
                     rsv_count[i_r] = 0;
                     int reserve_distance = 1200;
                     track_node* reserve_node = cur_node[i_r];
-                    while (reserve_distance > 0) {
+                    while (reserve_distance > 0 && reserve_node->type != NODE_EXIT) {
                         int reserve_train_num = 0;
                         if (i_r == 0) {
                             reserve_train_num = TRAIN_NUM1;
@@ -435,6 +467,10 @@ void Coordinator(void) {
                         rsv_count[i_r]++;
 
                         switch (reserve_node->type) {
+                            case NODE_ENTER:
+                                reserve_distance -= reserve_node->edge[DIR_AHEAD].dist;
+                                reserve_node = reserve_node->edge[DIR_AHEAD].dest;
+                                break;
                             case NODE_SENSOR:
                                 reserve_distance -= reserve_node->edge[DIR_AHEAD].dist;
                                 reserve_node = reserve_node->edge[DIR_AHEAD].dest;
@@ -446,6 +482,7 @@ void Coordinator(void) {
                             case NODE_BRANCH:
                                 ;
                                 int sw_num = reserve_node->num;
+
                                 int index = -1;
 
                                 if(sw_num <= 18) {
@@ -456,6 +493,46 @@ void Coordinator(void) {
 
                                 char pos = switchPos[index];
 
+                                // change switch if needed
+                                if(reserve_train_num == TRAIN_NUM1) {
+                                    for(i = 0; i < spT1_index; i++) {
+                                        if(sw_num == spT1[i].num && pos != spT1[i].state) {
+                                            // set switch
+                                            Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, spT1[i].num, spT1[i].state);
+                                            if(spT1[i].state == 'S' || spT1[i].state == 's') {
+                                                Printf(COM1, "%c%c", 0x21, spT1[i].num);
+                                                switchPos[index] = 's';
+                                                Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, 's');
+                                            } else if(spT1[i].state == 'C' || spT1[i].state == 'c') {
+                                                Printf(COM1, "%c%c", 0x22, spT1[i].num);
+                                                switchPos[index] = 'c';
+                                                Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, 'c');
+                                            }
+
+                                            Printf(COM1, "%c", 32); //trun off solenoid                                             
+                                        }
+                                    }
+                                } else if(reserve_train_num == TRAIN_NUM2) {
+                                    for(i = 0; i < spT2_index; i++) {
+                                        if(sw_num == spT2[i].num && pos != spT2[i].state) {
+                                            // set switch
+                                            Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, spT2[i].num, spT2[i].state);
+                                            if(spT2[i].state == 'S' || spT2[i].state == 's') {
+                                                Printf(COM1, "%c%c", 0x21, spT2[i].num);
+                                                switchPos[index] = 's';
+                                                Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, 's');
+                                            } else if(spT2[i].state == 'C' || spT2[i].state == 'c') {
+                                                Printf(COM1, "%c%c", 0x22, spT2[i].num);
+                                                switchPos[index] = 'c';
+                                                Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, 'c');
+                                            }
+
+                                            Printf(COM1, "%c", 32); //trun off solenoid                                             
+                                        }
+                                    }
+                                }
+
+                                pos = switchPos[index];
                                 //Printf(COM2, "\033[%d;%dH %d, %d, %c", i, TRACE_COL, sw_num, index, pos);
                                 switch(pos) {
                                 case 's':
@@ -482,32 +559,11 @@ void Coordinator(void) {
                         train_stuck[i_r] = 0;
                     }
                 }
-
-                prv_schar[cur_train_num] = cur_schar[cur_train_num];
-                prv_sint[cur_train_num] = cur_sint[cur_train_num];
-                cur_schar[cur_train_num] = req.schar;
-                cur_sint[cur_train_num] = req.sint;
-                
-                prev_time[cur_train_num] = sensorTriggerTime[cur_train_num];
-                sensorTriggerTime[cur_train_num] = Time();
-                
-                if(expected_time[cur_train_num] != 0) {
-                    Printf(COM2, "\033[%d;%dH\033[KSensor %c%d, tick diff %d", 
-                        TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar[cur_train_num], 
-                        prv_sint[cur_train_num], sensorTriggerTime[cur_train_num] - expected_time[cur_train_num]);                    
-                } else {
-                    Printf(COM2, "\033[%d;%dH\033[KCalculation error: expected time = 0", 
-                        TRAIN_TIME_ROW, TRAIN_TIME_COL);
-                }
-                
-
-                prev_node[cur_train_num] = cur_node[cur_train_num];
-                cur_snum[cur_train_num] = (cur_schar[cur_train_num] - 'A') * 16 + cur_sint[cur_train_num] - 1;
-
-                
                 //track_node* tmp_node = 0;
 
                 //cur_node[cur_train_num] = tmp_node;
+
+                interval_distance = findPathDist(switchPos, prev_node[cur_train_num], cur_node[cur_train_num]->num);
 
                 if(cur_node[cur_train_num] > 0) {
                     
@@ -540,12 +596,13 @@ void Coordinator(void) {
                     dis_req.train_num = cur_train_num;
                     Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
 
-                    if(sp) {
-                        int distance = findPathDist(switchPos, cur_node[cur_train_num], des_snum);
-                        if(distance < 1500 && distance > stop_distance1[cur_record_velocity[cur_train_num]]) {
-                            sp = 0;
+                    if(sp[cur_train_num]) {
+                        int distance = findPathDist(switchPos, cur_node[cur_train_num], des_snum[cur_train_num * 2]);
+                        int distance_rev = findPathDist(switchPos, cur_node[cur_train_num], des_snum[cur_train_num * 2 + 1]);
+                        if(distance < (stop_distance1[cur_record_velocity[cur_train_num]]) * 2 && distance > stop_distance1[cur_record_velocity[cur_train_num]]) {
+                            sp[cur_train_num] = 0;
 
-                            int delayTime = ((distance + des_dist - stop_distance1[cur_record_velocity[cur_train_num]]) * 10) / 
+                            int delayTime = ((distance + des_dist[cur_train_num] - stop_distance1[cur_record_velocity[cur_train_num]]) * 10) / 
                                              cur_velocity_10[cur_train_num];
 
                             sensorTiggerElapsedTime[cur_train_num] = Time();
@@ -561,6 +618,24 @@ void Coordinator(void) {
                             dis_req.stop_distance = distance;
                             Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
                            // Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
+                        } else if (distance_rev < (stop_distance1[cur_record_velocity[cur_train_num]]) * 2 && distance_rev > stop_distance1[cur_record_velocity[cur_train_num]]) {
+                            sp[cur_train_num] = 0;
+
+                            int delayTime = ((distance_rev + des_dist[cur_train_num] - stop_distance1[cur_record_velocity[cur_train_num]]) * 10) / 
+                                             cur_velocity_10[cur_train_num];
+
+                            sensorTiggerElapsedTime[cur_train_num] = Time();
+                            t_req train_req;
+                            train_req.type = 0;
+                            train_req.delayTime = delayTime - sensorTiggerElapsedTime[cur_train_num] + 
+                                                    sensorTriggerTime[cur_train_num];
+                            char reply_c;
+                            Send(trainCtrl_id[0], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                            
+                            dis_req.type = 2;
+                            dis_req.velocity_10 = cur_velocity_10[cur_train_num];
+                            dis_req.stop_distance = distance_rev;
+                            Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));                            
                         }
                     }
                 } else {
@@ -629,7 +704,7 @@ void Coordinator(void) {
                         rsv_count[train_req.arg1] = 0;
                         int reserve_distance = 1200;
                         track_node* reserve_node = cur_node[train_req.arg1]->reverse;
-                        while (reserve_distance > 0) {
+                        while (reserve_distance > 0 && reserve_node->type != NODE_EXIT) {
                             int reserve_train_num = 0;
                             if (train_req.arg1 == 0) {
                                 reserve_train_num = TRAIN_NUM1;
@@ -666,6 +741,10 @@ void Coordinator(void) {
                             rsv_count[train_req.arg1]++;
 
                             switch (reserve_node->type) {
+                                case NODE_ENTER:
+                                    reserve_distance -= reserve_node->edge[DIR_AHEAD].dist;
+                                    reserve_node = reserve_node->edge[DIR_AHEAD].dest;
+                                    break;
                                 case NODE_SENSOR:
                                     reserve_distance -= reserve_node->edge[DIR_AHEAD].dist;
                                     reserve_node = reserve_node->edge[DIR_AHEAD].dest;
@@ -768,9 +847,9 @@ void Coordinator(void) {
                                 Send(trainCtrl_id[0], &train_req, sizeof(t_req), &reply_c, sizeof(char));
                                 //Printf(COM2, "\033[%d;%dH\033[KsensorTriggerTime: %d, sensorTiggerElapsedTime: %d", STATUS_ROW + 6, STATUS_COL, sensorTriggerTime, sensorTiggerElapsedTime);                                
                             } else {
-                                sp = 1;
-                                des_snum = snum;
-                                des_dist = req.arg2;                                
+                                sp[cur_train_num] = 1;
+                                des_snum[cur_train_num] = snum;
+                                des_dist[cur_train_num] = req.arg2;                              
                             }                     
 
                         } else if(distance < 1500) {
@@ -787,23 +866,26 @@ void Coordinator(void) {
                             
                             //Printf(COM2, "\033[%d;%dH\033[Ktime1: %d, sensorTiggerElapsedTime: %d", STATUS_ROW + 6, STATUS_COL, time1, sensorTiggerElapsedTime);
                         } else {
-                            sp = 1;
-                            des_snum = snum;
-                            des_dist = req.arg2;
+                            sp[cur_train_num] = 1;
+                            des_snum[cur_train_num] = snum;
+                            des_dist[cur_train_num] = req.arg2;
                         }
 
                         Reply(rcv_id, &r, sizeof(char));
                         break;
+
                     case 9:
                         ;
                         int trainNum = req.train_num;
+                        if(trainNum == TRAIN_NUM1) {
+                            cur_train_num = 0;
+                        } else if(trainNum == TRAIN_NUM2) {
+                            cur_train_num = 1;
+                        }
                         src_node = 0;
 
-                        if(trainNum == TRAIN_NUM1) {
-                            src_node = cur_node[0];
-                        } else if(trainNum == TRAIN_NUM2) {
-                            src_node = cur_node[1];
-                        }
+                        src_node = cur_node[cur_train_num];
+    
 
                         int des = (req.schar - 'A') * 16 + req.sint - 1;
                         track_node *des_node = find_track_node(track, des);
@@ -814,6 +896,20 @@ void Coordinator(void) {
                         int prev[140];
 
                         int ret = 0;
+
+                        if(trainNum == TRAIN_NUM1) {
+                            for(i = 0; i < 22; i++) {
+                                spT1[i].num = 0;
+                                spT1[i].state = 'a';
+                            }
+                            spT1_index = 0;
+                        } else if(trainNum == TRAIN_NUM2) {
+                            for(i = 0; i < 22; i++) {
+                                spT2[i].num = 0;
+                                spT2[i].state = 'a';
+                            }
+                            spT2_index = 0;
+                        }                        
 
                         // case 1,  src: +
                         switchPath sp1[22];
@@ -839,10 +935,22 @@ void Coordinator(void) {
                             distance2 = 999999999;
                         }
 
-                        if(distance1 < distance2) {
-                            int i;
+                        if(distance1 < distance2 && distance1 > (stop_distance1[cur_record_velocity[cur_train_num]]) * 2) {
+                            
                             for(i = 0; i < sp1_index; i++) {
-                                Printf(COM2, "\033[%d;%dH\033[K%d, %c", 5+i, PATH_COL, sp1[i].num, sp1[i].state);
+                                // copy to spT
+                                if(trainNum == TRAIN_NUM1) {
+                                    spT1[i].num = sp1[i].num;
+                                    spT1[i].state = sp1[i].state;
+                                    spT1_index++;
+                                } else if(trainNum == TRAIN_NUM2) {
+                                    spT2[i].num = sp1[i].num;
+                                    spT2[i].state = sp1[i].state;
+                                    spT2_index++;
+                                }
+
+                                Printf(COM2, "\033[%d;%dH%d, %c", PATH_ROW + 2 + i, PATH_COL + 29, sp1[i].num, sp1[i].state);
+
 
                                 /*
                                 // reverse after merge
@@ -861,7 +969,8 @@ void Coordinator(void) {
                                     Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));                                    
                                 }
                                 */
-
+                                /*
+                                // set switch
                                 index = -1;
                                 if(sp1[i].num <= 18) {
                                     index = sp1[i].num - 1;
@@ -870,7 +979,7 @@ void Coordinator(void) {
                                 }
 
                                 if(sp1[i].state != switchPos[index]) {
-                                    // set switch
+                                    
                                     Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", TRAINCTRL_ROW, sp1[i].num, sp1[i].state);
                                     if(sp1[i].state == 'S' || sp1[i].state == 's') {
                                         Printf(COM1, "%c%c", 0x21, sp1[i].num);
@@ -888,30 +997,41 @@ void Coordinator(void) {
 
                                     Printf(COM1, "%c", 32); //trun off solenoid                                    
                                 }
+                                */
                             }
                         } else {
 
-                            int speed = 0;
+                            //reverse the train
+                            t_req train_req;
+                            train_req.type = 2;
                             if(trainNum == TRAIN_NUM1) {
-                                speed = cur_record_velocity[0];
+                                train_req.arg1 = 0;
+                                train_req.arg2 = cur_record_velocity[0];
                             } else {
-                                speed = cur_record_velocity[1];
+                                train_req.arg1 = 1;
+                                train_req.arg2 = cur_record_velocity[1];
                             }
-
-                            Printf(COM2, "\033[%d;1H\033[KReverse train %d", TRAINCTRL_ROW, trainNum);
-                            //set speed to 0
-                            Printf(COM1, "%c%c", 0, trainNum);
-                            Delay(500);
-
-                            //reverse
-                            Printf(COM1, "%c%c", 15, trainNum);
-
-                            //set speed back
-                            Delay(10);
-                            Printf(COM1, "%c%c", speed, trainNum);                            
                             
-                            int i;
+                            char reply_c;
+                            Send(trainCtrl_id[train_req.arg1], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                            reversing[train_req.arg1] = 1;                            
+                            
                             for(i = 0; i < sp2_index; i++) {
+                                // copy to spT
+                                if(trainNum == TRAIN_NUM1) {
+                                    spT1[i].num = sp2[i].num;
+                                    spT1[i].state = sp2[i].state;
+                                    spT1_index++;
+                                } else if(trainNum == TRAIN_NUM2) {
+                                    spT2[i].num = sp2[i].num;
+                                    spT2[i].state = sp2[i].state;
+                                    spT2_index++;
+                                }
+
+                                Printf(COM2, "\033[%d;%dH%d, %c", PATH_ROW + 2, PATH_COL + 29, sp2[i].num, sp2[i].state);
+
+
+
                                 /*
                                 // reverse after merge
                                 if(sp2[sp2_index].reverse) {
@@ -928,7 +1048,9 @@ void Coordinator(void) {
                                     Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));                                    
                                 }
                                 */
-                                
+
+                                //change switch if needed
+                                /*
                                 index = -1;
                                 if(sp2[i].num <= 18) {
                                     index = sp2[i].num - 1;
@@ -936,7 +1058,7 @@ void Coordinator(void) {
                                     index = sp2[i].num - 135;
                                 }
 
-                                //change switch if needed
+                                
                                 if(sp2[i].state != switchPos[index]) {
                                     // set switch
                                     Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", TRAINCTRL_ROW, sp2[i].num, sp2[i].state);
@@ -956,18 +1078,42 @@ void Coordinator(void) {
 
                                     Printf(COM1, "%c", 32); //trun off solenoid                                    
                                 }
+                                */
                             }
                         }
-
-                        sp = 1;
-                        des_snum = des;
-                        des_dist = 0;                  
+                        int des_rev = (des_node->reverse)->num;
+                        sp[cur_train_num] = 1;
+                        des_snum[cur_train_num * 2] = des;
+                        des_snum[cur_train_num * 2 + 1] = des_rev;
+                        des_dist[cur_train_num] = 0;                 
 
                         Reply(rcv_id, &r, sizeof(char));
-                        break;                        
+                        break;                       
                 }
                 break;
         }
     }
 }
 
+
+
+void randomDest(void) {
+    int rcv_id = 0;
+    for (;;) {
+        int trainNum = 0;
+        Receive(&rcv_id, &trainNum, sizeof(int));
+        Reply(rcv_id, &trainNum, sizeof(int));
+
+        int t = Time();
+        
+        trainReq req;
+        char r;
+        req.src = 't';
+        req.type = 9;
+        req.train_num = trainNum;
+        req.schar = 'A' + t % 4;
+        req.sint = 1 + (t / 4) % 15;
+
+        Send(rcv_id, &req, sizeof(trainReq), &r, sizeof(char));                    
+    }
+}

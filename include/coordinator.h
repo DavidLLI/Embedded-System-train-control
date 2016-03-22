@@ -35,7 +35,7 @@
 #define LOCATION_ROW 35
 	#define LOCATION_COL 33
 
-#define COORD_ROW 35
+#define COORD_ROW 39
 
 #define TRAINCTRL_ROW 37
 	#define TRAINCTRL_COL 1
@@ -49,6 +49,16 @@ typedef struct Train_Request {
 	char arg1;
 	char arg2;
 }t_req;
+
+typedef struct trainRequest {
+	char src; // 't' - train, 's' - sensor;
+	int type;
+	int arg1;
+	int arg2;
+	char schar;
+	int sint;
+	int train_num;
+} trainReq;
 
 
 void Coordinator(void);
