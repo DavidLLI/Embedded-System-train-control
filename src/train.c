@@ -289,48 +289,32 @@ void trainCommunication(void) {
 
 		switch(cmd_type) {
 			case 1: //tr
-				Printf(COM2, "\033[%d;1H\033[KSet train %d to speed %d", STATUS_ROW, cmd_arg1, cmd_arg2);
+				//Printf(COM2, "\033[%d;1H\033[KSet train %d to speed %d", STATUS_ROW, cmd_arg1, cmd_arg2);
 				req.src = 't';
 				req.type = 1;
 				req.arg1 = cmd_arg2;
-				if (cmd_arg1 == 63) {
-					req.train_num = 0;
-				}
-				else if (cmd_arg1 == 68) {
-					req.train_num = 1;
-				}
+				req.train_num = cmd_arg1;
 				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
-
-				Printf(COM1, "%c%c", cmd_arg2, cmd_arg1);
-
-				lastSpeed = cmd_arg2;			
+			
 				break;
 			case 2: //rv
-				Printf(COM2, "\033[%d;1H\033[KReverse train %d", STATUS_ROW, cmd_arg1);
-
-				//set speed to 0
-				Printf(COM1, "%c%c", 0, cmd_arg1);
-				Delay(500);
-
-				//reverse
-				Printf(COM1, "%c%c", 15, cmd_arg1);
-
-				//set speed back
-				Delay(10);
-				Printf(COM1, "%c%c", lastSpeed, cmd_arg1);											
+				req.src = 't';
+				req.type = 2;
+				req.train_num = cmd_arg1;
+				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));										
 				break;	
 			case 3: //sw
-				Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, cmd_arg1, cmd_arg2);
+				//Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, cmd_arg1, cmd_arg2);
 
 				if(cmd_arg2 == 'S' || cmd_arg2 == 's') {
-					Printf(COM1, "%c%c", 0x21, cmd_arg1);
+					//Printf(COM1, "%c%c", 0x21, cmd_arg1);
 					req.arg2 = 's';
 				} else if(cmd_arg2 == 'C' || cmd_arg2 == 'c') {
-					Printf(COM1, "%c%c", 0x22, cmd_arg1);
+					//Printf(COM1, "%c%c", 0x22, cmd_arg1);
 					req.arg2 = 'c';
 				}
 
-				Printf(COM1, "%c", 32); //trun off solenoid
+				//Printf(COM1, "%c", 32); //trun off solenoid
 
 				req.src = 't';
 				req.type = 3;
