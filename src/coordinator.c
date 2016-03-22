@@ -17,6 +17,8 @@
 void trainController1(void) {
     RegisterAs("trainController");
     Create(COORDINATOR_PRI, &Coordinator);
+
+
     int recv_id = 0;
     t_req req;
     for (;;) {
@@ -539,7 +541,6 @@ void Coordinator(void) {
                         if(distance1 < distance2) {
                             int i;
                             for(i = 0; i < sp1_index; i++) {
-                                Printf(COM2, "\033[%d;%dH\033[K%d, %c", 5+i, PATH_COL, sp1[i].num, sp1[i].state);
 
                                 /*
                                 // reverse after merge
@@ -588,24 +589,19 @@ void Coordinator(void) {
                             }
                         } else {
 
-                            int speed = 0;
+                            t_req train_req;
+                            train_req.type = 2;
+                            
                             if(trainNum == 63) {
-                                speed = cur_record_velocity[0];
+                                train_req.arg1 = 0;
+                                train_req.arg2 = cur_record_velocity[0];
                             } else {
-                                speed = cur_record_velocity[1];
+                                train_req.arg1 = 1;
+                                train_req.arg2 = cur_record_velocity[1];
                             }
-
-                            Printf(COM2, "\033[%d;1H\033[KReverse train %d", TRAINCTRL_ROW, trainNum);
-                            //set speed to 0
-                            Printf(COM1, "%c%c", 0, trainNum);
-                            Delay(500);
-
-                            //reverse
-                            Printf(COM1, "%c%c", 15, trainNum);
-
-                            //set speed back
-                            Delay(10);
-                            Printf(COM1, "%c%c", speed, trainNum);                            
+                            
+                            char reply_c;
+                            Send(trainCtrl_id1, &train_req, sizeof(t_req), &reply_c, sizeof(char));                            
                             
                             int i;
                             for(i = 0; i < sp2_index; i++) {

@@ -35,7 +35,7 @@
 #define LOCATION_ROW 35
 	#define LOCATION_COL 33
 
-#define COORD_ROW 35
+#define COORD_ROW 39
 
 #define TRAINCTRL_ROW 37
 	#define TRAINCTRL_COL 1
