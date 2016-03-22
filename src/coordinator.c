@@ -10,6 +10,9 @@
 
 #define TRAIN_MAX 2
 
+#define TRAIN_NUM1 63
+#define TRAIN_NUM2 68
+
 #define DEBUG 1
 
 typedef struct train_location_display_request {
@@ -34,10 +37,10 @@ void trainController(void) {
                 ;
                 int train_num = 0;
                 if (req.arg1 == 0) {
-                    train_num = 63; 
+                    train_num = TRAIN_NUM1; 
                 }
                 if (req.arg1 == 1) {
-                    train_num = 68;
+                    train_num = TRAIN_NUM2;
                 }
                 Delay(req.delayTime);
                 Printf(COM1, "%c%c", 0, train_num);
@@ -65,10 +68,10 @@ void trainController(void) {
             case 2:
                 ;
                 if (req.arg1 == 0) {
-                    train_num = 63; 
+                    train_num = TRAIN_NUM1; 
                 }
                 if (req.arg1 == 1) {
-                    train_num = 68;
+                    train_num = TRAIN_NUM2;
                 }
                 Printf(COM2, "\033[%d;1H\033[KReverse train %d", TRAINCTRL_ROW, train_num);
                 //set speed to 0
@@ -86,10 +89,10 @@ void trainController(void) {
                 ;
                 train_num = 0;
                 if (req.arg1 == 0) {
-                    train_num = 63; 
+                    train_num = TRAIN_NUM1; 
                 }
                 if (req.arg1 == 1) {
-                    train_num = 68;
+                    train_num = TRAIN_NUM2;
                 }
                 
                 Printf(COM2, "\033[%d;1H\033[KSet train %d to speed %d", STATUS_ROW, train_num, req.arg2);
@@ -261,6 +264,7 @@ void Coordinator(void) {
     reserve[0] = reserve1;
     reserve[1] = reserve2;
     int rsv_count[TRAIN_MAX];
+    int train_stuck[TRAIN_MAX];
 
     int init_i = 0;
     for (init_i = 0; init_i < TRAIN_MAX; init_i++) {
@@ -278,6 +282,7 @@ void Coordinator(void) {
         cur_node[init_i] = 0;
         expected_time[init_i] = 0;
         rsv_count[init_i] = 0;
+        train_stuck[init_i] = 0;
     }
 
     Printf(COM2, "\033[%d;%dHReserved by A: ", PATH_ROW + 1, PATH_COL);
@@ -304,7 +309,7 @@ void Coordinator(void) {
 
                 
 
-                // train 63 is not registered
+                // train TRAIN_NUM1 is not registered
                 if (cur_node[0] == 0) {
                     cur_train_num = 0;
                 }
@@ -325,7 +330,7 @@ void Coordinator(void) {
                                          find_nxt_merge(switchPos, cur_node[0])->reverse)) {
                     cur_train_num = 0;
                 }*/
-                // train 68 is not registered
+                // train TRAIN_NUM2 is not registered
                 else if (cur_node[1] == 0) {
                     cur_train_num = 1;
                 }
@@ -375,10 +380,10 @@ void Coordinator(void) {
                     while (reserve_distance > 0) {
                         int reserve_train_num = 0;
                         if (i_r == 0) {
-                            reserve_train_num = 63;
+                            reserve_train_num = TRAIN_NUM1;
                         }
                         else if (i_r == 1) {
-                            reserve_train_num = 68;
+                            reserve_train_num = TRAIN_NUM2;
                         }
                         if (reserve_node->ownedBy != 0 && reserve_node->ownedBy != reserve_train_num) { // Stop since node is reserved by the other train
                             t_req train_req;
@@ -387,6 +392,15 @@ void Coordinator(void) {
                             train_req.arg1 = i_r;
                             char reply_c;
                             Send(trainCtrl_id[i_r], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                            train_stuck[i_r] = 1;
+                            if (train_stuck[0] == 1 && train_stuck[1] == 1) {
+                                train_req.type = 2;
+                                train_req.arg2 = cur_record_velocity[1];
+                                train_req.arg1 = 1;
+                                char reply_c;
+                                Send(trainCtrl_id[1], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                                train_stuck[1] = 0;
+                            }
                             break;
                         }
                         // Reserve the track node
@@ -435,13 +449,14 @@ void Coordinator(void) {
                             
                         }
                     }
-                    if (reserve_distance <= 0) {
+                    if (reserve_distance <= 0 && train_stuck[i_r] == 1) {
                         t_req train_req;
                         train_req.type = 3;
                         train_req.arg1 = i_r;
                         train_req.arg2 = cur_record_velocity[i_r];
                         char reply_c;
                         Send(trainCtrl_id[i_r], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+                        train_stuck[i_r] = 0;
                     }
                 }
 
@@ -634,9 +649,9 @@ void Coordinator(void) {
                         int trainNum = req.train_num;
                         src_node = 0;
 
-                        if(trainNum == 63) {
+                        if(trainNum == TRAIN_NUM1) {
                             src_node = cur_node[0];
-                        } else if(trainNum == 68) {
+                        } else if(trainNum == TRAIN_NUM2) {
                             src_node = cur_node[1];
                         }
 
@@ -685,7 +700,7 @@ void Coordinator(void) {
                                     t_req train_req;
                                     train_req.type = 2;
                                     train_req.arg1 = trainNum;
-                                    if(trainNum == 63) {
+                                    if(trainNum == TRAIN_NUM1) {
                                         train_req.arg2 = cur_record_velocity[0];
                                     } else {
                                         train_req.arg2 = cur_record_velocity[1];
@@ -727,7 +742,7 @@ void Coordinator(void) {
                         } else {
 
                             int speed = 0;
-                            if(trainNum == 63) {
+                            if(trainNum == TRAIN_NUM1) {
                                 speed = cur_record_velocity[0];
                             } else {
                                 speed = cur_record_velocity[1];
@@ -753,7 +768,7 @@ void Coordinator(void) {
                                     t_req train_req;
                                     train_req.type = 2;
                                     train_req.arg1 = trainNum;
-                                    if(trainNum == 63) {
+                                    if(trainNum == TRAIN_NUM1) {
                                         train_req.arg2 = cur_record_velocity[0];
                                     } else {
                                         train_req.arg2 = cur_record_velocity[1];
