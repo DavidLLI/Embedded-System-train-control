@@ -50,16 +50,16 @@ void init(void) {
 		else switchNum = switchIndex + 1;
 
 		//send command
-		//if (switchNum == 10 || switchNum == 16) {
-			//Printf(COM1, "%c%c%c", 33, (char) switchNum, 32);
+		if (switchNum == 153 || switchNum == 155) {
+			Printf(COM1, "%c%c%c", 33, (char) switchNum, 32);
 			//print to COM2
-			//Printf(COM2, "\033[%d;%dHs", SWITCH_ROW + switchIndex, SWITCH_COL);
-		//}
-		//else {
+			Printf(COM2, "\033[%d;%dHs", SWITCH_ROW + switchIndex, SWITCH_COL);
+		}
+		else {
 			Printf(COM1, "%c%c%c", 34, (char) switchNum, 32);
 			//print to COM2
 			Printf(COM2, "\033[%d;%dHc", SWITCH_ROW + switchIndex, SWITCH_COL);
-		//}
+		}
 
 		
 

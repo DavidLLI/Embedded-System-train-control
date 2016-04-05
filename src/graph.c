@@ -1,5 +1,49 @@
 #include "graph.h"
 
+track_node* find_node_in_dist(char *switchPos, track_node* src_node, int distance) {
+    int i = 0;
+    while (distance > 0) {
+        switch(src_node->type) {
+            case NODE_EXIT:
+                return src_node;
+            case NODE_BRANCH:
+                ;
+                int sw_num = src_node->num;
+                int index = -1;
+
+                if(sw_num <= 18) {
+                    index = sw_num - 1;
+                } else {
+                    index = sw_num - 135;
+                }
+
+                char pos = switchPos[index];
+
+                //Printf(COM2, "\033[%d;%dH %d, %d, %c", i, TRACE_COL, sw_num, index, pos);
+                switch(pos) {
+                case 's':
+                    distance -= src_node->edge[DIR_STRAIGHT].dist;
+                    src_node = src_node->edge[DIR_STRAIGHT].dest;
+
+                    break;
+                case 'c':
+                    distance -= src_node->edge[DIR_CURVED].dist;
+                    src_node = src_node->edge[DIR_CURVED].dest;
+                    break;
+                }     
+                break;
+            case NODE_SENSOR:
+                distance -= src_node->edge[DIR_AHEAD].dist;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
+            case NODE_MERGE:
+                distance -= src_node->edge[DIR_AHEAD].dist;
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
+        }
+    }
+    return src_node;
+}
 
 track_node* find_nxt_merge(char *switchPos, track_node* src_node) {
     int i = 0;

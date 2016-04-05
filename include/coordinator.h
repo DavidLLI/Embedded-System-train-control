@@ -7,6 +7,7 @@
 #include "command.h"
 #include "track_node.h"
 #include "track_data.h"
+#include "reserve.h"
 
 #define TIME_ROW 1
 	#define TIME_COL 1
@@ -42,6 +43,9 @@
 
 #define PATH_ROW 38
 	#define PATH_COL 1
+
+#define TRAIN_NUM1 63
+#define TRAIN_NUM2 58
 
 typedef struct Train_Request {
 	char type;
