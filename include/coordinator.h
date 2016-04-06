@@ -45,9 +45,6 @@
 #define PATH_ROW 38
 	#define PATH_COL 1
 
-#define TRAIN_NUM1 63
-#define TRAIN_NUM2 58
-
 #define TRAINCTRL_PRI 18
 
 #define TIME_DISPLAY_PRI 17

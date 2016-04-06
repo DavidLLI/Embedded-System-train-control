@@ -75,9 +75,9 @@ void trainController(void) {
                     train_num = TRAIN_NUM2;
                 }
 
-                //if(!project) {
+                if(!project) {
                     Printf(COM2, "\033[%d;1H\033[KReverse train %d", STATUS_ROW, train_num);
-                //}
+                }
                 
                 //set speed to 0
                 Printf(COM1, "%c%c", 0, train_num);
@@ -90,9 +90,9 @@ void trainController(void) {
                 Delay(50);
                 Printf(COM1, "%c%c", req.arg2, train_num);
 
-                //if(!project) {
+                if(!project) {
                     Printf(COM2, "\033[%d;1H\033[KReaccelerate train %d to speed %d", STATUS_ROW, train_num, req.arg2);  
-                //}
+                }
                          
                 break;
             case 3:     // tr
@@ -238,7 +238,7 @@ void Coordinator(void) {
     int display_id = Create(LOC_DISPLAY_PRI, &train_location_display);
     
     track_node track[TRACK_MAX];
-    init_tracka(track);
+    init_trackb(track);
 
     int track_i = 0;
     for (track_i = 0; track_i < TRACK_MAX; track_i++) {
@@ -267,8 +267,8 @@ void Coordinator(void) {
     stop_distance1[6] = 0;
     stop_distance1[7] = 0;
     stop_distance1[8] = 350;
-    stop_distance1[9] = 535;
-    stop_distance1[10] = 660;
+    stop_distance1[9] = 550;
+    stop_distance1[10] = 400;
     stop_distance1[11] = 708;
     stop_distance1[12] = 750;
     stop_distance1[13] = 850;
@@ -395,7 +395,8 @@ void Coordinator(void) {
                     cur_train_num = 0;
                 }
                 // next sensor as expected
-                else if (find_nxt_sensor(switchPos, cur_node[0]) == tmp_node) { 
+                else if (find_nxt_sensor(switchPos, cur_node[0]) == tmp_node &&
+                         tmp_node->ownedBy == TRAIN_NUM1) { 
                     cur_train_num = 0;
                 }
                 // next next sensor as expected
@@ -404,8 +405,7 @@ void Coordinator(void) {
                     cur_train_num = 0;
                 }
                 // self-reverse sensor as expected
-                else if (cur_node[0]->reverse == tmp_node &&
-                         cur_node[0]->reverse->ownedBy == TRAIN_NUM1) {
+                else if (cur_node[0]->reverse == tmp_node) {
                     cur_train_num = 0;
                     reversing[0] = 0;
                 }
@@ -542,6 +542,31 @@ void Coordinator(void) {
                             train_stuck[i_r] = 0;
                         }
                     }
+                    if (train_stuck[0] == 1 && train_stuck[1] == 1) {
+                        if(project) {
+                            cabsReq *cabTmp = &(cab[cab_tail]);
+                            cab_tail = (cab_tail + 1) % 10;
+                            cab_count++;
+
+                            cabTmp->type = 0;
+                            cabTmp->trainNum = indexToTrainNum(0);
+
+                            cabTmp = &(cab[cab_tail]);
+                            cab_tail = (cab_tail + 1) % 10;
+                            cab_count++;
+
+                            cabTmp->type = 0;
+                            cabTmp->trainNum = indexToTrainNum(1);
+
+                            if(projectRdy) {
+                                projectRdy = 0;
+                                Reply(projectId, &(cab[cab_head]), sizeof(cabsReq));
+                                cab_head = (cab_head + 1) % 10;
+                                cab_count--;
+                            }                            
+                        }
+
+                    }
                 }
 
 
@@ -623,7 +648,7 @@ void Coordinator(void) {
 
                                 if(projectRdy) {
                                     projectRdy = 0;
-                                    Reply(projectId, cabTmp, sizeof(cabsReq));
+                                    Reply(projectId, &(cab[cab_head]), sizeof(cabsReq));
                                     cab_head = (cab_head + 1) % 10;
                                     cab_count--;
                                 }
@@ -666,7 +691,7 @@ void Coordinator(void) {
 
                                 if(projectRdy) {
                                     projectRdy = 0;
-                                    Reply(projectId, cabTmp, sizeof(cabsReq));
+                                    Reply(projectId, &(cab[cab_head]), sizeof(cabsReq));
                                     cab_head = (cab_head + 1) % 10;
                                     cab_count--;
                                 }
@@ -910,11 +935,21 @@ void Coordinator(void) {
                             src_node = find_nxt_sensor(switchPos, src_node);
                         }
 
+
+
                         if(!project) {
                             Printf(COM2, "\033[%d;1H\033[Kfind path from %s to %s", COORD_ROW, src_node->name, des_node->name);
                         }
 
+                        int prev_ownedBy = src_node->ownedBy;
+
+                        if (src_node->ownedBy != trainNum) {
+                            src_node->ownedBy = 0;
+                        }
+
                         ret = Dijkstra(trainNum, track, src_node->reverse, dist, prev, des_node);
+
+                        src_node->ownedBy = prev_ownedBy;
                         
                         if(ret) {
                             distance2 = getSwitchPath(track, sp2, &sp2_index, dist, prev, des_node);
@@ -927,21 +962,22 @@ void Coordinator(void) {
 
 
                         if(distance1 == 999999999 && distance2 == 999999999) { // no available path
-                            cabsReq *cabTmp = &(cab[cab_tail]);
-                            cab_tail = (cab_tail + 1) % 10;
-                            cab_count++;
-                            cabTmp->type = 0;
-                            cabTmp->trainNum = indexToTrainNum(cur_train_num);
-                            cabTmp->dst = des;
-                            
+                            if(project) {
+                                cabsReq *cabTmp = &(cab[cab_tail]);
+                                cab_tail = (cab_tail + 1) % 10;
+                                cab_count++;
+                                cabTmp->type = 0;
+                                cabTmp->trainNum = indexToTrainNum(cur_train_num);
+                                cabTmp->dst = des;
+                                
 
-                            if(projectRdy) {
-                                projectRdy = 0;
-                                Reply(projectId, cabTmp, sizeof(cabsReq));
-                                cab_head = (cab_head + 1) % 10;
-                                cab_count--;
+                                if(projectRdy) {
+                                    projectRdy = 0;
+                                    Reply(projectId, &(cab[cab_head]), sizeof(cabsReq));
+                                    cab_head = (cab_head + 1) % 10;
+                                    cab_count--;
+                                }                                
                             }
-
                         } else if(distance1 < distance2 && distance1 > (stop_distance1[cur_record_velocity[cur_train_num]]) * 2) {
                             
                             for(i = 0; i < sp1_index; i++) {
@@ -1071,7 +1107,7 @@ void Coordinator(void) {
 
                         if(projectRdy) {
                             projectRdy = 0;
-                            Reply(projectId, cabTmp, sizeof(cabsReq));
+                            Reply(projectId, &(cab[cab_head]), sizeof(cabsReq));
                             cab_head = (cab_head + 1) % 10;
                             cab_count--;
                         }

@@ -85,7 +85,7 @@ void timer(void) {
 		int pct = ((idle / 50) / cur_time);
 		int remain = ((idle / 50) % cur_time);
 		remain = remain * 100 / cur_time;
-		Printf(COM2, "\033[%d;1H\033[K%d.%d", IDLE_ROW, pct, remain);
+		//Printf(COM2, "\033[%d;1H\033[K%d.%d", IDLE_ROW, pct, remain);
 
 		if (cur_time > prev_time) {
 
@@ -204,10 +204,10 @@ void sensorData(void) {
 						}
 						//Printf(COM2, "\033[%d;%dH   ", SENSOR_ROW + j, SENSOR_COL);
 						if (num_of_sensor >= 10) {
-							Printf(COM2, "\033[%d;%dH%c%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+							//Printf(COM2, "\033[%d;%dH%c%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
 						}
 						else {
-							Printf(COM2, "\033[%d;%dH%c0%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
+							//Printf(COM2, "\033[%d;%dH%c0%d", SENSOR_ROW + j, SENSOR_COL, (rts[j] / 16) + 'A', num_of_sensor);
 						}
 					}
 				}
