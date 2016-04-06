@@ -8,6 +8,7 @@
 #include "track_node.h"
 #include "track_data.h"
 #include "reserve.h"
+#include "project.h"
 
 #define TIME_ROW 1
 	#define TIME_COL 1
@@ -47,22 +48,28 @@
 #define TRAIN_NUM1 63
 #define TRAIN_NUM2 58
 
+#define TRAINCTRL_PRI 18
+
+#define TIME_DISPLAY_PRI 17
+
+#define LOC_DISPLAY_PRI 16
+
+#define SENSOR_PRI 14
+
+#define TRAIN_COM_PRI 15
+
+#define PROJECT_PRI 9
+
+#define TIMER_PRI 17
+
+#define COORDINATOR_PRI 10
+
 typedef struct Train_Request {
 	char type;
 	int delayTime;
 	char arg1;
 	char arg2;
 }t_req;
-
-typedef struct trainRequest {
-	char src; // 't' - train, 's' - sensor;
-	int type;
-	int arg1;
-	int arg2;
-	char schar;
-	int sint;
-	int train_num;
-} trainReq;
 
 
 void Coordinator(void);

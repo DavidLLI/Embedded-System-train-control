@@ -109,6 +109,11 @@ track_node* find_nxt_sensor(char *switchPos, track_node* src_node) {
         //Printf(COM2, "\033[%d;1H%s", 35 + i, src_node->name);
         //Delay(10);
         switch(src_node->type) {
+            case NODE_EXIT:
+                return self;
+            case NODE_ENTER:
+                src_node = src_node->edge[DIR_AHEAD].dest;
+                break;
             case NODE_SENSOR:
                 if (src_node != self) {
                     return src_node;

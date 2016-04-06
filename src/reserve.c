@@ -12,7 +12,7 @@ void clear_reserve_arr(track_node** reserve_arr, int* rsv_count, int cur_train_n
 }
 
 int reserve_track(char* switchPos, track_node* src_node, track_node** reserve_arr, int* rsv_count, int cur_train_num, switchPath* sp, int sp_index) {
-	int reserve_distance = 1000;
+	int reserve_distance = 1200;
     track_node* reserve_node = src_node;
     while (reserve_distance > 0) {
         int reserve_train_num = 0;

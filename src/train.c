@@ -1,12 +1,5 @@
 #include "train.h"
 
-
-#define TIMER_PRI 17
-
-#define COORDINATOR_PRI 10
-
-
-
 void init(void) {
 	Printf(COM2, "\033[2J");
 
@@ -355,7 +348,14 @@ void trainCommunication(void) {
 				req.sint = ssr_int;
 
 				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
-				break;	
+				break;
+			case 10: //proj
+				Printf(COM2, "\033[%d;1H\033[KStart project() task", STATUS_ROW);
+				req.src = 't';
+				req.type = 10;
+
+				Send(CoordinatorId, &req, sizeof(trainReq), &r, sizeof(char));
+				break;
 
 		}
 		Printf(COM2, "\033[%d;1H\033[K", CMD_ROW);

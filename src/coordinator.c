@@ -1,13 +1,5 @@
 #include "coordinator.h"
 
-
-
-#define TRAINCTRL_PRI 18
-#define TIME_DISPLAY_PRI 17
-#define LOC_DISPLAY_PRI 16
-#define SENSOR_PRI 14
-#define TRAIN_COM_PRI 15
-
 #define TRAIN_MAX 2
 
 #define DEBUG 1
@@ -26,6 +18,8 @@ void trainController(void) {
     int display_id = WhoIs("LocationDisplay");
     int recv_id = 0;
 
+    int project = 0;
+
     t_req req;
     for (;;) {
         Receive(&recv_id, &req, sizeof(t_req));
@@ -43,7 +37,11 @@ void trainController(void) {
                 }
                 Delay(req.delayTime);
                 Printf(COM1, "%c%c", 0, train_num);
-                Printf(COM2, "\033[%d;1H\033[KSet train %d to speed 0", STATUS_ROW, train_num);
+
+                if(!project) {
+                    Printf(COM2, "\033[%d;1H\033[KSet train %d to speed 0", STATUS_ROW, train_num);
+                }
+                
                 t_loc_req dis_req;
                 dis_req.type = 2;
                 dis_req.velocity_10 = 0;
@@ -53,7 +51,11 @@ void trainController(void) {
                 Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
                 break;
             case 1:     // sw
-                Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", TRAINCTRL_ROW, req.arg1, req.arg2);
+
+                if(!project) {
+                    Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", TRAINCTRL_ROW, req.arg1, req.arg2);
+                }
+                
                 if(req.arg2 == 'S' || req.arg2 == 's') {
                     Printf(COM1, "%c%c", 0x21, req.arg1);
                     req.arg2 = 's';
@@ -72,7 +74,11 @@ void trainController(void) {
                 if (req.arg1 == 1) {
                     train_num = TRAIN_NUM2;
                 }
-                Printf(COM2, "\033[%d;1H\033[KReverse train %d", STATUS_ROW, train_num);
+
+                //if(!project) {
+                    Printf(COM2, "\033[%d;1H\033[KReverse train %d", STATUS_ROW, train_num);
+                //}
+                
                 //set speed to 0
                 Printf(COM1, "%c%c", 0, train_num);
                 Delay(500);
@@ -83,7 +89,11 @@ void trainController(void) {
                 //set speed back
                 Delay(50);
                 Printf(COM1, "%c%c", req.arg2, train_num);
-                Printf(COM2, "\033[%d;1H\033[KReaccelerate train %d to speed %d", STATUS_ROW, train_num, req.arg2);           
+
+                //if(!project) {
+                    Printf(COM2, "\033[%d;1H\033[KReaccelerate train %d to speed %d", STATUS_ROW, train_num, req.arg2);  
+                //}
+                         
                 break;
             case 3:     // tr
                 ;
@@ -95,12 +105,27 @@ void trainController(void) {
                     train_num = TRAIN_NUM2;
                 }
                 
-                Printf(COM2, "\033[%d;1H\033[KSet train %d to speed %d", STATUS_ROW, train_num, req.arg2);
+                if(!project) {
+                   Printf(COM2, "\033[%d;1H\033[KSet train %d to speed %d", STATUS_ROW, train_num, req.arg2); 
+                }
+
+                
                 Printf(COM1, "%c%c", req.arg2, train_num);
-                dis_req.type = 3;
-                dis_req.velocity_10 = 20;
-                dis_req.train_num = req.arg1; 
-                Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+
+                if(!project) {
+                    dis_req.type = 3;
+                    dis_req.velocity_10 = 20;
+                    dis_req.train_num = req.arg1; 
+
+                    Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));                    
+                }
+
+                break;
+            case 4:
+                project = 1;
+                break;
+            default:
+                break;
 
         }
     }
@@ -147,6 +172,8 @@ void train_location_display(void) {
 
     char r;
 
+    int project = 0;
+
     for(;;) {
         Receive(&recv_id, &req, sizeof(t_loc_req));
         Reply(recv_id, &r, sizeof(char));
@@ -165,9 +192,12 @@ void train_location_display(void) {
                             cur_velocity_10[p_i] = 0;
                         }
                     }
-                    Printf(COM2, "\033[%d;%dH\033[K%c%d+%d.%d", 
-                        LOCATION_ROW + p_i, LOCATION_COL, 
-                        cur_schar[p_i], cur_sint[p_i], mm_int, mm_dec);
+                    if(!project) {
+                        Printf(COM2, "\033[%d;%dH\033[K%c%d+%d.%d", 
+                            LOCATION_ROW + p_i, LOCATION_COL, 
+                            cur_schar[p_i], cur_sint[p_i], mm_int, mm_dec);                        
+                    }
+
                 }
                 break;
             case 1: // Coordinator sensor
@@ -190,16 +220,21 @@ void train_location_display(void) {
                 stop[cur_train_num] = 0;
                 cur_velocity_10[cur_train_num] = 20;
                 break;
+            case 4: // stop print
+                project = 1;
+                break;
         }
     }
 }
 
 void Coordinator(void) {
+    int error = 30;
     int trainCtrl_id[2];
     trainCtrl_id[0] = Create(TRAINCTRL_PRI, &trainController);
     trainCtrl_id[1] = Create(TRAINCTRL_PRI, &trainController);
     RegisterAs("Coordinator");
 
+    // create
     int display_id = Create(LOC_DISPLAY_PRI, &train_location_display);
     
     track_node track[TRACK_MAX];
@@ -233,7 +268,7 @@ void Coordinator(void) {
     stop_distance1[7] = 0;
     stop_distance1[8] = 350;
     stop_distance1[9] = 535;
-    stop_distance1[10] = 450;
+    stop_distance1[10] = 660;
     stop_distance1[11] = 708;
     stop_distance1[12] = 750;
     stop_distance1[13] = 850;
@@ -309,15 +344,40 @@ void Coordinator(void) {
     Printf(COM2, "\033[%d;%dHReserved by A: ", PATH_ROW + 1, PATH_COL);
     Printf(COM2, "\033[%d;%dHReserved by B: ", PATH_ROW + 1, PATH_COL + 20);
 
+    //decleration after added project.h
+    int project = 0;
+
+    int projectRdy = 0;
+
+    int projectId;
+
+    cabsReq cab[10];
+    int cab_head = 0;
+    int cab_tail = 0;
+    int cab_count = 0;
+
+
+    
+
     for(;;) {
 
         int rcv_id;
         trainReq req;
-        char r = 'a';
+        char r;
         Receive(&rcv_id, &req, sizeof(trainReq));
 
         
         switch(req.src) {
+            case 'p':
+                if(cab_count > 0) {
+                    Reply(projectId, &(cab[cab_head]), sizeof(cabsReq));
+                    cab_head = (cab_head + 1) % 10;
+                    cab_count--;
+                } else {
+                    projectRdy = 1;
+                }
+
+                break;
             case 's':
                 Reply(rcv_id, &r, sizeof(char));
 
@@ -411,7 +471,10 @@ void Coordinator(void) {
                     cur_train_num = 1;
                 }*/
                 else {
-                    Printf(COM2, "\033[%d;%dH\033[KSensor discarded", PATH_ROW, PATH_COL);
+                    if(!project) {
+                        Printf(COM2, "\033[%d;%dH\033[KSensor discarded", PATH_ROW, PATH_COL);
+                    }
+                    
                     break;
                 }
                 
@@ -424,14 +487,17 @@ void Coordinator(void) {
                 prev_time[cur_train_num] = sensorTriggerTime[cur_train_num];
                 sensorTriggerTime[cur_train_num] = Time();
                 
-                if(expected_time[cur_train_num] != 0) {
-                    Printf(COM2, "\033[%d;%dH\033[KSensor %c%d, tick diff %d", 
-                        TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar[cur_train_num], 
-                        prv_sint[cur_train_num], sensorTriggerTime[cur_train_num] - expected_time[cur_train_num]);                    
-                } else {
-                    Printf(COM2, "\033[%d;%dH\033[KCalculation error: expected time = 0", 
-                        TRAIN_TIME_ROW, TRAIN_TIME_COL);
+                if(!project) {
+                    if(expected_time[cur_train_num] != 0) {
+                        Printf(COM2, "\033[%d;%dH\033[KSensor %c%d, tick diff %d", 
+                            TRAIN_TIME_ROW, TRAIN_TIME_COL, prv_schar[cur_train_num], 
+                            prv_sint[cur_train_num], sensorTriggerTime[cur_train_num] - expected_time[cur_train_num]);                    
+                    } else {
+                        Printf(COM2, "\033[%d;%dH\033[KCalculation error: expected time = 0", 
+                            TRAIN_TIME_ROW, TRAIN_TIME_COL);
+                    }                    
                 }
+
                 
 
                 prev_node[cur_train_num] = cur_node[cur_train_num];
@@ -513,12 +579,15 @@ void Coordinator(void) {
                     dis_req.sint = cur_sint[cur_train_num];
                     dis_req.velocity_10 = cur_velocity_10[cur_train_num];
                     dis_req.train_num = cur_train_num;
-                    Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+                    if(!project) {
+                        Send(display_id, &dis_req, sizeof(t_loc_req), &r, sizeof(char));
+                    }
+                    
 
                     if(sp[cur_train_num]) {
                         int distance = findPathDist(switchPos, cur_node[cur_train_num], des_snum[cur_train_num * 2]);
                         int distance_rev = findPathDist(switchPos, cur_node[cur_train_num], des_snum[cur_train_num * 2 + 1]);
-                        if(distance < (stop_distance1[cur_record_velocity[cur_train_num]]) * 2 && distance > stop_distance1[cur_record_velocity[cur_train_num]]) {
+                        if(distance < (stop_distance1[cur_record_velocity[cur_train_num]]) * 3 && distance > stop_distance1[cur_record_velocity[cur_train_num]]) {
                             sp[cur_train_num] = 0;
 
                             int delayTime = ((distance + des_dist[cur_train_num] - stop_distance1[cur_record_velocity[cur_train_num]]) * 10) / 
@@ -532,9 +601,36 @@ void Coordinator(void) {
                                                     sensorTriggerTime[cur_train_num];
                             char reply_c;
                             Send(trainCtrl_id[cur_train_num], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+
+                            // get new destination from project()
+                            if(project) {
+                                cabsReq *cabTmp = &(cab[cab_tail]);
+                                cab_tail = (cab_tail + 1) % 10;
+                                cab_count++;
+                                cabTmp->type = 1;
+                                cabTmp->trainNum = indexToTrainNum(cur_train_num);
+                                int des1 = des_snum[cur_train_num * 2];
+                                int des2 = des_snum[cur_train_num * 2 + 1];
+                                if(des1 == S0 || des2 == S0) {
+                                    cabTmp->arriveAt = S0;
+                                } else if(des1 == S1 || des2 == S1) {
+                                    cabTmp->arriveAt = S1;
+                                } else if(des1 == S2 || des2 == S2) {
+                                    cabTmp->arriveAt = S2;
+                                } else {
+                                    cabTmp->arriveAt = des1;
+                                }
+
+                                if(projectRdy) {
+                                    projectRdy = 0;
+                                    Reply(projectId, cabTmp, sizeof(cabsReq));
+                                    cab_head = (cab_head + 1) % 10;
+                                    cab_count--;
+                                }
+                            }
+
                             
-                           // Printf(COM2, "\033[%d;%dH\033[KCoordinator: sp sent at dist %d", STATUS_ROW + 9, STATUS_COL, distance);
-                        } else if (distance_rev < (stop_distance1[cur_record_velocity[cur_train_num]]) * 2 && distance_rev > stop_distance1[cur_record_velocity[cur_train_num]]) {
+                        } else if (distance_rev < (stop_distance1[cur_record_velocity[cur_train_num]]) * 3 && distance_rev > stop_distance1[cur_record_velocity[cur_train_num]]) {
                             sp[cur_train_num] = 0;
 
                             int delayTime = ((distance_rev + des_dist[cur_train_num] - stop_distance1[cur_record_velocity[cur_train_num]]) * 10) / 
@@ -548,11 +644,42 @@ void Coordinator(void) {
                                                     sensorTriggerTime[cur_train_num];
                             char reply_c;
                             Send(trainCtrl_id[cur_train_num], &train_req, sizeof(t_req), &reply_c, sizeof(char));
+
+                            // get new destination from project()
+                            if(project) {
+                                cabsReq *cabTmp = &(cab[cab_tail]);
+                                cab_tail = (cab_tail + 1) % 10;
+                                cab_count++;
+                                cabTmp->type = 1;
+                                cabTmp->trainNum = indexToTrainNum(cur_train_num);
+                                int des1 = des_snum[cur_train_num * 2];
+                                int des2 = des_snum[cur_train_num * 2 + 1];
+                                if(des1 == S0 || des2 == S0) {
+                                    cabTmp->arriveAt = S0;
+                                } else if(des1 == S1 || des2 == S1) {
+                                    cabTmp->arriveAt = S1;
+                                } else if(des1 == S2 || des2 == S2) {
+                                    cabTmp->arriveAt = S2;
+                                } else {
+                                    cabTmp->arriveAt = des2;
+                                }
+
+                                if(projectRdy) {
+                                    projectRdy = 0;
+                                    Reply(projectId, cabTmp, sizeof(cabsReq));
+                                    cab_head = (cab_head + 1) % 10;
+                                    cab_count--;
+                                }
+                                
+                            }                            
                                                       
                         }
                     }
                 } else {
-                    Printf(COM2, "\033[%d;%dH\033[KNode not found", SPEED_ROW, SPEED_COL);
+                    if(!project) {
+                        Printf(COM2, "\033[%d;%dH\033[KNode not found", SPEED_ROW, SPEED_COL);
+                    }
+                    
                 }
 
                 break;
@@ -618,8 +745,11 @@ void Coordinator(void) {
                             index = req.arg1 - 135;
                         }
 
-                        Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, req.arg2);
-                        Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, req.arg1, req.arg2);
+                        if(!project) {
+                            Printf(COM2, "\033[%d;%dH\033[K%c", index + 2, SWITCH_COL, req.arg2);
+                            Printf(COM2, "\033[%d;1H\033[KChange switch %d to %c", STATUS_ROW, req.arg1, req.arg2);
+                        }
+                       
                         
                         if(req.arg2 == 's') {
                             Printf(COM1, "%c%c", 0x21, req.arg1);
@@ -690,22 +820,43 @@ void Coordinator(void) {
                         Reply(rcv_id, &r, sizeof(char));
                         break;
 
-                    case 9:
-                        ;
+                    case 9:; // gt and jump lable to find new path
+                        
+                        int trainNum;
+                        int des;
 
-                        int trainNum = req.train_num;
-                        if(trainNum == TRAIN_NUM1) {
-                            cur_train_num = 0;
-                        } else if(trainNum == TRAIN_NUM2) {
-                            cur_train_num = 1;
-                        }
+
+                        trainNum = req.train_num;
+                        des = (req.schar - 'A') * 16 + req.sint - 1;
+
+                        cur_train_num = trainNumToIndex(trainNum);
+
+                        
                         src_node = 0;
 
+                        if(cur_node[cur_train_num] == 0) {
+                            Reply(rcv_id, &r, sizeof(char));
+                            break;
+                        }
+
                         src_node = find_nxt_sensor(switchPos, cur_node[cur_train_num]);
-                        int des = (req.schar - 'A') * 16 + req.sint - 1;
+
                         track_node *des_node = find_track_node(track, des);
 
-                        Printf(COM2, "\033[%d;1H\033[Kfind path from %s to %s", COORD_ROW, src_node->name, des_node->name);
+                        if(src_node == 0) {
+                            Printf(COM2, "\033[%d;1H\033[Kerror: src_node = 0 in find path", error);
+                            error++;
+                        }
+
+                        if(des_node == 0) {
+                            Printf(COM2, "\033[error;1H\033[Kerror: des_node = 0 in find path", error);
+                            error++;
+                        }
+
+                        if(!project) {
+                            Printf(COM2, "\033[%d;1H\033[Kfind path from %s to %s", COORD_ROW, src_node->name, des_node->name);
+                        }
+                        
 
                         int dist[140];
                         int prev[140];
@@ -733,11 +884,15 @@ void Coordinator(void) {
                         int distance1 = 0;
 
                         ret = Dijkstra(trainNum, track, src_node, dist, prev, des_node);
+
                         if(ret) {
                             distance1 = getSwitchPath(track, sp1, &sp1_index, dist, prev, des_node);
                         } else {
                             distance1 = 999999999;
                         }
+
+                        //Printf(COM2, "\033[%d;1H\033[KDij 1 done, index %d, distance %d", error, sp1_index, distance1);
+                        //error++;
   
                         // case 2,  src: -
                         switchPath sp2[22];
@@ -751,14 +906,43 @@ void Coordinator(void) {
 
                         src_node = find_node_in_dist(switchPos, cur_node[cur_train_num], dist_from_sensor);
 
+                        if (src_node->type == NODE_MERGE) {
+                            src_node = find_nxt_sensor(switchPos, src_node);
+                        }
+
+                        if(!project) {
+                            Printf(COM2, "\033[%d;1H\033[Kfind path from %s to %s", COORD_ROW, src_node->name, des_node->name);
+                        }
+
                         ret = Dijkstra(trainNum, track, src_node->reverse, dist, prev, des_node);
+                        
                         if(ret) {
                             distance2 = getSwitchPath(track, sp2, &sp2_index, dist, prev, des_node);
                         } else {
                             distance2 = 999999999;
                         }
 
-                        if(distance1 < distance2 && distance1 > (stop_distance1[cur_record_velocity[cur_train_num]]) * 2) {
+                        //Printf(COM2, "\033[%d;1H\033[KDij 2 done, index %d, distance %d", error, sp2_index, distance2);
+                        //error++;
+
+
+                        if(distance1 == 999999999 && distance2 == 999999999) { // no available path
+                            cabsReq *cabTmp = &(cab[cab_tail]);
+                            cab_tail = (cab_tail + 1) % 10;
+                            cab_count++;
+                            cabTmp->type = 0;
+                            cabTmp->trainNum = indexToTrainNum(cur_train_num);
+                            cabTmp->dst = des;
+                            
+
+                            if(projectRdy) {
+                                projectRdy = 0;
+                                Reply(projectId, cabTmp, sizeof(cabsReq));
+                                cab_head = (cab_head + 1) % 10;
+                                cab_count--;
+                            }
+
+                        } else if(distance1 < distance2 && distance1 > (stop_distance1[cur_record_velocity[cur_train_num]]) * 2) {
                             
                             for(i = 0; i < sp1_index; i++) {
                                 // copy to spT
@@ -772,10 +956,9 @@ void Coordinator(void) {
                                     spT2_index++;
                                 }
 
-                                Printf(COM2, "\033[%d;%dH%d, %c", PATH_ROW + 2 + i, PATH_COL + 29, sp1[i].num, sp1[i].state);
-
-
-                                
+                                if(!project) {
+                                    Printf(COM2, "\033[%d;%dH%d, %c", PATH_ROW + 2 + i, PATH_COL + 29, sp1[i].num, sp1[i].state);
+                                }
                             }
                             clear_reserve_arr(reserve[cur_train_num], rsv_count, cur_train_num);
                             int reserve_result = 0;
@@ -794,12 +977,16 @@ void Coordinator(void) {
                                 stop_train(trainCtrl_id[cur_train_num], cur_train_num, 0);
                                 train_stuck[cur_train_num] = 1;
                             }
+
+                            // set destination
+                            int des_rev = (des_node->reverse)->num;
+                            sp[cur_train_num] = 1;
+                            des_snum[cur_train_num * 2] = des;
+                            des_snum[cur_train_num * 2 + 1] = des_rev;
+                            des_dist[cur_train_num] = 0;
                             
                         } else {
 
-                            
-
-                            
                             for(i = 0; i < sp2_index; i++) {
                                 // copy to spT
                                 if(trainNum == TRAIN_NUM1) {
@@ -812,13 +999,13 @@ void Coordinator(void) {
                                     spT2_index++;
                                 }
 
-                                Printf(COM2, "\033[%d;%dH%d, %c", PATH_ROW + 2, PATH_COL + 29, sp2[i].num, sp2[i].state);
-
-
-
+                                if(!project) {
+                                    Printf(COM2, "\033[%d;%dH%d, %c", PATH_ROW + 2 + i, PATH_COL + 29, sp2[i].num, sp2[i].state);
+                                }
                                 
                             }
-
+                            //Printf(COM2, "\033[%d;1H\033[Kstart reserving the track", error);
+                            //error++;
                             int reserve_result = 0;
                             if (cur_train_num == 0) {
                                 reserve_result = reserve_track(switchPos, src_node->reverse, reserve[cur_train_num], rsv_count, cur_train_num, spT1, spT1_index);
@@ -828,49 +1015,71 @@ void Coordinator(void) {
                             }
                             
                             if (reserve_result == 0) {
+                                //Printf(COM2, "\033[%d;1H\033[KGT reverse command sent", error);
+                                //error++;
                                 reverse_train(trainCtrl_id[cur_train_num], cur_train_num, 0);
                                 train_stuck[cur_train_num] = 1;
                             }
                             else if (reserve_result == 1) {
+                                //Printf(COM2, "\033[%d;1H\033[KGT reverse command sent", error);
+                                //error++;
                                 reverse_train(trainCtrl_id[cur_train_num], cur_train_num, cur_record_velocity[cur_train_num]);
                                 train_stuck[cur_train_num] = 0;
                             }
                             reversing[cur_train_num] = 1;
                             //cur_node[cur_train_num] = src_node;
+
+                            // set destination
+                            int des_rev = (des_node->reverse)->num;
+                            sp[cur_train_num] = 1;
+                            des_snum[cur_train_num * 2] = des;
+                            des_snum[cur_train_num * 2 + 1] = des_rev;
+                            des_dist[cur_train_num] = 0;
                         }
-                        int des_rev = (des_node->reverse)->num;
-                        sp[cur_train_num] = 1;
-                        des_snum[cur_train_num * 2] = des;
-                        des_snum[cur_train_num * 2 + 1] = des_rev;
-                        des_dist[cur_train_num] = 0;                 
+                        
 
                         Reply(rcv_id, &r, sizeof(char));
-                        break;                       
+                        //Printf(COM2, "\033[%d;1H\033[KGT command handling done", error);
+                        //error++;
+   
+                        
+                        break;
+
+                    case 10: // project
+                        project = 1;
+                        
+
+                        // stop printing
+                        t_req stopReq;
+                        stopReq.type = 4;
+
+                        Send(trainCtrl_id[0], &stopReq, sizeof(t_req), &reply_c, sizeof(char));
+                        Send(trainCtrl_id[1], &stopReq, sizeof(t_req), &reply_c, sizeof(char));
+
+                        t_loc_req disStopReq;
+                        disStopReq.type = 4;
+                        Send(display_id, &disStopReq, sizeof(t_loc_req), &r, sizeof(char));
+
+                        // get initial destination
+                        projectId = Create(PROJECT_PRI, &proj);
+
+                        cabsReq *cabTmp = &(cab[cab_tail]);
+                        cab_tail = (cab_tail + 1) % 10;
+                        cab_count++;
+
+                        cabTmp->type = 3;
+
+                        if(projectRdy) {
+                            projectRdy = 0;
+                            Reply(projectId, cabTmp, sizeof(cabsReq));
+                            cab_head = (cab_head + 1) % 10;
+                            cab_count--;
+                        }
+
+                        break;
                 }
                 break;
         }
     }
 }
 
-
-
-void randomDest(void) {
-    int rcv_id = 0;
-    for (;;) {
-        int trainNum = 0;
-        Receive(&rcv_id, &trainNum, sizeof(int));
-        Reply(rcv_id, &trainNum, sizeof(int));
-
-        int t = Time();
-        
-        trainReq req;
-        char r;
-        req.src = 't';
-        req.type = 9;
-        req.train_num = trainNum;
-        req.schar = 'A' + t % 4;
-        req.sint = 1 + (t / 4) % 15;
-
-        Send(rcv_id, &req, sizeof(trainReq), &r, sizeof(char));                    
-    }
-}

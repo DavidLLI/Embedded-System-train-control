@@ -301,7 +301,19 @@ void parse_command(char *cb, int *type, int *arg1, int *arg2, char *schar, int *
                     return;
                 }
             }
-            break;            
+            break;
+        case 'p':
+            if(cb[1] == 'r' && cb[2] == 'o' && cb[3] == 'j') {
+                *type = 10;
+                return;
+            }
+            break;
+        case 'P':
+            if(cb[1] == 'R' && cb[2] == 'O' && cb[3] == 'J') {
+                *type = 10;
+                return;
+            }
+            break;   
     }
     *type = 5;
     return;
