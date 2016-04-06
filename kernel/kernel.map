@@ -31,7 +31,7 @@ bss             0x0000000000000000        0x0
  *(.bss)
                 0x0000000000000000                _BssEnd = .
 
-text            0x0000000000000000     0xf560
+text            0x0000000000000000    0x10d14
  *(.text)
  .text          0x0000000000000000      0x6c4 kernel.o
                 0x0000000000000000                main
@@ -58,22 +58,21 @@ text            0x0000000000000000     0xf560
                 0x0000000000001458                pq_delete
                 0x00000000000013c4                pq_insert
                 0x0000000000001400                pq_movetoend
- .text          0x0000000000001514      0x11c userFunction.o
-                0x0000000000001518                user
+ .text          0x0000000000001514       0xbc userFunction.o
                 0x0000000000001514                idle
-                0x0000000000001578                first
- .text          0x0000000000001630      0x534 contextSwitch.o
-                0x0000000000001630                activate
-                0x00000000000018b0                initialize
- .text          0x0000000000001b64      0x938 command.o
-                0x0000000000001bd0                parse_digit3
-                0x00000000000021e0                parse_command
-                0x0000000000001f3c                parse_arg3
-                0x0000000000001c58                parse_arg1
-                0x0000000000001b64                parse_digit1
-                0x0000000000001b80                parse_digit2
-                0x0000000000001cf4                parse_arg2
-                0x0000000000002060                parse_arg4
+                0x0000000000001518                first
+ .text          0x00000000000015d0      0x534 contextSwitch.o
+                0x00000000000015d0                activate
+                0x0000000000001850                initialize
+ .text          0x0000000000001b04      0x998 command.o
+                0x0000000000001b70                parse_digit3
+                0x0000000000002180                parse_command
+                0x0000000000001edc                parse_arg3
+                0x0000000000001bf8                parse_arg1
+                0x0000000000001b04                parse_digit1
+                0x0000000000001b20                parse_digit2
+                0x0000000000001c94                parse_arg2
+                0x0000000000002000                parse_arg4
  .text          0x000000000000249c      0x310 syscall.o
                 0x000000000000249c                Send
                 0x000000000000269c                MyParentTid
@@ -119,84 +118,100 @@ text            0x0000000000000000     0xf560
                 0x00000000000034e8                COM2GetServer
                 0x00000000000039f8                COM2GetNotifier
                 0x0000000000003934                COM1GetNotifier
- .text          0x0000000000003cc8      0xaf8 train.o
+ .text          0x0000000000003cc8      0xb14 train.o
                 0x0000000000003f5c                timer
                 0x0000000000004074                sensorData
                 0x0000000000003cc8                init
                 0x0000000000004348                trainCommunication
- .text          0x00000000000047c0     0x777c track_data.o
-                0x0000000000008408                init_trackb
-                0x00000000000047e4                init_tracka
- .text          0x000000000000bf3c     0x1ba8 coordinator.o
-                0x000000000000c26c                train_location_display_timer
-                0x000000000000c540                Coordinator
-                0x000000000000c2b4                train_location_display
-                0x000000000000bf3c                trainController
-                0x000000000000da08                randomDest
- .text          0x000000000000dae4      0x918 graph.o
-                0x000000000000dcb8                findPathDist
-                0x000000000000df20                Dijkstra
-                0x000000000000db68                find_nxt_merge
-                0x000000000000dd5c                find_nxt_node
-                0x000000000000dbec                find_nxt_sensor
-                0x000000000000dae4                find_node_in_dist
-                0x000000000000dc70                minDist
-                0x000000000000de5c                find_dist_to_next_sensor
-                0x000000000000e170                getSwitchPath
-                0x000000000000dee4                find_track_node
- .text          0x000000000000e3fc      0x55c reserve.o
-                0x000000000000e48c                reserve_track
-                0x000000000000e8b0                stop_train
-                0x000000000000e920                reverse_train
-                0x000000000000e3fc                clear_reserve_arr
-                0x000000000000e8e8                resume_train
- .text          0x000000000000e958      0x110 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)
-                0x000000000000e958                __udivsi3
-                0x000000000000ea50                __aeabi_uidivmod
- .text          0x000000000000ea68      0x140 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_divsi3.o)
-                0x000000000000ea68                __divsi3
-                0x000000000000eb90                __aeabi_idivmod
- .text          0x000000000000eba8       0xcc /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_umodsi3.o)
-                0x000000000000eba8                __umodsi3
- .text          0x000000000000ec74       0xe4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_modsi3.o)
-                0x000000000000ec74                __modsi3
- .text          0x000000000000ed58        0x4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_dvmd_tls.o)
-                0x000000000000ed58                __aeabi_ldiv0
-                0x000000000000ed58                __div0
-                0x000000000000ed58                __aeabi_idiv0
+ .text          0x00000000000047dc     0x777c track_data.o
+                0x0000000000008424                init_trackb
+                0x0000000000004800                init_tracka
+ .text          0x000000000000bf58     0x2134 coordinator.o
+                0x000000000000c2c4                train_location_display_timer
+                0x000000000000c5bc                Coordinator
+                0x000000000000c30c                train_location_display
+                0x000000000000bf58                trainController
+ .text          0x000000000000e08c      0x91c graph.o
+                0x000000000000e264                findPathDist
+                0x000000000000e4cc                Dijkstra
+                0x000000000000e110                find_nxt_merge
+                0x000000000000e308                find_nxt_node
+                0x000000000000e194                find_nxt_sensor
+                0x000000000000e08c                find_node_in_dist
+                0x000000000000e21c                minDist
+                0x000000000000e408                find_dist_to_next_sensor
+                0x000000000000e71c                getSwitchPath
+                0x000000000000e490                find_track_node
+ .text          0x000000000000e9a8      0x55c reserve.o
+                0x000000000000ea38                reserve_track
+                0x000000000000ee5c                stop_train
+                0x000000000000eecc                reverse_train
+                0x000000000000e9a8                clear_reserve_arr
+                0x000000000000ee94                resume_train
+ .text          0x000000000000ef04      0xd5c project.o
+                0x000000000000efd4                sensorToStation
+                0x000000000000f070                PrintBoard
+                0x000000000000efa8                stationToSensor
+                0x000000000000f010                trainNumToIndex
+                0x000000000000f034                sensorToName
+                0x000000000000ef04                rand
+                0x000000000000f6dc                proj
+                0x000000000000f684                gt
+                0x000000000000f2fc                PrintTrainInfo
+                0x000000000000f1e0                PrintStationInfo
+                0x000000000000f000                indexToTrainNum
+                0x000000000000f450                PrintMessage
+ .text          0x000000000000fc60      0x110 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)
+                0x000000000000fc60                __udivsi3
+                0x000000000000fd58                __aeabi_uidivmod
+ .text          0x000000000000fd70      0x140 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_divsi3.o)
+                0x000000000000fd70                __divsi3
+                0x000000000000fe98                __aeabi_idivmod
+ .text          0x000000000000feb0       0xcc /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_umodsi3.o)
+                0x000000000000feb0                __umodsi3
+ .text          0x000000000000ff7c       0xe4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_modsi3.o)
+                0x000000000000ff7c                __modsi3
+ .text          0x0000000000010060        0x4 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_dvmd_tls.o)
+                0x0000000000010060                __aeabi_ldiv0
+                0x0000000000010060                __div0
+                0x0000000000010060                __aeabi_idiv0
  *(.got)
- .got           0x000000000000ed5c       0x5c ClockServer.o
+ .got           0x0000000000010064       0x60 ClockServer.o
  *(.got.plt)
- .got.plt       0x000000000000edb8        0xc ClockServer.o
-                0x000000000000edb8                _GLOBAL_OFFSET_TABLE_
+ .got.plt       0x00000000000100c4        0xc ClockServer.o
+                0x00000000000100c4                _GLOBAL_OFFSET_TABLE_
  *(.rodata)
  *(.rodata.str1.4)
  .rodata.str1.4
-                0x000000000000edc4        0xc ClockServer.o
+                0x00000000000100d0        0xc ClockServer.o
  .rodata.str1.4
-                0x000000000000edd0       0x55 wrapper.o
+                0x00000000000100dc       0x55 wrapper.o
                                          0x64 (size before relaxing)
  .rodata.str1.4
-                0x000000000000ee25        0x0 ioServer.o
+                0x0000000000010131        0x0 ioServer.o
                                          0x58 (size before relaxing)
- *fill*         0x000000000000ee25        0x3 00
+ *fill*         0x0000000000010131        0x3 00
  .rodata.str1.4
-                0x000000000000ee28      0x247 train.o
-                                        0x250 (size before relaxing)
- *fill*         0x000000000000f06f        0x1 00
+                0x0000000000010134      0x267 train.o
+                                        0x270 (size before relaxing)
+ *fill*         0x000000000001039b        0x1 00
  .rodata.str1.4
-                0x000000000000f070      0x2ad track_data.o
+                0x000000000001039c      0x2ad track_data.o
                                         0x2b0 (size before relaxing)
- *fill*         0x000000000000f31d        0x3 00
+ *fill*         0x0000000000010649        0x3 00
  .rodata.str1.4
-                0x000000000000f320      0x223 coordinator.o
-                                        0x234 (size before relaxing)
- *fill*         0x000000000000f543        0x1 00
+                0x000000000001064c      0x2d7 coordinator.o
+                                        0x2e8 (size before relaxing)
+ *fill*         0x0000000000010923        0x1 00
  .rodata.str1.4
-                0x000000000000f544       0x1b reserve.o
+                0x0000000000010924       0x1b reserve.o
                                          0x5c (size before relaxing)
+ *fill*         0x000000000001093f        0x1 00
+ .rodata.str1.4
+                0x0000000000010940      0x3d3 project.o
+                                        0x3dc (size before relaxing)
  *(.glue_7)
- *fill*         0x000000000000f55f        0x1 00
+ *fill*         0x0000000000010d13        0x1 00
  *(.glue_7t)
 
 .rel.dyn
@@ -217,10 +232,11 @@ LOAD track_data.o
 LOAD coordinator.o
 LOAD graph.o
 LOAD reserve.o
+LOAD project.o
 LOAD /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a
 OUTPUT(kernel.elf elf32-littlearm)
 
-.comment        0x0000000000000000      0x132
+.comment        0x0000000000000000      0x144
  .comment       0x0000000000000000       0x12 kernel.o
  .comment       0x0000000000000012       0x12 ClockServer.o
  .comment       0x0000000000000024       0x12 helper.o
@@ -238,6 +254,7 @@ OUTPUT(kernel.elf elf32-littlearm)
  .comment       0x00000000000000fc       0x12 coordinator.o
  .comment       0x000000000000010e       0x12 graph.o
  .comment       0x0000000000000120       0x12 reserve.o
+ .comment       0x0000000000000132       0x12 project.o
 
 .debug_line     0x0000000000000000      0x256
  .debug_line    0x0000000000000000       0x86 /u/wbcowan/gnuarm-4.0.2/lib/gcc/arm-elf/4.0.2/libgcc.a(_udivsi3.o)

@@ -15,7 +15,7 @@ LDFLAGS = -init main -Map kernel.map -N  -T orex.ld -L/u/wbcowan/gnuarm-4.0.2/li
 
 OBJ = ClockServer.o helper.o kernelFunction.o nameServer.o taskDescriptor.o userFunction.o \
 	contextSwitch.o command.o syscall.o wrapper.o ioServer.o train.o track_data.o \
-	coordinator.o graph.o reserve.o
+	coordinator.o graph.o reserve.o project.o
 
 
 
@@ -68,9 +68,10 @@ graph.o: ../src/graph.c
 	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 reserve.o: ../src/reserve.c 
-	$(XCC) -O2 -c -o $@ $< $(CFLAGS)			
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
-
+project.o: ../src/project.c 
+	$(XCC) -O2 -c -o $@ $< $(CFLAGS)
 
 #kernel.s: kernel.c 
 #	$(XCC) -S $(CFLAGS) kernel.c ../src/taskDescriptor.c ../src/contextSwitch.c
